@@ -8,7 +8,6 @@
     if(tmp == 0) 
       return 7;
     else return tmp;
-
   });
 
   let p1 = 1;
@@ -25,39 +24,8 @@
   function getDaysInMounth(date) {
     return new Date(date.getFullYear(), date.getMonth()+1, 0).getDate();
   }
-
-
 </script>
 
-<style>
-        /* Stili personalizzati per fare in modo che il calendario occupi lo spazio rimanente */
-        body, html {
-      height: 100%;
-    }
-
-    .container-fluid {
-      height: calc(100% - 60px); /* Altezza che esclude l'header fisso */
-      padding-top: 60px; /* Distanza tra l'header e il calendario */
-    }
-
-    .calendar {
-      height: 100%;
-      overflow: auto;
-    }
-
-    table {
-      width: 100%;
-      height: 100%;
-      table-layout: fixed;
-    }
-
-    th, td {
-      text-align: center;
-      vertical-align: middle;
-      height: 100px;
-    }
-
-</style>
 
 <div class="gird">
     <div class="row py-2">
@@ -91,7 +59,8 @@
     {/each}
 </div>
 
-<button class="btn btn-outline-primary">
+<!-- <button class="btn btn-outline-primary">
   <i class="bi bi-download"></i> {buttonText}
-</button>
+</button> -->
+
 

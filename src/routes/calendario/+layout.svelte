@@ -1,4 +1,4 @@
-<script >
+<script>
     let today = new Date();
 
 </script>
