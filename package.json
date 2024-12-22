@@ -27,5 +27,6 @@
 	},
 	"dependencies": {
 		"mongoose": "^8.9.2"
+		"bootstrap": "^5.3.3"
 	}
 }
