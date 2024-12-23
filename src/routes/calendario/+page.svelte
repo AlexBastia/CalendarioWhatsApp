@@ -2,6 +2,9 @@
   let week = ['dom','lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
   let weekscol = [1,2,3,4,5,6];
   let buttonText = 'premi';
+  let { data } = $props();
+
+  console.log(data.events[0].date.getDate());
 
   let currentDate = $state(new Date(2024, 11, 2)); // Data corrente
   let firstDayOfTheMounth = $derived(() => {
@@ -35,6 +38,7 @@
 </script>
 
 
+
 <div class="gird">
     <div class="row py-2">
       {#each week as day}
@@ -55,7 +59,16 @@
           
           {:else if (i +  j*7  + 1) - firstDayOfTheMounth() <= getDaysInMounth(currentDate)}
             <div class="col">
-              {(i +  j*7  + 1) - firstDayOfTheMounth()} 
+              {(i +  j*7  + 1) - firstDayOfTheMounth()}
+
+              {#each data.events as event}
+              {#if event.date.getMonth()==currentDate.getMonth() && event.date.getFullYear()==currentDate.getFullYear() &&( (i +  j*7  + 1) - firstDayOfTheMounth()) == event.date.getDate()}
+                  <div>
+                    {event.title}
+                  </div>
+                {/if}
+              {/each}  
+
             </div>
           {:else}
             <div class="col bg-primary">
