@@ -1,6 +1,7 @@
 <script>
   let week = ['dom','lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
   let weekscol = [1,2,3,4,5,6];
+  let buttonText = 'premi';
 
   let currentDate = $state(new Date(2024, 11, 2)); // Data corrente
   let firstDayOfTheMounth = $derived(() => {
@@ -59,8 +60,10 @@
     {/each}
 </div>
 
-<!-- <button class="btn btn-outline-primary">
+<button class="btn btn-outline-primary">
   <i class="bi bi-download"></i> {buttonText}
-</button> -->
+
+  efwf
+</button>
 
 
