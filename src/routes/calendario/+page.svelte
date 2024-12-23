@@ -59,8 +59,5 @@
     {/each}
 </div>
 
-<!-- <button class="btn btn-outline-primary">
-  <i class="bi bi-download"></i> {buttonText}
-</button> -->
 
 
