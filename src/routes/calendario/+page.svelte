@@ -24,7 +24,6 @@
   function previousMonth(date) {
     return new Date(date.getFullYear(), date.getMonth() - 1, 1);
   }
-
   
   function nextMonth(date) {
     return new Date(date.getFullYear(), date.getMonth() + 1, 1);
@@ -68,8 +67,6 @@
     {/each}
 </div>
 
-<<<<<<< HEAD
-=======
 <p>mese: {currentDate.getMonth()} anno: {currentDate.getFullYear()}</p>
 
 <button class="btn btn-outline-primary" on:click={goBack}>
@@ -79,6 +76,5 @@
 <button class="btn btn-outline-primary" on:click={goAhead}>
   <i class="bi bi-download"></i> {buttonText}
 </button>
->>>>>>> calendar
 
 
