@@ -1,6 +1,7 @@
 <script>
   let week = ['dom','lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
   let weekscol = [1,2,3,4,5,6];
+  let buttonText = 'premi';
 
   let currentDate = $state(new Date(2024, 11, 2)); // Data corrente
   let firstDayOfTheMounth = $derived(() => {
@@ -10,13 +11,21 @@
     else return tmp;
   });
 
-  let p1 = 1;
-  let p2 = 1;
+
+
+  function goBack() {
+    currentDate = previousMonth(currentDate)
+  }
+
+  function goAhead(){
+    currentDate = nextMonth(currentDate);
+  }
 
   function previousMonth(date) {
     return new Date(date.getFullYear(), date.getMonth() - 1, 1);
   }
 
+  
   function nextMonth(date) {
     return new Date(date.getFullYear(), date.getMonth() + 1, 1);
   }
@@ -29,11 +38,11 @@
 
 <div class="gird">
     <div class="row py-2">
-    {#each week as day}
-        <div class="col">
-            {day}
-        </div>        
-    {/each}
+      {#each week as day}
+          <div class="col">
+              {day}
+          </div>        
+      {/each}
     </div>
 
     {#each weekscol as raw, j}
@@ -45,13 +54,13 @@
               {getDaysInMounth(previousMonth(currentDate))- (firstDayOfTheMounth() - 1 -i)}
             </div>
           
-          {:else if p1 <= getDaysInMounth(currentDate)}
+          {:else if (i +  j*7  + 1) - firstDayOfTheMounth() <= getDaysInMounth(currentDate)}
             <div class="col">
-              {p1++}
+              {(i +  j*7  + 1) - firstDayOfTheMounth()} 
             </div>
           {:else}
             <div class="col bg-primary">
-              {p2++}
+              {(i +  j*7  + 1) - firstDayOfTheMounth() - getDaysInMounth(currentDate)}
             </div>
           {/if}
         {/each}
@@ -59,5 +68,17 @@
     {/each}
 </div>
 
+<<<<<<< HEAD
+=======
+<p>mese: {currentDate.getMonth()} anno: {currentDate.getFullYear()}</p>
+
+<button class="btn btn-outline-primary" on:click={goBack}>
+  <i class="bi bi-download"></i> {buttonText}
+</button>
+
+<button class="btn btn-outline-primary" on:click={goAhead}>
+  <i class="bi bi-download"></i> {buttonText}
+</button>
+>>>>>>> calendar
 
 
