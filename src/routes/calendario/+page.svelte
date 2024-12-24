@@ -1,8 +1,12 @@
 <script>
+  import { goto } from '$app/navigation';
+	import { events } from './data';
+
   let week = ['dom','lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
   let weekscol = [1,2,3,4,5,6];
   let buttonText = 'premi';
-  let { data } = $props();
+
+  let {data} = $props();
 
   console.log(data);
 
@@ -13,6 +17,10 @@
       return 7;
     else return tmp;
   });
+
+  function goToForm(){
+    goto('/calendario/addEvent');
+  }
 
   function goBack() {
     currentDate = previousMonth(currentDate)
@@ -56,18 +64,20 @@
             </div>
           
           {:else if (i +  j*7  + 1) - firstDayOfTheMounth() <= getDaysInMounth(currentDate)}
-            <!-- <div class="col">
+            <div class="col">
               {(i +  j*7  + 1) - firstDayOfTheMounth()}
 
               {#each data.events as event}
-              {#if event.date.getMonth()==currentDate.getMonth() && event.date.getFullYear()==currentDate.getFullYear() &&( (i +  j*7  + 1) - firstDayOfTheMounth()) == event.date.getDate()}
-                  <div>
+                {#if event.start.getFullYear() == currentDate.getFullYear() && event.start.getMonth() == currentDate.getMonth() && (i +  j*7  + 1) - firstDayOfTheMounth() == event.start.getDate()}
+                  <div class="bg-primary">
                     {event.title}
-                  </div>
+                </div>
                 {/if}
-              {/each}  
+                
+              {/each}
 
-            </div> -->
+
+            </div> 
           {:else}
             <div class="col bg-primary">
               {(i +  j*7  + 1) - firstDayOfTheMounth() - getDaysInMounth(currentDate)}
@@ -87,5 +97,7 @@
 <button class="btn btn-outline-primary" on:click={goAhead}>
   <i class="bi bi-download"></i> {buttonText}
 </button>
+
+<button class="btn btn-primary" on:click={goToForm}>aggiungi evento</button>
 
 
