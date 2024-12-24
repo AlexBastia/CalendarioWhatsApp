@@ -4,7 +4,7 @@
   let buttonText = 'premi';
   let { data } = $props();
 
-  console.log(data.events[0].date.getDate());
+  console.log(data);
 
   let currentDate = $state(new Date(2024, 11, 2)); // Data corrente
   let firstDayOfTheMounth = $derived(() => {
@@ -13,8 +13,6 @@
       return 7;
     else return tmp;
   });
-
-
 
   function goBack() {
     currentDate = previousMonth(currentDate)
@@ -35,9 +33,9 @@
   function getDaysInMounth(date) {
     return new Date(date.getFullYear(), date.getMonth()+1, 0).getDate();
   }
+
+
 </script>
-
-
 
 <div class="gird">
     <div class="row py-2">
@@ -58,7 +56,7 @@
             </div>
           
           {:else if (i +  j*7  + 1) - firstDayOfTheMounth() <= getDaysInMounth(currentDate)}
-            <div class="col">
+            <!-- <div class="col">
               {(i +  j*7  + 1) - firstDayOfTheMounth()}
 
               {#each data.events as event}
@@ -69,7 +67,7 @@
                 {/if}
               {/each}  
 
-            </div>
+            </div> -->
           {:else}
             <div class="col bg-primary">
               {(i +  j*7  + 1) - firstDayOfTheMounth() - getDaysInMounth(currentDate)}
