@@ -1,8 +1,11 @@
 import { Appunto } from '$lib/models/Appunto';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 
-export async function load({ params }) {
-  let appunto = await Appunto.findById(params.idAppunto);
+export async function load(event) {
+  if (event.locals.user === null) {
+    return redirect('/login')
+  }
+  let appunto = await Appunto.findById(event.params.idAppunto);
 
   if (!appunto) error(404);
 

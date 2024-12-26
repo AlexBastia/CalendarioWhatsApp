@@ -1,13 +1,14 @@
-import { Schema, model } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 
-const appuntoSchema = new Schema({
+export const appuntoSchema = new Schema({
   titolo: String,
   testo: String,
   caratteri: Number,
   inizioTesto: String,
   categorie: [String],
   dataCreazione: Date,
-  dataUltimaModifica: Date
+  dataUltimaModifica: Date,
+  idUtente: Types.ObjectId
 });
 
 export const Appunto = model('Appunto', appuntoSchema);

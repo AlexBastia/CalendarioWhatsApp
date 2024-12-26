@@ -1,10 +1,15 @@
 import { goto } from "$app/navigation";
-import { Appunto } from "$lib/models/Appunto.js"
-import { redirect } from "@sveltejs/kit";
+import { Appunto } from "$lib/models/Appunto";
+import { fail, redirect } from "@sveltejs/kit";
 import mongoose from "mongoose";
 
-export async function load() {
-  const appunti = await Appunto.find({}, { testo: 0 });
+export async function load(event) {
+
+  if (event.locals.user === null) {
+    return redirect(301, "/login");
+  }
+
+  const appunti = await Appunto.find({ idUtente: event.locals.user._id }, { testo: 0 });
 
 
   return {
@@ -22,27 +27,45 @@ export async function load() {
 
 const ANTEP_MAX_LUNGH = 200;
 export const actions = {
-  create: async ({ url }) => {
+  create: async (event) => {
+    if (event.locals.user === null) {
+      throw fail(401);
+    }
+
+    const data = await event.request.formData();
+
+    const titolo = data.get('titolo') + ' | duplicato';
+    const testo = data.get('testo');
+
+    let caratteri = null, inizioTesto = null;
+
+    if (titolo) {
+      inizioTesto = truncateString(testo, ANTEP_MAX_LUNGH);
+      caratteri = testo.length;
+    }
+
     const appuntoVuoto = new Appunto({
-      titolo: '',
-      testo: '',
-      caratteri: 0,
-      categorie: ['test1'],
-      inizioTesto: '',
+      titolo: titolo ?? '',
+      testo: testo ?? '',
+      caratteri: caratteri ?? 0,
+      categorie: [],
+      inizioTesto: inizioTesto ?? '',
       dataCreazione: getCurrTime(),
-      dataUltimaModifica: getCurrTime()
+      dataUltimaModifica: getCurrTime(),
+      idUtente: event.locals.user._id
     });
 
     const saved = await appuntoVuoto.save();
 
     if (!saved) return { success: false };
 
-    redirect(303, `${url.origin}${url.pathname}/${saved._id.toString()}`);
+    redirect(303, `/appunti/${saved._id.toString()}`);
   },
-  update: async ({ request }) => {
-    const data = await request.formData();
-
-    console.log(data);
+  update: async (event) => {
+    if (event.locals.user === null) {
+      throw fail(401);
+    }
+    const data = await event.request.formData();
 
     const id = new mongoose.Types.ObjectId(data.get('id'));
     const titolo = data.get('titolo');
@@ -53,22 +76,25 @@ export const actions = {
     const dataUltimaModifica = getCurrTime();
     const caratteri = testo.length;
 
-    const appunto = await Appunto.findOneAndUpdate({ _id: id }, {
+    const appunto = await Appunto.findOneAndUpdate({ idUtente: event.locals.user._id, _id: id }, {
       titolo,
       testo,
       caratteri,
       categorie,
       inizioTesto,
       dataUltimaModifica
-    }, { new: true });
+    });
 
     return { success: true }
   },
-  delete: async ({ request }) => {
-    const data = await request.formData();
+  delete: async (event) => {
+    if (event.locals.user === null) {
+      throw fail(401);
+    }
+    const data = await event.request.formData();
 
     const id = new mongoose.Types.ObjectId(data.get('id'));
-    const idk = await Appunto.deleteOne({ _id: id });
+    await Appunto.deleteOne({ idUtente: event.locals.user._id, _id: id });
 
     return { success: true }
   }
