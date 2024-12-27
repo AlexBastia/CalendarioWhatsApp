@@ -10,4 +10,5 @@ const eventSchema = new Schema(
         note: String
     }
 )
-export const Evento = model('Event', eventSchema);
+
+export const Evento = model('Evento', eventSchema);
