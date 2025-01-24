@@ -1,5 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
+	import plus from '$lib/assets/svgs/plus.svg';
+	import up from '$lib/assets/svgs/arrow-up.svg';
+	import down from '$lib/assets/svgs/arrow-down.svg';
 
 	let { data, form } = $props();
 
@@ -106,43 +109,85 @@
 	};
 </script>
 
-<header>
-	<h2>Appunti</h2>
-	<button>W</button>
+<header class="container">
+	<h1 class="display-2">Appunti</h1>
 </header>
 <main>
-	<div>
+	<div class="container">
 		<input
 			id="ricerca"
 			type="text"
+			class="form-control fs-2 mt-4"
 			placeholder="Search"
 			oninput={(e) => filtraAnteprime(e.target.value)}
 		/>
-		<label for="sort">Sort</label>
-		<select name="sort" id="sort" oninput={(e) => ordinaAnteprime(e.target.value)}>
-			<option value="date" selected>Data</option>
-			<option value="alpha">Alfabetico</option>
-			<option value="len">Lunghezza</option>
-		</select>
-		<button onclick={() => invertiOrdine()}>Crescente: {ordineIsCrescente ? 'si' : 'no'}</button>
-		<label for="tag">Categoria</label>
-		<select name="tag" id="tag" oninput={(e) => filtraCategoria(e.target.value)}>
-			<option value="" selected>Nessuna</option>
-			<option value="test1">Test1</option>
-			<option value="test2">Test2</option>
-		</select>
-	</div>
-	<div>
-		{#each anteprimeFiltrate as anteprima}
-			<div>
-				<a href="/appunti/{anteprima.id}"><h3>{anteprima.titolo || 'No title'}</h3></a>
-				<p>{anteprima.testo || 'No testo'}</p>
+		<div class="row align-items-end mt-2">
+			<div class="col">
+				<label for="sort" class="fs-6">Ordina</label>
+				<select id="sort" class="form-select fs-6" oninput={(e) => ordinaAnteprime(e.target.value)}>
+					<option value="date" selected>Data</option>
+					<option value="alpha">Alfabetico</option>
+					<option value="len">Lunghezza</option>
+				</select>
 			</div>
-		{/each}
+			<div class="col">
+				<label for="tag">Categoria</label>
+				<select id="tag" class="form-select" oninput={(e) => filtraCategoria(e.target.value)}>
+					<option value="" selected>Nessuna</option>
+					<option value="test1">Test1</option>
+					<option value="test2">Test2</option>
+				</select>
+			</div>
+			<div class="col-2">
+				<input
+					id="invertOrderCheckbox"
+					type="checkbox"
+					class="btn-check"
+					autocomplete="off"
+					onclick={() => invertiOrdine()}
+				/>
+				<label class="btn" for="invertOrderCheckbox" style="border: none;"
+					><img
+						src={ordineIsCrescente ? up : down}
+						alt={ordineIsCrescente ? 'Growing' : 'Decreasing'}
+					/></label
+				>
+			</div>
+		</div>
 	</div>
-	<form method="POST" action="?/create">
-		<input name="titolo" type="hidden" value="" />
-		<input name="testo" type="hidden" value="" />
-		<input type="submit" value="Aggiungi" />
-	</form>
+	<div class="container mt-4">
+		<div class="row g-4">
+			{#each anteprimeFiltrate as anteprima (anteprima.id)}
+				<div class="col">
+					<div class="card" style="max-width: 400px; min-width: 100px; position: relative;">
+						<a class="card-link" href="/appunti/{anteprima.id}" aria-label="continue reading"></a>
+						<div class="card-body">
+							<h5 class="card-title">{anteprima.titolo || 'No title'}</h5>
+							<p class="card-text">{anteprima.testo || 'No testo'}</p>
+						</div>
+					</div>
+				</div>
+			{/each}
+		</div>
+	</div>
+	<div class="position-fixed" style="bottom: 40px; right: 30px">
+		<form method="POST" action="?/create">
+			<input name="titolo" type="hidden" value="" />
+			<input name="testo" type="hidden" value="" />
+			<button class="btn btn-primary float-end rounded-circle p-1"
+				><img width="50" height="50" src={plus} alt="Add Note" /></button
+			>
+		</form>
+	</div>
 </main>
+
+<style>
+	.card-link::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		left: 0;
+	}
+</style>

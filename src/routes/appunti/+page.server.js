@@ -26,6 +26,8 @@ export async function load(event) {
 }
 
 const ANTEP_MAX_LUNGH = 200;
+const TITOLO_MAX_LUNGH = 50;
+const TESTO_MAX_LUNGH = 1000;
 export const actions = {
   create: async (event) => {
     if (event.locals.user === null) {
@@ -34,12 +36,14 @@ export const actions = {
 
     const data = await event.request.formData();
 
-    const titolo = data.get('titolo') + ' | duplicato';
-    const testo = data.get('testo');
+    let titolo = data.get('titolo').substring(0, TITOLO_MAX_LUNGH);
+    const testo = data.get('testo').substring(0, TESTO_MAX_LUNGH);
 
     let caratteri = null, inizioTesto = null;
 
-    if (titolo) {
+    if (titolo && data.get('duplica')) titolo += ' | duplicato';
+
+    if (testo) {
       inizioTesto = truncateString(testo, ANTEP_MAX_LUNGH);
       caratteri = testo.length;
     }

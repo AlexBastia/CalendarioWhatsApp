@@ -31,6 +31,7 @@
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"bootstrap": "^5.3.3",
+		"masonry-layout": "^4.2.2",
 		"mongoose": "^8.9.2"
 	}
 }
