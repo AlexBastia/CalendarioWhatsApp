@@ -12,5 +12,3 @@ export const appuntoSchema = new Schema({
 });
 
 export const Appunto = model('Appunto', appuntoSchema);
-
-

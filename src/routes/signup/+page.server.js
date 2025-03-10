@@ -34,6 +34,7 @@ async function action(event) {
       username: ""
     });
   }
+  console.log("iniziamo a verificare per bene")
   if (!verifyEmailInput(email)) {
     return fail(400, {
       message: "Invalid email",
@@ -56,6 +57,7 @@ async function action(event) {
       username
     });
   }
+  console.log("Tutto buono, creiamo l'utente!")
   const user = await createUser(email, username, password);
 
   const sessionToken = generateSessionToken();

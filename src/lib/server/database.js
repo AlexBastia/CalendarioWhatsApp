@@ -1,5 +1,4 @@
-import mongoose from 'mongoose';
-import { MONGO_URL } from '$env/static/private';
+import mongoose, { mongo } from 'mongoose';
 /* 
   0 - disconnected
   1 - connected
@@ -10,6 +9,17 @@ import { MONGO_URL } from '$env/static/private';
 const mongoConnection = {
   isConnected: 0,
 };
+
+const mongoCreds = {
+  user: "site242511",
+  psw: "Eeb1uoGi",
+  site: "mongo_site242511",
+  dbName: "test"
+}
+
+const MONGO_URL_DEV = 'mongodb+srv://Beverini:gT6YzKMjNKt3crEe@devdb.lu8sk.mongodb.net/?retryWrites=true&w=majority&appName=DevDB'
+const MONGO_URL_PROD = `mongodb://${mongoCreds.user}:${mongoCreds.psw}@${mongoCreds.site}/${mongoCreds.dbName}?authSource=admin&writeConcern=majority`
+const MONGO_URL = (process.env.NODE_ENV === "development") ? MONGO_URL_DEV : MONGO_URL_PROD
 
 export const dbConnect = async () => {
   console.log('MONGO_URL', MONGO_URL);
