@@ -27,7 +27,7 @@ export async function load(event) {
 
 const ANTEP_MAX_LUNGH = 200;
 const TITOLO_MAX_LUNGH = 50;
-const TESTO_MAX_LUNGH = 1000;
+const TESTO_MAX_LUNGH = 10000;
 export const actions = {
   create: async (event) => {
     if (event.locals.user === null) {

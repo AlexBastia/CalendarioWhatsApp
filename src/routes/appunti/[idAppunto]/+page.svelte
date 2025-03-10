@@ -81,7 +81,7 @@
 			name="testo"
 			value={data.appunto.testo}
 			placeholder="Testo..."
-			maxlength="1000"
+			maxlength="10000"
 			style="outline: 0; resize: none; height: 70vh;"
 		></textarea>
 		<input name="categorie" type="hidden" value={data.appunto.categorie} />
