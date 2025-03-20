@@ -2,11 +2,10 @@
   import { goto } from '$app/navigation';
   import { addDays, addMonths, subMonths, subDays, startOfWeek, format, getMonth, getYear, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
   import "bootstrap/dist/css/bootstrap.min.css";
-
+  import { onMount } from 'svelte';
 
   let week = ['dom','lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
   let weekscol = [1,2,3,4,5,6]; // serve solo per creare un ciclo dentro il while 
-  let buttonText = 'premi';
   let {data} = $props();
 
   console.log(data);
@@ -45,24 +44,34 @@
 
   //ritorna un array con i giorni della settimana corrente, da domenica a sabato
   function getWeekDays(date) {
-    let sunday = startOfWeek(date); 
-    return eachDayOfInterval({start, end: addDays(date, 6)});
+    let sunday = startOfWeek(date);
+    let saturday = addDays(sunday, 6);
+    return eachDayOfInterval({start: sunday, end: saturday});
   }
 
   // calcolo del primo giorno (settimanale) del mese (se è domenica, ovvero 0 ritorna 7)
   // questa funzione chiama startOfWeek sul primo del mese, quindi e` superflua oltre a non essere generalizzata, la devo togliere prima o poi
 
   let firstDayOfTheMounth = $derived(() => {
-    let tmp = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+    let t = startOfMonth(currentDate);  
+    let tmp = t.getDay();
     if(tmp == 0) 
       return 7;
     else return tmp;
   });
+  let weekDays = $derived(getWeekDays(currentDate));
+  /*i console log onMount servono a testare le variabili $state;
+  onMount(() => {
+    console.log('currentDate:', currentDate);
+    console.log('sunday', getWeekDays(currentDate));
+
+    console.log('weekdays', weekDays); // Qui puoi loggare weekDays
+  });*/
 </script>
 
 <div class="d-flex align-items-center gap-2">
   <label for="view-mode" class="form-label">Vista:</label>
-  <select id="view-mode" class="form-select w-auto" bind:value={$viewMode}>
+  <select id="view-mode" class="form-select w-auto" bind:value={viewMode}>
     <option value="daily">Giornaliera</option>
     <option value="weekly">Settimanale</option>
     <option value="monthly">Mensile</option>
@@ -72,7 +81,7 @@
 {#if viewMode === 'daily'}
   <div class="grid">
     <div class="row py-5">
-      <div class="col border p-3" id="{format(currentDate, 'yyyy-MM-dd')}">
+      <div class="col" id="{format(currentDate, 'yyyy-MM-dd')}">
         {format(currentDate, 'dd EEEE')}
         {#each data.events as event}
           {#if format(event.start, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd')}
@@ -91,33 +100,31 @@
   <p>Giorno: {format(currentDate, 'dd/MM/yyyy')}</p>
 
 {:else if viewMode === 'weekly'}
-	<div class="container">
+	<div class="container-fluid">
 	  <!-- Intestazione della settimana -->
 	  <div class="row py-2">
 	    {#each week as day}
 	      <div class="col text-center">
-	        <strong>{format(day, 'EEE')}</strong>
-	        <div>{format(day, 'dd')}</div>
+	        <strong>{day}</strong>
 	      </div>
 	    {/each}
 	  </div>
-  <div class="row py-5">
-    {#each getWeekDays(currentDate) as day}
-      <div class="col-md-2 col-sm-4 border p-3" id="{format(day, 'yyyy-MM-dd')}">
-        <h5 class="text-center">{format(day, 'dd EEEE')}</h5>
-        {#each data.events as event}
-          {#if format(event.start, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd')}
-            <button 
-              class="btn btn-primary text-white p-1 mt-2 w-100 text-left"
-              onclick={() => goto(`/calendario/${event.id}`)} 
-              aria-label="Vai al dettaglio dell'evento {event.title}">
-              {event.title}
-            </button>
-          {/if}
-        {/each}
-      </div>
-    {/each}
-  </div>
+    <div class="row py-5">
+      {#each weekDays as d}
+        <div class="col-1 col-sm col-md-1 col-lg-1  border p-3" id="{format(d, 'yyyy-MM-dd')}">
+          <p class="text-center">{format(d, 'dd EEEE')}</p>
+          {#each data.events as event}
+            {#if event.start && format(event.start, 'yyyy-MM-dd') === format(d, 'yyyy-MM-dd')}
+              <button class="bg-primary"
+                onclick={() => goto(`/calendario/${event.id}`)} 
+                aria-label="Vai al dettaglio dell'evento {event.title}">
+                {event.title}
+              </button>
+            {/if}
+          {/each}
+       </div>
+      {/each}
+    </div>
   <!-- Data della settimana -->
   <p class="text-center">Settimana di: {format(currentDate, 'dd/MM/yyyy')}</p>
 </div>
@@ -195,15 +202,14 @@
       {/each}
   </div>
 
-  <p>mese: {currentDate.getMonth()} anno: {currentDate.getFullYear()}</p>
+  <p>mese: {currentDate.getMonth() + 1} anno: {currentDate.getFullYear()}</p>
 {/if}
 <button class="btn btn-outline-primary" onclick={goBack}>
-  <i class="bi bi-download"></i> {buttonText}
+  <i class="bi bi-download"></i> indietro
 </button>
 
 <button class="btn btn-outline-primary" onclick={goAhead}>
-  <i class="bi bi-download"></i> {buttonText}
+  <i class="bi bi-download"></i> avanti
 </button>
 
 <button class="btn btn-primary" onclick={goToForm}>aggiungi evento</button>
-
