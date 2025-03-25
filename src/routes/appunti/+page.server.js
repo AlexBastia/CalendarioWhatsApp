@@ -1,7 +1,9 @@
-import { goto } from "$app/navigation";
-import { Appunto } from "$lib/models/Appunto";
-import { fail, redirect } from "@sveltejs/kit";
+import { Note } from "$lib/models/Note";
+import { error, fail, redirect } from "@sveltejs/kit";
+import { getCurrTime, truncateNoteText } from "$lib/server/utilities";
+import { TITLE_MAX_LEN, TEXT_MAX_LEN } from "$lib/server/constants";
 import mongoose from "mongoose";
+import { User } from "$lib/models/User";
 
 export async function load(event) {
 
@@ -9,110 +11,84 @@ export async function load(event) {
     return redirect(301, "/login");
   }
 
-  const appunti = await Appunto.find({ idUtente: event.locals.user._id }, { testo: 0 });
+  const notes = await Note.find({ userID: event.locals.user._id }, { text: 0 });
 
+  if (!notes) return error(404, { message: "Non e' stato possibile caricare gli appunti" })
 
+  const userData = await User.findById({ _id: event.locals.user._id }, { tags: 1 })
+
+  if (!userData) return fail(404)
+
+  const userTags = userData.tags
   return {
-    anteprime: appunti.map((appunto) => ({
-      id: appunto._id.toString(),
-      titolo: appunto.titolo,
-      testo: appunto.inizioTesto,
-      dataCreazione: appunto.dataCreazione,
-      dataUltimaModifica: appunto.dataUltimaModifica,
-      categorie: appunto.categorie,
-      caratteri: appunto.caratteri
-    }))
+    notePreviews: JSON.parse(JSON.stringify(notes)),
+    userTags: JSON.parse(JSON.stringify(userTags))
   }
 }
 
-const ANTEP_MAX_LUNGH = 200;
-const TITOLO_MAX_LUNGH = 50;
-const TESTO_MAX_LUNGH = 10000;
 export const actions = {
   create: async (event) => {
     if (event.locals.user === null) {
-      throw fail(401);
+      return fail(401);
     }
 
     const data = await event.request.formData();
 
-    let titolo = data.get('titolo').substring(0, TITOLO_MAX_LUNGH);
-    const testo = data.get('testo').substring(0, TESTO_MAX_LUNGH);
+    let title = data.get('title').substring(0, TITLE_MAX_LEN) || '';
+    const text = data.get('text').substring(0, TEXT_MAX_LEN) || '';
+    const tagIDs = data.get('tagIDs') || [];
 
-    let caratteri = null, inizioTesto = null;
+    const textStart = truncateNoteText(text);
+    const charNum = text.length;
 
-    if (titolo && data.get('duplica')) titolo += ' | duplicato';
 
-    if (testo) {
-      inizioTesto = truncateString(testo, ANTEP_MAX_LUNGH);
-      caratteri = testo.length;
-    }
-
-    const appuntoVuoto = new Appunto({
-      titolo: titolo ?? '',
-      testo: testo ?? '',
-      caratteri: caratteri ?? 0,
-      categorie: [],
-      inizioTesto: inizioTesto ?? '',
-      dataCreazione: getCurrTime(),
-      dataUltimaModifica: getCurrTime(),
-      idUtente: event.locals.user._id
+    const newNote = new Note({
+      title,
+      text,
+      charNum,
+      tagIDs,
+      textStart,
+      timeCreation: getCurrTime(),
+      timeLastModified: getCurrTime(),
+      userID: event.locals.user._id
     });
 
-    const saved = await appuntoVuoto.save();
+    const saved = await newNote.save();
 
-    if (!saved) return { success: false };
+    if (!saved) return fail(404, { notAvailable: true });
 
-    redirect(303, `/appunti/${saved._id.toString()}`);
+    return redirect(303, `/appunti/${saved._id.toString()}`)
   },
-  update: async (event) => {
+  createTag: async (event) => {
     if (event.locals.user === null) {
-      throw fail(401);
+      return fail(401)
     }
+
     const data = await event.request.formData();
 
-    const id = new mongoose.Types.ObjectId(data.get('id'));
-    const titolo = data.get('titolo');
-    const testo = data.get('testo');
-    const categorie = data.get('categorie');
+    const tagName = data.get('tagName');
 
-    const inizioTesto = truncateString(testo, ANTEP_MAX_LUNGH);
-    const dataUltimaModifica = getCurrTime();
-    const caratteri = testo.length;
+    if (tagName === null) return fail(404);
+    if (tagName.trim() === '') return fail(422, { message: 'Name not valid' })
 
-    const appunto = await Appunto.findOneAndUpdate({ idUtente: event.locals.user._id, _id: id }, {
-      titolo,
-      testo,
-      caratteri,
-      categorie,
-      inizioTesto,
-      dataUltimaModifica
-    });
-
-    return { success: true }
+    await User.updateOne({ _id: event.locals.user._id }, {
+      $push: { tags: { name: tagName, noteIDs: [] } }
+    })
   },
-  delete: async (event) => {
+  deleteTag: async (event) => {
     if (event.locals.user === null) {
-      throw fail(401);
+      return fail(401)
     }
+
     const data = await event.request.formData();
+    console.log(data)
 
-    const id = new mongoose.Types.ObjectId(data.get('id'));
-    await Appunto.deleteOne({ idUtente: event.locals.user._id, _id: id });
+    const tagID = data.get('id');
 
-    return { success: true }
+    if (tagID === null) return fail(404);
+
+    await User.updateOne({ _id: event.locals.user._id }, {
+      $pull: { tags: { _id: tagID } }
+    })
   }
 }
-
-// https://stackoverflow.com/a/53637828
-function truncateString(str, num) {
-  if (str.length > num) {
-    return str.slice(0, num) + "...";
-  } else {
-    return str;
-  }
-}
-
-const getCurrTime = () => {
-  return new Date();
-};

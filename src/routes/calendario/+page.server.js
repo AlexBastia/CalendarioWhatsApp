@@ -25,8 +25,8 @@ export async function load(event) {
 }
 
 export const actions = {
-  createEvent: async ({ request, url }) => {
-    if (event.locals.user === null) {
+  createEvent: async ({ locals, request, url }) => {
+    if (locals.user === null) {
       return redirect(301, "/login");
     }
     const formData = await request.formData();
@@ -70,8 +70,8 @@ export const actions = {
 
     redirect(303, `${url.origin}${url.pathname}/${saved._id.toString()}`);
   },
-  updateEvent: async ({ request }) => {
-    if (event.locals.user === null) {
+  updateEvent: async ({ locals, request }) => {
+    if (locals.user === null) {
       throw fail(401);
     }
     const formData = await request.formData();
@@ -119,8 +119,8 @@ export const actions = {
 
   },
 
-  deleteEvent: async ({ request }) => {
-    if (event.locals.user === null) {
+  deleteEvent: async ({ locals, request }) => {
+    if (locals.user === null) {
       return fail(401);
     }
     const data = await request.formData();

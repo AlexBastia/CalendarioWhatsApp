@@ -10,7 +10,7 @@ export async function validateSessionToken(token) {
 
   // La sessione non esiste con il token dato
   if (session === null) return { session: null, user: null }
-  const user = await User.findOne({ _id: session.userId })
+  const user = await User.findOne({ _id: session.userId }, '_id')
   // Non esiste l'utente a cui e' assegnata la sessione TODO: come gestirlo?
   if (user === null) return { session: null, user: null }
 
