@@ -6,15 +6,15 @@ export const filterPreviews = (activeTagID, userTags, searchFilter, orderedPrevi
     if (searchFilter)
       return tagFilteredPreviews.filter(
         (preview) =>
-          preview.title.toLowerCase().includes(searchFilter) ||
-          preview.textStart.toLowerCase().includes(searchFilter)
+          preview.title.toLowerCase().includes(searchFilter) || (preview.textStart &&
+            preview.textStart.toLowerCase().includes(searchFilter))
       );
     return tagFilteredPreviews;
   } else
     return orderedPreviews.filter(
       (preview) =>
-        preview.title.toLowerCase().includes(searchFilter) ||
-        preview.textStart.toLowerCase().includes(searchFilter)
+        preview.title.toLowerCase().includes(searchFilter) || (preview.textStart &&
+          preview.textStart.toLowerCase().includes(searchFilter))
     );
 };
 

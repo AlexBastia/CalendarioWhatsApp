@@ -1,9 +1,5 @@
 <script>
 	import { onMount } from 'svelte';
-	import plus from '$lib/assets/svgs/plus.svg';
-	import up from '$lib/assets/svgs/arrow-up.svg';
-	import down from '$lib/assets/svgs/arrow-down.svg';
-	import trash from '$lib/assets/svgs/trash-2.svg';
 	import { enhance } from '$app/forms';
 	import { filterPreviews, sortPreviews } from './utilities';
 
@@ -48,12 +44,13 @@
 	});
 
 	// Filtro e ordinamento note
-	let orderedPreviews = data.notePreviews;
-	let filteredPreviews = $state(data.notePreviews);
+	const originalPreviews = data.notePreviews.concat(data.sharedNotePreviews).concat(data.lists);
+	let orderedPreviews = originalPreviews;
+	let filteredPreviews = $state(orderedPreviews);
 
 	const updatePreviewsOrder = (sort) => {
 		orderBy = sort;
-		orderedPreviews = sortPreviews(sort, orderIsGrowing, data.notePreviews);
+		orderedPreviews = sortPreviews(sort, orderIsGrowing, originalPreviews);
 		updatePreviewsFilter(activeTagID, searchFilter);
 	};
 
@@ -71,7 +68,7 @@
 </script>
 
 <header class="container d-flex justify-content-between align-items-center">
-	<h1 class="display-2">Appunti</h1>
+	<h1 class="display-2">Note</h1>
 	<!-- Button trigger modal -->
 	<button
 		type="button"
@@ -125,51 +122,92 @@
 					autocomplete="off"
 					onclick={() => invertOrder()}
 				/>
-				<label class="btn" for="invertOrderCheckbox" style="border: none;"
-					><img
-						src={orderIsGrowing ? up : down}
-						alt={orderIsGrowing ? 'Growing' : 'Decreasing'}
-					/></label
-				>
+				<label class="btn fs-4" for="invertOrderCheckbox" style="border: none;">
+					{#if orderIsGrowing}
+						<i class="bi bi-sort-up"></i>
+					{:else}
+						<i class="bi bi-sort-down"></i>
+					{/if}
+				</label>
 			</div>
 		</div>
 	</div>
 	<div class="container mt-4">
 		<div class="row g-4">
 			{#each filteredPreviews as preview (preview._id)}
-				<div class="col">
-					<div class="card" style="max-width: 400px; min-width: 100px; position: relative;">
-						<a class="card-link" href="/appunti/{preview._id}" aria-label="continue reading"></a>
-						<div class="card-body">
-							<h5 class="card-title">{preview.title || 'No title'}</h5>
-							<p class="card-text">{preview.textStart || 'No text'}</p>
-							<p class="card-text">
-								<small class="text-muted">
-									{#each data.userTags as tag}
-										{#if tag.noteIDs.includes(preview._id)}
-											<span class="badge bg-secondary me-1">{tag.name}</span>
-										{/if}
-									{/each}
-								</small>
-							</p>
+				{#if preview.items}
+					<div class="col">
+						<div class="card" style="max-width: 400px; min-width: 100px; position: relative;">
+							<a class="card-link" href="/note/liste/{preview._id}" aria-label="continue reading"
+							></a>
+							<div class="card-body">
+								<h5 class="card-title">{preview.title || 'No title'}</h5>
+								<p class="card-text">{'Numero elementi: ' + preview.items.length || 'No items'}</p>
+								<p class="card-text">
+									<small class="text-muted">
+										{#each data.userTags as tag}
+											{#if tag.noteIDs.includes(preview._id)}
+												<span class="badge bg-secondary me-1">{tag.name}</span>
+											{/if}
+										{/each}
+									</small>
+								</p>
+							</div>
 						</div>
 					</div>
-				</div>
+				{:else}
+					<div class="col">
+						<div class="card" style="max-width: 400px; min-width: 100px; position: relative;">
+							<a class="card-link" href="/note/{preview._id}" aria-label="continue reading"></a>
+							<div class="card-body">
+								<h5 class="card-title">{preview.title || 'No title'}</h5>
+								<p class="card-text">{preview.textStart || 'No text'}</p>
+								<p class="card-text">
+									<small class="text-muted">
+										{#each data.userTags as tag}
+											{#if tag.noteIDs.includes(preview._id)}
+												<span class="badge bg-secondary me-1">{tag.name}</span>
+											{/if}
+										{/each}
+									</small>
+								</p>
+							</div>
+						</div>
+					</div>
+				{/if}
 			{/each}
 		</div>
 	</div>
 	<div class="position-fixed" style="bottom: 1em; right: 0.6em">
-		<form method="POST" action="?/create" use:enhance>
+		<form method="POST" action="?/create" id="createNoteForm" use:enhance>
 			<input name="title" type="hidden" value="" />
 			<input name="text" type="hidden" value="" />
+		</form>
+		<form method="POST" action="/note/liste?/create" id="createListForm" use:enhance></form>
+		<div class="btn-group dropup float-end">
 			<button
-				class="float-end btn text-primary bg-light rounded-circle p-0"
+				type="button"
+				class="btn text-primary bg-light rounded-circle p-0"
 				aria-label="Add note"
 				style="font-size: 4em; line-height: 64px;"
+				data-bs-toggle="dropdown"
+				aria-expanded="false"
 			>
 				<i class="bi bi-plus-circle-fill"></i>
 			</button>
-		</form>
+			<ul class="dropdown-menu">
+				<li>
+					<button form="createNoteForm" type="submit" class="dropdown-item"
+						><i class="bi bi-fonts me-2"></i>Text</button
+					>
+				</li>
+				<li>
+					<button form="createListForm" type="submit" class="dropdown-item"
+						><i class="bi bi-list-check me-2"></i>List</button
+					>
+				</li>
+			</ul>
+		</div>
 	</div>
 </main>
 
@@ -183,14 +221,14 @@
 	aria-labelledby="staticBackdropLabel"
 	aria-hidden="true"
 >
-	<div class="modal-dialog">
+	<div class="modal-dialog modal-dialog-scrollable">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h1 class="modal-title fs-5" id="staticBackdropLabel">Categorie</h1>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
-				<form method="POST" action="/appunti?/createTag" use:enhance>
+				<form method="POST" action="/note?/createTag" use:enhance>
 					<div class="input-group">
 						<input type="text" name="tagName" placeholder="Nome categoria" class="form-control" />
 						<button type="submit" class="btn btn-outline-secondary">Aggiungi</button>

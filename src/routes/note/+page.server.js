@@ -4,6 +4,7 @@ import { getCurrTime, truncateNoteText } from "$lib/server/utilities";
 import { TITLE_MAX_LEN, TEXT_MAX_LEN } from "$lib/server/constants";
 import mongoose from "mongoose";
 import { User } from "$lib/models/User";
+import { List } from "$lib/models/List";
 
 export async function load(event) {
 
@@ -12,8 +13,12 @@ export async function load(event) {
   }
 
   const notes = await Note.find({ userID: event.locals.user._id }, { text: 0 });
+  if (!notes) return error(404, { message: "Non e' stato possibile caricare le note" })
 
-  if (!notes) return error(404, { message: "Non e' stato possibile caricare gli appunti" })
+  const lists = await List.find({ userID: event.locals.user._id });
+  if (!lists) return error(404, { message: "Non e' stato possibile caricare le liste" })
+
+  const sharedNotes = await Note.find({ $or: [{ isPublic: true, userID: { $ne: event.locals.user._id } }, { "sharedUsers.userID": event.locals.user._id }] }, { text: 0 })
 
   const userData = await User.findById({ _id: event.locals.user._id }, { tags: 1 })
 
@@ -21,7 +26,9 @@ export async function load(event) {
 
   const userTags = userData.tags
   return {
+    lists: JSON.parse(JSON.stringify(lists)),
     notePreviews: JSON.parse(JSON.stringify(notes)),
+    sharedNotePreviews: JSON.parse(JSON.stringify(sharedNotes)),
     userTags: JSON.parse(JSON.stringify(userTags))
   }
 }
@@ -57,7 +64,7 @@ export const actions = {
 
     if (!saved) return fail(404, { notAvailable: true });
 
-    return redirect(303, `/appunti/${saved._id.toString()}`)
+    return redirect(303, `/note/${saved._id.toString()}`)
   },
   createTag: async (event) => {
     if (event.locals.user === null) {
@@ -90,5 +97,5 @@ export const actions = {
     await User.updateOne({ _id: event.locals.user._id }, {
       $pull: { tags: { _id: tagID } }
     })
-  }
+  },
 }

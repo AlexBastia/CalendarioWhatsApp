@@ -8,7 +8,14 @@ export const noteSchema = new Schema({
   tagIDs: [Types.ObjectId],
   timeCreation: Date,
   timeLastModified: Date,
-  userID: Types.ObjectId
+  userID: Types.ObjectId,
+  isPublic: { type: Boolean, default: false },
+  sharedUsers: [
+    {
+      email: String,
+      userID: Types.ObjectId
+    }
+  ]
 });
 
 export const Note = model('Note', noteSchema);
