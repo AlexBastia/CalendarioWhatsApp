@@ -1,270 +1,157 @@
 <script>
-	import { onMount } from 'svelte';
-	import WhatsappIcon from '$lib/assets/svgs/whatsapp.svg';
-	import PlayIcon from '$lib/assets/svgs/playfill.svg';
-	import PauseIcon from '$lib/assets/svgs/pause.svg';
+	let { data, form } = $props();
+	console.log(data);
+    let pomodori  = data.pomodori;
+	console.log(form);
 
-	let timerStudio = new Date('2022-01-01');
-	let timerPausa = new Date('2022-01-01');
-	let totaleStudio = new Date('2022-01-01');
-	let totalePausa = new Date('2022-01-01');
-	let inPausa = false;
-	let timerAttivo = false;
-
-	let r;
-	let c;
-	let dislocamento = 0;
-	let cicloCorrente = 0;
-
-	r = 45;
-	$: c = 2 * Math.PI * r;
-
-    let tempStudio;
+	let tempStudio;
+    let title;
     let tempPausa;
-    let tempCicli;
-
-	totaleStudio.setMinutes(0);
-	totalePausa.setMinutes(0);
-	totaleStudio.setSeconds(2);
-	totalePausa.setSeconds(1);
-
-	let cicli;
-	let intervallo;
-	let displayTime = '30:00';
-
-	cicli = 5;
-
-	function updateDisplayTime(orario) {
-		let minutes = orario.getMinutes().toString().padStart(2, '0');
-		let seconds = orario.getSeconds().toString().padStart(2, '0');
-		displayTime = `${minutes}:${seconds}`;
-	}
-
-	function updateDislocamento(orario, totale) {
-		let totalSeconds = totale.getMinutes() * 60 + totale.getSeconds();
-		let remainingSeconds = orario.getMinutes() * 60 + orario.getSeconds();
-		dislocamento = c * (1 - remainingSeconds / totalSeconds);
-	}
-
-	function eseguiTimer(orario, totale, callback) {
-		console.log(orario);
-		orario.setMinutes(totale.getMinutes());
-		orario.setSeconds(totale.getSeconds());
-
-		updateDisplayTime(orario);
-		updateDislocamento(orario, totale);
-
-		intervallo = setInterval(() => {
-			if (inPausa == false) {
-				if (orario.getMinutes() != 0 || orario.getSeconds() != 0) {
-					orario.setSeconds(orario.getSeconds() - 1);
-					updateDisplayTime(orario);
-					updateDislocamento(orario, totale);
-				} else {
-					clearInterval(intervallo);
-					if (callback) callback();
-				}
-			}
-		}, 1000);
-	}
-
-	function eseguiCiclo(contaCicli) {
-		cicloCorrente = contaCicli;
-		if (contaCicli > 0) {
-			eseguiTimer(timerStudio, totaleStudio, () => {
-				eseguiTimer(timerPausa, totalePausa, () => {
-					cicloCorrente--;
-					eseguiCiclo(contaCicli - 1);
-				});
-			});
-		} else {
-			console.log('Cicli terminati');
-			timerAttivo = false;
-		}
-	}
+    let cicli;
 </script>
 
-<div
-	class="container d-flex flex-column align-items-center justify-content-center"
-	style="height: 100vh;"
->
-	<!-- Bottone per le impostazioni del timer -->
-	<button
-		type="button"
-		class="btn btn-primary mb-3"
-		data-bs-toggle="modal"
-		data-bs-target="#settingsModal"
-	>
-		Impostazioni Timer
-	</button>
+<header class="container d-flex justify-content-between align-items-center">
+	<h1 class="display-2">Pomodori</h1>
+</header>
 
-	<!-- Modal per le impostazioni del timer -->
-	<div
-		class="modal fade"
-		id="settingsModal"
-		tabindex="-1"
-		aria-labelledby="settingsModalLabel"
-		aria-hidden="true"
-	>
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="settingsModalLabel">Impostazioni Timer</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-					></button>
-				</div>
-				<div class="modal-body">
-					<!-- Contenuto delle impostazioni del timer -->
-					<div class="mb-3">
-						<label for="studioTime" class="form-label">Tempo di Studio (minuti)</label>
-						<input
-							type="number"
-							class="form-control"
-							id="studioTime"
-							bind:value={tempStudio}
-							min="1"
-						/>
-					</div>
-					<div class="mb-3">
-						<label for="pausaTime" class="form-label">Tempo di Pausa (minuti)</label>
-						<input
-							type="number"
-							class="form-control"
-							id="pausaTime"
-							bind:value={tempPausa}
-							min="1"
-						/>
-					</div>
-					<div class="mb-3">
-						<label for="cicliCount" class="form-label">Numero di Cicli</label>
-						<input type="number" class="form-control" id="cicliCount" bind:value={cicli} min="1" />
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-					<button
-						type="button"
-						class="btn btn-primary"
-                        data-bs-dismiss="modal"
-						on:click={() => {
-                            totaleStudio.setMinutes(tempStudio);
-                            totaleStudio.setSeconds(0);
-                            totalePausa.setMinutes(tempPausa);
-                            totalePausa.setSeconds(0);
+<main>
 
-                            clearInterval(intervallo);
-							updateDisplayTime(totaleStudio);
-							updateDislocamento(totaleStudio, totaleStudio);
-						}}>
-                        Salva Impostazioni</button
-					>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- SVG -->
-	<svg viewBox="0 0 100 100" width="400" height="400">
-		<!-- Cerchio di sfondo con gradiente -->
-		<circle cx="50" cy="50" {r} fill="white" />
+<div class="container mt-4">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-4">
+        {#each pomodori as pomodoro}
+            <div class="col">
 
-		<!-- Cerchio grigio -->
-		<circle cx="50" cy="50" {r} fill="none" stroke="gray" stroke-width="2" />
+                <div class="card-horizontal d-flex align-items-center p-3 border rounded"> 
+                    <div class="card-icon me-3">
+                        <i class="bi bi-clock-fill" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="card-content text-start">
+                        <h3 class="card-title">{pomodoro.title}</h3>
+                        <p class="card-time mb-0">Durata: {new Date(pomodoro.timeStudy).getMinutes()} minuti</p>
+                        <p class="card-time mb-0">Pausa: {new Date(pomodoro.timeBreak).getMinutes()} minuti</p>
+                        <p class="card-time mb-0">Ripetizioni: {pomodoro.cycles}</p>
+                    </div>
+                </div>
 
-		<!-- Cerchio nero animato -->
-		<circle
-			cx="50"
-			cy="50"
-			{r}
-			fill="none"
-			stroke="black"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-dasharray={c}
-			stroke-dashoffset={dislocamento}
-			transform="rotate(-90 50 50)"
-		/>
-
-		<!-- Testo del timer -->
-		<text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="20" fill="black"
-			>{displayTime}</text
-		>
-		{#if timerAttivo}
-			<text x="50%" y="70%" text-anchor="middle" dy=".3em" font-size="10" fill="black"
-				>{cicloCorrente}/{cicli}</text
-			>
-		{/if}
-	</svg>
-
-	<!-- Bottone per iniziare il timer -->
-	{#if !timerAttivo}
-		<button
-			type="button"
-			id="iniziaPomodoro"
-			class="btn p-5 m-2 rounded-circle"
-			aria-label="Inizia Pomodoro"
-			on:click={() => {
-				timerAttivo = true;
-				eseguiCiclo(cicli);
-			}}
-		>
-			<img src={WhatsappIcon} alt="Inizia Pomodoro" />
-		</button>
-	{/if}
-
-	<!-- Bottone per fermare il timer -->
-	{#if timerAttivo}
-		<div class="d-flex justify-content-around">
-			<button
-				type="button"
-				id="pausa"
-				class="btn p-5 m-2 rounded-circle"
-				aria-label="Ferma Pomodoro"
-				on:click={() => {
-					inPausa = !inPausa;
-				}}
-			>
-				{#if inPausa}
-					<img src={PlayIcon} alt="Ferma Pomodoro" />
-				{:else}
-					<img src={PauseIcon} alt="Ferma Pomodoro" />
-				{/if}
-			</button>
-			<button
-				type="button"
-				id="fermaPomodoro"
-				class="btn p-5 m-2 rounded-circle"
-				aria-label="Ferma Pomodoro"
-				on:click={() => {
-					clearInterval(intervallo);
-					inPausa = false;
-					updateDisplayTime(totaleStudio);
-					updateDislocamento(totaleStudio, totaleStudio);
-					timerAttivo = false;
-				}}
-			>
-				<img src={WhatsappIcon} alt="Ferma Pomodoro" />
-			</button>
-			<button
-				type="button"
-				id="rincominciaCiclo"
-				class="btn p-5 m-2 rounded-circle"
-				aria-label="Rincomincia Ciclo"
-				on:click={() => {
-					clearInterval(intervallo);
-					inPausa = false;
-					updateDisplayTime(totaleStudio);
-					updateDislocamento(totaleStudio, totaleStudio);
-					eseguiCiclo(cicloCorrente);
-				}}
-			>
-				<img src={WhatsappIcon} alt="Rincomincia Ciclo" />
-			</button>
-		</div>
-	{/if}
+            </div>
+        {/each}
+    </div>
 </div>
 
+
+    <div class="position-fixed" style="bottom: 1em; right: 0.6em">
+        <div class="btn-group dropup float-end">
+            <button
+                type="button"
+                class="btn text-primary bg-light rounded-circle p-0"
+                aria-label="Add pomodoro"
+                style="font-size: 4em; line-height: 64px;"
+                data-bs-toggle="modal"
+                data-bs-target="#settingsModal"
+            >
+                <i class="bi bi-plus-circle-fill"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- modale per la creazione di un pomodorino -->
+    <div
+    class="modal fade"
+    id="settingsModal"
+    tabindex="-1"
+    aria-labelledby="settingsModalLabel"
+    aria-hidden="true"
+    data-bs-backdrop="static"> <!-- Impedisce la chiusura cliccando fuori -->
+
+    <div class="modal-dialog">
+        <div class="modal-content bg-white"> <!-- Aggiunto .bg-white per lo sfondo bianco -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalLabel">Aggiungi Pomodoro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="/pomodoro?/createPomodoro">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Titolo</label>
+                        <input
+                            type="text"
+                            id="title"
+                            class="form-control"
+                            name="title"
+                            bind:value={title}
+                            required
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label for="timeStudy" class="form-label">Durata Studio (minuti)</label>
+                        <input
+                            type="number"
+                            id="timeStudy"
+                            class="form-control"
+                            name="timeStudy"
+                            bind:value={tempStudio}
+                            min="1"
+                            max="59"
+                            required
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label for="timeBreak" class="form-label">Durata Pausa (minuti)</label>
+                        <input
+                            type="number"
+                            id="timeBreak"
+                            name="timeBreak"
+                            class="form-control"
+                            bind:value={tempPausa}
+                            min="1"
+                            max="59"
+                            required
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label for="cycles" class="form-label">Ripetizioni</label>
+                        <input
+                            type="number"
+                            id="cycles"
+                            name="cycles"
+                            class="form-control"
+                            bind:value={cicli}
+                            min="1"
+                            required
+                        />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Aggiungi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</main>
+
 <style>
-	.btn:hover {
-		background-color: #e0e0e0;
+	.card-container {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+	.card {
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		width: 200px;
+		background-color: #fff;
+	}
+	.card-title {
+		font-size: 1.25rem;
+		margin-bottom: 0.5rem;
+	}
+	.card-text {
+		font-size: 1rem;
+		margin-bottom: 0.5rem;
+	}
+	.card-time {
+		font-size: 0.875rem;
+		color: #555;
 	}
 </style>

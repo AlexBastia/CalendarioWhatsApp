@@ -79,6 +79,7 @@
 		Gestisci categorie
 	</button>
 </header>
+
 <main>
 	<div class="container">
 		<input
@@ -185,6 +186,7 @@
 		</form>
 		<form method="POST" action="/note/liste?/create" id="createListForm" use:enhance></form>
 		<div class="btn-group dropup float-end">
+
 			<button
 				type="button"
 				class="btn text-primary bg-light rounded-circle p-0"
@@ -195,6 +197,7 @@
 			>
 				<i class="bi bi-plus-circle-fill"></i>
 			</button>
+			
 			<ul class="dropdown-menu">
 				<li>
 					<button form="createNoteForm" type="submit" class="dropdown-item"
@@ -235,6 +238,7 @@
 					</div>
 				</form>
 				<div class="list-group list-group-flush">
+					
 					{#each data.userTags as tag, i (tag._id)}
 						<form
 							method="POST"
@@ -254,6 +258,7 @@
 							>
 						</form>
 					{/each}
+
 				</div>
 			</div>
 		</div>

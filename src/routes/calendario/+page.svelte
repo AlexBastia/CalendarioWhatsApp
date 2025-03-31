@@ -16,6 +16,7 @@
   let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
   
   function goToForm(){
+    
     goto('/calendario/addEvent');
   }
 
@@ -204,6 +205,7 @@
 
   <p>mese: {currentDate.getMonth() + 1} anno: {currentDate.getFullYear()}</p>
 {/if}
+
 <button class="btn btn-outline-primary" onclick={goBack}>
   <i class="bi bi-download"></i> indietro
 </button>

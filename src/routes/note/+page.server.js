@@ -18,7 +18,7 @@ export async function load(event) {
   const lists = await List.find({ userID: event.locals.user._id });
   if (!lists) return error(404, { message: "Non e' stato possibile caricare le liste" })
 
-  const sharedNotes = await Note.find({ $or: [{ isPublic: true, userID: { $ne: event.locals.user._id } }, { "sharedUsers.userID": event.locals.user._id }] }, { text: 0 })
+  const sharedNotes = await Note.find({ $or: [{ isPublic: true, userID: { $ne: event.locals.user._id } }, { "sharedUsers.userID": event.locals.user._id }] }, { text: 0 }) // Find notes that are public or shared with the user
 
   const userData = await User.findById({ _id: event.locals.user._id }, { tags: 1 })
 
@@ -34,6 +34,7 @@ export async function load(event) {
 }
 
 export const actions = {
+
   create: async (event) => {
     if (event.locals.user === null) {
       return fail(401);
@@ -66,6 +67,7 @@ export const actions = {
 
     return redirect(303, `/note/${saved._id.toString()}`)
   },
+  
   createTag: async (event) => {
     if (event.locals.user === null) {
       return fail(401)
@@ -82,6 +84,7 @@ export const actions = {
       $push: { tags: { name: tagName, noteIDs: [] } }
     })
   },
+
   deleteTag: async (event) => {
     if (event.locals.user === null) {
       return fail(401)
@@ -98,4 +101,5 @@ export const actions = {
       $pull: { tags: { _id: tagID } }
     })
   },
+
 }

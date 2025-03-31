@@ -15,7 +15,7 @@
 		name="password"
 		autocomplete="new-password"
 		required
-	/><br />
+	/><br/>
 	<button>Continue</button>
 </form>
 <a href="/login">Sign in</a>
