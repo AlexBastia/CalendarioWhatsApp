@@ -9,18 +9,18 @@ export async function load(event) {
     if (event.locals.user === null) {
         return redirect(301, "/login");
     }
-    
+
     const pomodori = await Pomodoro.find(
-        { userId: event.locals.user._id }
+        { userID: event.locals.user._id }
     ); // Find pomodori that are public or shared with the user
     if (!pomodori) return error(404, { message: "Non e' stato possibile caricare i pomidori" });
-      
+
 
     // pomodori condivisi
-    const sharedPomodori = await Pomodoro.find({ $or: [{userId: { $ne: event.locals.user._id } }, { "sharedUsers.userId": event.locals.user._id }] }) // Find notes that are public or shared with the user
+    const sharedPomodori = await Pomodoro.find({ $or: [{ userID: { $ne: event.locals.user._id } }, { "sharedUsers.userId": event.locals.user._id }] }) // Find notes that are public or shared with the user
 
-    
-    
+
+
     return {
         pomodori: JSON.parse(JSON.stringify(pomodori)),
         sharedPomodori: JSON.parse(JSON.stringify(sharedPomodori)),
@@ -37,35 +37,43 @@ export const actions = {
 
         const data = await event.request.formData();
 
+        console.log('ciccia');
         const title = data.get('title') || ''; // stringa
-        const timeStudy = data.get('timeStudy'); // oggetto Number
+        const timeStudyDate = data.get('timeStudy'); // oggetto Number
         const sharedUsers = data.get('sharedUsers') || []; // array di oggetti {userId, email}
-        const timeBreak = data.get('timeBreak') // oggetto Number
+        const timeBreakDate = data.get('timeBreak') // oggetto Number
         const cycles = data.get('cycles'); // numero di cicli
-        const userId = event.locals.user._id;
+        const userId = event.locals.user._id; // id dell'utente
 
         console.log(title);
-        console.log(timeBreak);
-        console.log(timeStudy);
+        console.log(timeBreakDate);
+        console.log(timeStudyDate);
         console.log(cycles);
-        console.log(data)
+        console.log(data);
+
+        const timeStudy = new Date(1, 1, 1, 0, timeStudyDate).toISOString()
+        const timeBreak = new Date(1, 1, 1, 0, timeBreakDate).toISOString()
+        console.log(typeof (timeStudy));
+        console.log(typeof (timeBreak));
+
+        // Controlla se l'utente è loggato
+        console.log('user_id: ', userId);
 
 
         const newPomodoro = new Pomodoro({
-            title,
-            timeStudy: String(new Date(1,1,1,0, timeStudy)), 
-            timeBreak: String(new Date(1,1,1,0, timeBreak)), 
-            cycles: parseInt(cycles, 10),       // Converti in numero
+            timeStudy,
+            timeBreak,
+            userID: userId,
             sharedUsers: [],
-            userId
+            title,
+            cycles: parseInt(cycles, 10),       // Converti in numero
         });
-        await newPomodoro.save();
+        console.log(newPomodoro);
+
+        const saved = await newPomodoro.save();
 
         // Restituisci la risposta
-        return {
-            status: 201,
-            body: newPomodoro
-        }
+        return redirect(303, `/pomodoro/${saved._id.toString()}`)        
     },
 
     async put({ params }) {
@@ -82,6 +90,7 @@ export const actions = {
             body: pomodoro
         }
     },
+
     async delete({ params }) {
         const { id } = params;
         const pomodoro = await Pomodoro.findById(id);

@@ -3,11 +3,21 @@
 	import WhatsappIcon from '$lib/assets/svgs/whatsapp.svg';
 	import PlayIcon from '$lib/assets/svgs/playfill.svg';
 	import PauseIcon from '$lib/assets/svgs/pause.svg';
+	import { page } from '$app/stores'; // Importa il modulo page per accedere ai parametri della route
+	import { getMinutes, getSeconds } from 'date-fns';
 
-	let timerStudio = new Date('2022-01-01');
-	let timerPausa = new Date('2022-01-01');
-	let totaleStudio = new Date('2022-01-01');
-	let totalePausa = new Date('2022-01-01');
+	let { data } = $$props; // Ottieni i dati della pagina
+	console.log(data);
+
+	let pomData = data.pomodoro[0]; // Ottieni i dati del pomodoro
+	let title = pomData.title;
+	let cicli = pomData.cycles;
+
+	let totaleStudio = new Date(pomData.timeStudy);
+	let totalePausa = new Date(pomData.timeBreak);
+	let timerStudio = new Date(pomData.timeStudy);
+	let timerPausa = new Date(pomData.timeBreak);
+
 	let inPausa = false;
 	let timerAttivo = false;
 
@@ -19,19 +29,15 @@
 	r = 45;
 	$: c = 2 * Math.PI * r;
 
-    let tempStudio;
-    let tempPausa;
+	let tempStudio;
+	let tempPausa;
 
-	totaleStudio.setMinutes(0);
-	totalePausa.setMinutes(0);
-	totaleStudio.setSeconds(2);
-	totalePausa.setSeconds(1);
+	// se proprio vuoi forzare secondi e minuti
+	// totaleStudio.setSeconds(2);
+	// totalePausa.setSeconds(1);
 
-	let cicli;
 	let intervallo;
-	let displayTime = '30:00';
-
-	cicli = 5;
+	let displayTime = `${String(getMinutes(totaleStudio)).padStart(2, '0')}:${String(getSeconds(totaleStudio)).padStart(2, '0')}`;
 
 	function updateDisplayTime(orario) {
 		let minutes = orario.getMinutes().toString().padStart(2, '0');
@@ -87,7 +93,7 @@
 	class="container d-flex flex-column align-items-center justify-content-center"
 	style="height: 100vh;"
 >
-	<!-- Bottone per le impostazioni del timer -->
+	Bottone per le impostazioni del timer
 	<button
 		type="button"
 		class="btn btn-primary mb-3"
@@ -144,23 +150,25 @@
 					<button
 						type="button"
 						class="btn btn-primary"
-                        data-bs-dismiss="modal"
+						data-bs-dismiss="modal"
 						on:click={() => {
-                            totaleStudio.setMinutes(tempStudio);
-                            totaleStudio.setSeconds(0);
-                            totalePausa.setMinutes(tempPausa);
-                            totalePausa.setSeconds(0);
+							totaleStudio.setMinutes(tempStudio);
+							totaleStudio.setSeconds(0);
+							totalePausa.setMinutes(tempPausa);
+							totalePausa.setSeconds(0);
 
-                            clearInterval(intervallo);
+							clearInterval(intervallo);
 							updateDisplayTime(totaleStudio);
 							updateDislocamento(totaleStudio, totaleStudio);
-						}}>
-                        Salva Impostazioni</button
+						}}
+					>
+						Salva Impostazioni</button
 					>
 				</div>
 			</div>
 		</div>
 	</div>
+
 	<!-- SVG -->
 	<svg viewBox="0 0 100 100" width="400" height="400">
 		<!-- Cerchio di sfondo con gradiente -->
