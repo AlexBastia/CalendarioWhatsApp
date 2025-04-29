@@ -5,6 +5,7 @@
 	import PauseIcon from '$lib/assets/svgs/pause.svg';
 	import { page } from '$app/stores'; // Importa il modulo page per accedere ai parametri della route
 	import { getMinutes, getSeconds } from 'date-fns';
+	import FloatingButton from '$lib/components/FloatingButton.svelte';
 
 	let { data } = $$props; // Ottieni i dati della pagina
 	console.log(data);
