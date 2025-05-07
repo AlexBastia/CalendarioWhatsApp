@@ -16,7 +16,7 @@ export async function load(event) {
         });
 
         if (!pomodoroDoc) {
-            throw error(404, { message: 'Pomodoro non trovato o accesso non consentito' });
+            throw error(404, { message: 'ziopera' });
         }
 
         return {
@@ -28,6 +28,6 @@ export async function load(event) {
             throw err; 
         }
         console.error("Errore durante il caricamento del Pomodoro [ID]:", err);
-        throw error(500, { message: 'Errore interno del server durante il recupero dei dati del Pomodoro' });
+        throw error(500, { message: 'SadBasta noises' });
     }
 }
