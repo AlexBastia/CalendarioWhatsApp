@@ -5,9 +5,12 @@
 	import PauseIcon from '$lib/assets/svgs/pause.svg';
 	import { page } from '$app/stores'; // Importa il modulo page per accedere ai parametri della route
 	import { getMinutes, getSeconds } from 'date-fns';
-	import FloatingButton from '$lib/components/FloatingButton.svelte';
+    import FloatingButton from '$lib/components/btn.svelte';
+    import PomodoroCard from '$lib/components/pomodoroCard.svelte';
+    import PomodoroModal from '$lib/components/pomodoroModal.svelte';
 
 	let { data } = $$props; // Ottieni i dati della pagina
+	console.log("data:\n");
 	console.log(data);
 
 	let pomData = data.pomodoro[0]; // Ottieni i dati del pomodoro

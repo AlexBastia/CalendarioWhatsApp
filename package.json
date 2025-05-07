@@ -13,7 +13,7 @@
 	"devDependencies": {
 		"@eslint/compat": "^1.2.3",
 		"@sveltejs/adapter-auto": "^3.0.0",
-		"@sveltejs/adapter-node": "^5.2.11",
+		"@sveltejs/adapter-node": "^5.2.12",
 		"@sveltejs/kit": "^2.9.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"eslint": "^9.7.0",
@@ -35,5 +35,17 @@
 		"dompurify": "^3.2.4",
 		"marked": "^15.0.7",
 		"mongoose": "^8.9.2"
-	}
+	},
+	"description": "Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).",
+	"main": "eslint.config.js",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AlexBastia/CalendarioWhatsApp.git"
+	},
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/AlexBastia/CalendarioWhatsApp/issues"
+	},
+	"homepage": "https://github.com/AlexBastia/CalendarioWhatsApp#readme"
 }

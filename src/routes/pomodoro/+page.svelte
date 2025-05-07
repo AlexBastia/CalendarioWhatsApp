@@ -61,7 +61,9 @@
         </div>
     </div>
 
-    <FloatingButton icon="bi-gear-fill" ariaLabel="Apri impostazioni" modalTarget="#createPomodoro"
+    <FloatingButton 
+        ariaLabel="Apri impostazioni" 
+        modalTarget="#createPomodoro"
     ></FloatingButton>
 
     <!-- modale per la creazione di un pomodorino -->
