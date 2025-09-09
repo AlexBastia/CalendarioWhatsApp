@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model, Types } from "mongoose";
 
 const eventSchema = new Schema(
     {
@@ -15,9 +15,27 @@ const eventSchema = new Schema(
               email: String,
               userID: Types.ObjectId
             }
-          ],
-        isPomodoro: { type: Boolean, default: false },
-        pomodoroID: Types.ObjectId
+        ],
+        eventType: {
+            type: String,
+            enum: ['STANDARD', 'POMODORO'],
+            default: 'STANDARD',
+            required: true
+        },
+
+        pomodoroPreset: {
+            type: Types.ObjectId,
+            ref: 'Pomodoro',
+            required: function() { return this.eventType === 'POMODORO'; }
+        },
+
+        status: {
+            type: String,
+            enum: ['PIANIFICATO', 'COMPLETATO', 'INCOMPLETO'],
+            default: 'PIANIFICATO',
+            required: function() { return this.eventType === 'POMODORO'; }
+        }
     }
 );
+
 export const Evento = model('Evento', eventSchema);

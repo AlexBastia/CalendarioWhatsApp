@@ -1,281 +1,256 @@
 <script>
-	import { onMount } from 'svelte';
-	import WhatsappIcon from '$lib/assets/svgs/whatsapp.svg';
-	import PlayIcon from '$lib/assets/svgs/playfill.svg';
-	import PauseIcon from '$lib/assets/svgs/pause.svg';
-	import { page } from '$app/stores'; // Importa il modulo page per accedere ai parametri della route
-	import { getMinutes, getSeconds } from 'date-fns';
+    import { onMount } from 'svelte';
+    import WhatsappIcon from '$lib/assets/svgs/whatsapp.svg';
+    import PlayIcon from '$lib/assets/svgs/playfill.svg';
+    import PauseIcon from '$lib/assets/svgs/pause.svg';
+    import { page } from '$app/stores';
     import FloatingButton from '$lib/components/btn.svelte';
     import PomodoroCard from '$lib/components/pomodoroCard.svelte';
     import PomodoroModal from '$lib/components/pomodoroModal.svelte';
+    import { initNotifiche, mostraNotifica, presetsPomodoro } from '$lib/utils/notification.js'; // CORRETTO: 'notifications.js' (plurale)
 
-	let { data } = $$props; // Ottieni i dati della pagina
-	console.log("data:\n");
-	console.log(data);
+    let { data } = $$props;
+    let pomData = data.pomodoro[0];
 
-	let pomData = data.pomodoro[0]; // Ottieni i dati del pomodoro
-	let title = pomData.title;
-	let cicli = pomData.cycles;
+    // Dati iniziali dal DB
+    let title = pomData.title;
+    let cicli = pomData.cycles;
 
-	let totaleStudio = new Date(pomData.timeStudy);
-	let totalePausa = new Date(pomData.timeBreak);
-	let timerStudio = new Date(pomData.timeStudy);
-	let timerPausa = new Date(pomData.timeBreak);
+    // 1. Convertiamo le durate da Date a un numero intero di secondi una sola volta.
+    const totaleStudioDate = new Date(pomData.timeStudy);
+    const totalePausaDate = new Date(pomData.timeBreak);
 
-	let inPausa = false;
-	let timerAttivo = false;
+    let durataStudioSecondi = totaleStudioDate.getMinutes() * 60 + totaleStudioDate.getSeconds();
+    let durataPausaSecondi = totalePausaDate.getMinutes() * 60 + totalePausaDate.getSeconds();
 
-	let r;
-	let c;
-	let dislocamento = 0;
-	let cicloCorrente = 0;
+    // 2. Usiamo una singola variabile per il conto alla rovescia.
+    let secondiRimanenti = durataStudioSecondi;
+    let faseCorrenteSecondi = durataStudioSecondi; // Per calcolare il dislocamento
 
-	r = 45;
-	$: c = 2 * Math.PI * r;
+    // Variabili di stato (invariate)
+    let inPausa = false;
+    let timerAttivo = false;
+    let cicloCorrente = 0;
+    let intervallo;
 
-	let tempStudio;
-	let tempPausa;
+    // Variabili per l'interfaccia (invariate)
+    let tempStudio = totaleStudioDate.getMinutes();
+    let tempPausa = totalePausaDate.getMinutes();
+    let r = 45;
+    let c = 2 * Math.PI * r;
+    let dislocamento = 0;
+    let tempoVisualizzato;
 
-	// se proprio vuoi forzare secondi e minuti
-	// totaleStudio.setSeconds(2);
-	// totalePausa.setSeconds(1);
+    // 3. Le funzioni di aggiornamento ora lavorano con i secondi.
+    function aggiornaTempoVisualizzato(totaleSecondi) {
+        const minuti = Math.floor(totaleSecondi / 60);
+        const secondi = totaleSecondi % 60;
+        tempoVisualizzato = `${String(minuti).padStart(2, '0')}:${String(secondi).padStart(2, '0')}`;
+    }
 
-	let intervallo;
-	let displayTime = `${String(getMinutes(totaleStudio)).padStart(2, '0')}:${String(getSeconds(totaleStudio)).padStart(2, '0')}`;
+    function aggiornaDislocamento(rimanenti, totali) {
+        if (totali === 0) {
+            dislocamento = 0;
+            return;
+        }
+        dislocamento = c * (1 - rimanenti / totali);
+    }
 
-	function updateDisplayTime(orario) {
-		let minutes = orario.getMinutes().toString().padStart(2, '0');
-		let seconds = orario.getSeconds().toString().padStart(2, '0');
-		displayTime = `${minutes}:${seconds}`;
-	}
+    aggiornaTempoVisualizzato(secondiRimanenti);
 
-	function updateDislocamento(orario, totale) {
-		let totalSeconds = totale.getMinutes() * 60 + totale.getSeconds();
-		let remainingSeconds = orario.getMinutes() * 60 + orario.getSeconds();
-		dislocamento = c * (1 - remainingSeconds / totalSeconds);
-	}
+    function eseguiFase(durataSecondi) {
+        return new Promise((resolve) => {
+            secondiRimanenti = durataSecondi;
+            faseCorrenteSecondi = durataSecondi;
+            aggiornaTempoVisualizzato(secondiRimanenti);
+            aggiornaDislocamento(secondiRimanenti, faseCorrenteSecondi);
 
-	function eseguiTimer(orario, totale, callback) {
-		console.log(orario);
-		orario.setMinutes(totale.getMinutes());
-		orario.setSeconds(totale.getSeconds());
+            intervallo = setInterval(() => {
+                if (inPausa) return;
 
-		updateDisplayTime(orario);
-		updateDislocamento(orario, totale);
+                if (secondiRimanenti > 0) {
+                    secondiRimanenti--;
+                    aggiornaTempoVisualizzato(secondiRimanenti);
+                    aggiornaDislocamento(secondiRimanenti, faseCorrenteSecondi);
+                }
+                
+                if (secondiRimanenti <= 0) {
+                    clearInterval(intervallo); 
+                    resolve();
+                }
+            }, 1000);
+        });
+    }
 
-		intervallo = setInterval(() => {
-			if (inPausa == false) {
-				if (orario.getMinutes() != 0 || orario.getSeconds() != 0) {
-					orario.setSeconds(orario.getSeconds() - 1);
-					updateDisplayTime(orario);
-					updateDislocamento(orario, totale);
-				} else {
-					clearInterval(intervallo);
-					if (callback) callback();
-				}
-			}
-		}, 1000);
-	}
+    async function eseguiCicli(cicloIniziale = 1) {
+        timerAttivo = true;
+        for (let i = cicloIniziale; i <= cicli; i++) {
+            cicloCorrente = i;
 
-	function eseguiCiclo(contaCicli) {
-		cicloCorrente = contaCicli;
-		if (contaCicli > 0) {
-			eseguiTimer(timerStudio, totaleStudio, () => {
-				eseguiTimer(timerPausa, totalePausa, () => {
-					cicloCorrente--;
-					eseguiCiclo(contaCicli - 1);
-				});
-			});
-		} else {
-			console.log('Cicli terminati');
-			timerAttivo = false;
-		}
-	}
+            await eseguiFase(durataStudioSecondi);
+            mostraNotifica(presetsPomodoro.fineStudio.title, presetsPomodoro.fineStudio.options);
+
+            if (i < cicli) {
+                await eseguiFase(durataPausaSecondi);
+                mostraNotifica(presetsPomodoro.finePausa.title, presetsPomodoro.finePausa.options);
+            }
+        }
+
+        mostraNotifica(presetsPomodoro.sessionEnd.title, presetsPomodoro.sessionEnd.options);
+        timerAttivo = false;
+        cicloCorrente = 0;
+        console.log('Sessione terminata');
+        aggiornaTempoVisualizzato(durataStudioSecondi);
+        aggiornaDislocamento(durataStudioSecondi, durataStudioSecondi);
+    }
+
+    function fermaTutto() {
+        clearInterval(intervallo); 
+        timerAttivo = false;
+        inPausa = false;
+        cicloCorrente = 0;
+        secondiRimanenti = durataStudioSecondi;
+        aggiornaTempoVisualizzato(secondiRimanenti);
+        aggiornaDislocamento(secondiRimanenti, durataStudioSecondi);
+    }
+
+    onMount(async ()=>{
+        initNotifiche();
+    });
 </script>
 
 <div
-	class="container d-flex flex-column align-items-center justify-content-center"
-	style="height: 100vh;"
+    class="container d-flex flex-column align-items-center justify-content-center"
+    style="height: 100vh;"
 >
-	Bottone per le impostazioni del timer
-	<button
-		type="button"
-		class="btn btn-primary mb-3"
-		data-bs-toggle="modal"
-		data-bs-target="#settingsModal"
-	>
-		Impostazioni Timer
-	</button>
+    <button
+        type="button"
+        class="btn btn-primary mb-3"
+        data-bs-toggle="modal"
+        data-bs-target="#settingsModal"
+    >
+        Impostazioni Timer
+    </button>
 
-	<!-- Modal per le impostazioni del timer -->
-	<div
-		class="modal fade"
-		id="settingsModal"
-		tabindex="-1"
-		aria-labelledby="settingsModalLabel"
-		aria-hidden="true"
-	>
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="settingsModalLabel">Impostazioni Timer</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-					></button>
-				</div>
-				<div class="modal-body">
-					<!-- Contenuto delle impostazioni del timer -->
-					<div class="mb-3">
-						<label for="studioTime" class="form-label">Tempo di Studio (minuti)</label>
-						<input
-							type="number"
-							class="form-control"
-							id="studioTime"
-							bind:value={tempStudio}
-							min="1"
-						/>
-					</div>
-					<div class="mb-3">
-						<label for="pausaTime" class="form-label">Tempo di Pausa (minuti)</label>
-						<input
-							type="number"
-							class="form-control"
-							id="pausaTime"
-							bind:value={tempPausa}
-							min="1"
-						/>
-					</div>
-					<div class="mb-3">
-						<label for="cicliCount" class="form-label">Numero di Cicli</label>
-						<input type="number" class="form-control" id="cicliCount" bind:value={cicli} min="1" />
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-					<button
-						type="button"
-						class="btn btn-primary"
-						data-bs-dismiss="modal"
-						on:click={() => {
-							totaleStudio.setMinutes(tempStudio);
-							totaleStudio.setSeconds(0);
-							totalePausa.setMinutes(tempPausa);
-							totalePausa.setSeconds(0);
+    <div
+        class="modal fade"
+        id="settingsModal"
+        tabindex="-1"
+        aria-labelledby="settingsModalLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">Impostazioni Timer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="studioTime" class="form-label">Tempo di Studio (minuti)</label>
+                        <input type="number" class="form-control" id="studioTime" bind:value={tempStudio} min="1"/>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pausaTime" class="form-label">Tempo di Pausa (minuti)</label>
+                        <input type="number" class="form-control" id="pausaTime" bind:value={tempPausa} min="1"/>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cicliCount" class="form-label">Numero di Cicli</label>
+                        <input type="number" class="form-control" id="cicliCount" bind:value={cicli} min="1"/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                        on:click={() => {
+                            durataStudioSecondi = tempStudio * 60;
+                            durataPausaSecondi = tempPausa * 60;
+                            fermaTutto();
+                        }}
+                    >
+                        Salva Impostazioni
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-							clearInterval(intervallo);
-							updateDisplayTime(totaleStudio);
-							updateDislocamento(totaleStudio, totaleStudio);
-						}}
-					>
-						Salva Impostazioni</button
-					>
-				</div>
-			</div>
-		</div>
-	</div>
+    <svg viewBox="0 0 100 100" width="400" height="400">
+        <circle cx="50" cy="50" {r} fill="white" />
+        <circle cx="50" cy="50" {r} fill="none" stroke="gray" stroke-width="2" />
+        <circle
+            cx="50"
+            cy="50"
+            {r}
+            fill="none"
+            stroke="black"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-dasharray={c}
+            stroke-dashoffset={dislocamento}
+            transform="rotate(-90 50 50)"
+        />
+        <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="20" fill="black">{tempoVisualizzato}</text>
+        {#if timerAttivo}
+            <text x="50%" y="70%" text-anchor="middle" dy=".3em" font-size="10" fill="black">
+                Ciclo: {cicloCorrente} / {cicli}
+            </text>
+        {/if}
+    </svg>
 
-	<!-- SVG -->
-	<svg viewBox="0 0 100 100" width="400" height="400">
-		<!-- Cerchio di sfondo con gradiente -->
-		<circle cx="50" cy="50" {r} fill="white" />
+    {#if !timerAttivo}
+        <button
+            type="button"
+            class="btn p-5 m-2 rounded-circle"
+            aria-label="Inizia Pomodoro"
+            on:click={() => eseguiCicli()}
+        >
+            <img src={PlayIcon} alt="Inizia Pomodoro" />
+        </button>
+    {/if}
 
-		<!-- Cerchio grigio -->
-		<circle cx="50" cy="50" {r} fill="none" stroke="gray" stroke-width="2" />
-
-		<!-- Cerchio nero animato -->
-		<circle
-			cx="50"
-			cy="50"
-			{r}
-			fill="none"
-			stroke="black"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-dasharray={c}
-			stroke-dashoffset={dislocamento}
-			transform="rotate(-90 50 50)"
-		/>
-
-		<!-- Testo del timer -->
-		<text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="20" fill="black"
-			>{displayTime}</text
-		>
-		{#if timerAttivo}
-			<text x="50%" y="70%" text-anchor="middle" dy=".3em" font-size="10" fill="black"
-				>{cicloCorrente}/{cicli}</text
-			>
-		{/if}
-	</svg>
-
-	<!-- Bottone per iniziare il timer -->
-	{#if !timerAttivo}
-		<button
-			type="button"
-			id="iniziaPomodoro"
-			class="btn p-5 m-2 rounded-circle"
-			aria-label="Inizia Pomodoro"
-			on:click={() => {
-				timerAttivo = true;
-				eseguiCiclo(cicli);
-			}}
-		>
-			<img src={WhatsappIcon} alt="Inizia Pomodoro" />
-		</button>
-	{/if}
-
-	<!-- Bottone per fermare il timer -->
-	{#if timerAttivo}
-		<div class="d-flex justify-content-around">
-			<button
-				type="button"
-				id="pausa"
-				class="btn p-5 m-2 rounded-circle"
-				aria-label="Ferma Pomodoro"
-				on:click={() => {
-					inPausa = !inPausa;
-				}}
-			>
-				{#if inPausa}
-					<img src={PlayIcon} alt="Ferma Pomodoro" />
-				{:else}
-					<img src={PauseIcon} alt="Ferma Pomodoro" />
-				{/if}
-			</button>
-			<button
-				type="button"
-				id="fermaPomodoro"
-				class="btn p-5 m-2 rounded-circle"
-				aria-label="Ferma Pomodoro"
-				on:click={() => {
-					clearInterval(intervallo);
-					inPausa = false;
-					updateDisplayTime(totaleStudio);
-					updateDislocamento(totaleStudio, totaleStudio);
-					timerAttivo = false;
-				}}
-			>
-				<img src={WhatsappIcon} alt="Ferma Pomodoro" />
-			</button>
-			<button
-				type="button"
-				id="rincominciaCiclo"
-				class="btn p-5 m-2 rounded-circle"
-				aria-label="Rincomincia Ciclo"
-				on:click={() => {
-					clearInterval(intervallo);
-					inPausa = false;
-					updateDisplayTime(totaleStudio);
-					updateDislocamento(totaleStudio, totaleStudio);
-					eseguiCiclo(cicloCorrente);
-				}}
-			>
-				<img src={WhatsappIcon} alt="Rincomincia Ciclo" />
-			</button>
-		</div>
-	{/if}
+    {#if timerAttivo}
+        <div class="d-flex justify-content-around">
+            <button
+                type="button"
+                class="btn p-5 m-2 rounded-circle"
+                aria-label="Pausa/Riprendi"
+                on:click={() => (inPausa = !inPausa)}
+            >
+                {#if inPausa}
+                    <img src={PlayIcon} alt="Riprendi Pomodoro" />
+                {:else}
+                    <img src={PauseIcon} alt="Metti in Pausa Pomodoro" />
+                {/if}
+            </button>
+            <button
+                type="button"
+                class="btn p-5 m-2 rounded-circle"
+                aria-label="Ferma Pomodoro"
+                on:click={fermaTutto}
+            >
+                <img src={WhatsappIcon} alt="Ferma Pomodoro" />
+            </button>
+            <button
+                type="button"
+                class="btn p-5 m-2 rounded-circle"
+                aria-label="Ricomincia Ciclo"
+                on:click={() => {
+                    clearInterval(intervallo); // CORRETTO: clearInterval
+                    eseguiCicli(cicloCorrente);
+                }}
+            >
+                <img src={WhatsappIcon} alt="Ricomincia Ciclo" />
+            </button>
+        </div>
+    {/if}
 </div>
 
 <style>
-	.btn:hover {
-		background-color: #e0e0e0;
-	}
+    .btn:hover {
+        background-color: #e0e0e0;
+    }
 </style>
