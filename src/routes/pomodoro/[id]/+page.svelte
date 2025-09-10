@@ -67,7 +67,7 @@
 
             intervallo = setInterval(() => {
                 if (inPausa) return;
-
+                
                 if (secondiRimanenti > 0) {
                     secondiRimanenti--;
                     aggiornaTempoVisualizzato(secondiRimanenti);

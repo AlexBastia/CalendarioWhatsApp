@@ -1,20 +1,27 @@
-import { Evento } from "$lib/models/Event.js"
-import { redirect } from "@sveltejs/kit";
-import { goto } from "$app/navigation";
-import mongoose from "mongoose";
+import { Evento } from '$lib/models/Evento.js';
+import { Pomodoro } from '$lib/models/Pomodoro.js';
+import { error, redirect } from '@sveltejs/kit';
 
-export async function load({ params }) {
-    
-    let id = new mongoose.Types.ObjectId(params.id);
-    console.log('evento',typeof id);
+export async function load({ params, locals }) {
+    // Proteggi la rotta
+    if (!locals.user) {
+        redirect(303, '/login');
+    }
 
-    let evento = await Evento.findById(params.id);
+    // Carica l'evento specifico usando l'ID dai parametri dell'URL
+    const evento = await Evento.findById(params.id);
 
-    if (!evento) error(404);
+    // Se l'evento non esiste, lancia un errore 404
+    if (!evento) {
+        throw error(404, 'Evento non trovato');
+    }
 
-    evento = JSON.parse(JSON.stringify(evento))
-  
-    return {evento}
-  
+    // Carica tutti i preset pomodoro dell'utente
+    const pomodori = await Pomodoro.find({ userID: locals.user.id });
 
+    // Restituisci entrambi i set di dati al componente frontend
+    return {
+        evento: JSON.parse(JSON.stringify(evento)),
+        pomodori: JSON.parse(JSON.stringify(pomodori))
+    };
 }
