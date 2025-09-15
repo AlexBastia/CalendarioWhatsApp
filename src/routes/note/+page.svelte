@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 	import { filterPreviews, sortPreviews } from './utilities';
+	import NoteModalCategorie from '$lib/components/NoteModalCategorie.svelte';
+	import PreviewNote from '$lib/components/PreviewNote.svelte';
 
 	let { data, form } = $props();
 
@@ -69,18 +71,18 @@
 
 <header class="container d-flex justify-content-between align-items-center">
 	<h1 class="display-2">Note</h1>
-	<!-- Button trigger modal -->
 	<button
 		type="button"
 		class="btn btn-outline-primary"
 		data-bs-toggle="modal"
-		data-bs-target="#staticBackdrop"
+		data-bs-target="#noteModalCategorie"
 	>
 		Gestisci categorie
 	</button>
 </header>
 
 <main>
+	<!-- Order/Filter inputs -->
 	<div class="container">
 		<input
 			id="searchVal"
@@ -133,60 +135,23 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Note preview list -->
 	<div class="container mt-4">
 		<div class="row g-4">
 			{#each filteredPreviews as preview (preview._id)}
 				{#if preview.items}
-					<div class="col">
-						<div class="card" style="max-width: 400px; min-width: 100px; position: relative;">
-							<a class="card-link" href="/note/liste/{preview._id}" aria-label="continue reading"
-							></a>
-							<div class="card-body">
-								<h5 class="card-title">{preview.title || 'No title'}</h5>
-								<p class="card-text">{'Numero elementi: ' + preview.items.length || 'No items'}</p>
-								<p class="card-text">
-									<small class="text-muted">
-										{#each data.userTags as tag}
-											{#if tag.noteIDs.includes(preview._id)}
-												<span class="badge bg-secondary me-1">{tag.name}</span>
-											{/if}
-										{/each}
-									</small>
-								</p>
-							</div>
-						</div>
-					</div>
+					<PreviewNote {preview} userTags={data.userTags} href={`/note/liste/${preview._id}`} mainText={'Numero elementi: ' + preview.items.length || 'No items'} />
 				{:else}
-					<div class="col">
-						<div class="card" style="max-width: 400px; min-width: 100px; position: relative;">
-							<a class="card-link" href="/note/{preview._id}" aria-label="continue reading"></a>
-							<div class="card-body">
-								<h5 class="card-title">{preview.title || 'No title'}</h5>
-								<p class="card-text">{preview.textStart || 'No text'}</p>
-								<p class="card-text">
-									<small class="text-muted">
-										{#each data.userTags as tag}
-											{#if tag.noteIDs.includes(preview._id)}
-												<span class="badge bg-secondary me-1">{tag.name}</span>
-											{/if}
-										{/each}
-									</small>
-								</p>
-							</div>
-						</div>
-					</div>
+					<PreviewNote {preview} userTags={data.userTags} href={`/note/${preview._id}`} mainText={preview.textStart || 'No text'} />
 				{/if}
 			{/each}
 		</div>
 	</div>
-	<div class="position-fixed" style="bottom: 1em; right: 0.6em">
-		<form method="POST" action="?/create" id="createNoteForm" use:enhance>
-			<input name="title" type="hidden" value="" />
-			<input name="text" type="hidden" value="" />
-		</form>
-		<form method="POST" action="/note/liste?/create" id="createListForm" use:enhance></form>
-		<div class="btn-group dropup float-end">
 
+	<!-- New Note/List button dropup -->
+	<div class="position-fixed" style="bottom: 1em; right: 0.6em">
+		<div class="btn-group dropup float-end">
 			<button
 				type="button"
 				class="btn text-primary bg-light rounded-circle p-0"
@@ -197,7 +162,6 @@
 			>
 				<i class="bi bi-plus-circle-fill"></i>
 			</button>
-			
 			<ul class="dropdown-menu">
 				<li>
 					<button form="createNoteForm" type="submit" class="dropdown-item"
@@ -212,66 +176,15 @@
 			</ul>
 		</div>
 	</div>
+
+	<!-- Hidden Forms -->
+	<form method="POST" action="?/create" id="createNoteForm" use:enhance>
+		<input name="title" type="hidden" value="" />
+		<input name="text" type="hidden" value="" />
+	</form>
+	<form method="POST" action="/note/liste?/create" id="createListForm" use:enhance></form>
+	
+	<!-- Modals -->
+	<NoteModalCategorie userTags={data.userTags}/>
 </main>
 
-<!-- Modal Categorie -->
-<div
-	class="modal fade"
-	id="staticBackdrop"
-	data-bs-backdrop="static"
-	data-bs-keyboard="false"
-	tabindex="-1"
-	aria-labelledby="staticBackdropLabel"
-	aria-hidden="true"
->
-	<div class="modal-dialog modal-dialog-scrollable">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="staticBackdropLabel">Categorie</h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body">
-				<form method="POST" action="/note?/createTag" use:enhance>
-					<div class="input-group">
-						<input type="text" name="tagName" placeholder="Nome categoria" class="form-control" />
-						<button type="submit" class="btn btn-outline-secondary">Aggiungi</button>
-					</div>
-				</form>
-				<div class="list-group list-group-flush">
-					
-					{#each data.userTags as tag, i (tag._id)}
-						<form
-							method="POST"
-							action="?/deleteTag"
-							class="list-group-item d-flex justify-content-between align-items-center"
-							use:enhance
-						>
-							<input type="hidden" name="id" value={tag._id} />
-							<label for={`deleteTag_${i}`}
-								><span class="badge bg-secondary fs-6">{tag.name}</span></label
-							>
-							<button
-								id={`deleteTag_${i}`}
-								type="submit"
-								class="btn text-danger"
-								aria-label="delete tag"><i class="bi bi-x-square-fill"></i></button
-							>
-						</form>
-					{/each}
-
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-
-<style>
-	.card-link::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		right: 0;
-		left: 0;
-	}
-</style>

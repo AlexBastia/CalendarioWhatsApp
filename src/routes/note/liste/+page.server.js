@@ -21,6 +21,6 @@ export const actions = {
 
     if (!saved) return fail(404, { notAvailable: true });
 
-    return redirect(303, `/liste/${saved._id.toString()}`)
+    return redirect(303, `note/liste/${saved._id.toString()}`)
   }
 }
