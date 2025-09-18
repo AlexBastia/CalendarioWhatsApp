@@ -2,6 +2,8 @@
 	import { enhance } from '$app/forms';
 	import { onMount } from 'svelte';
 	import { onDestroy } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
+
 
 	// Props esistenti (invariate)
 	export let id;
@@ -17,21 +19,21 @@
     let modalElement;
     let modalInstance = null;
 
-    // 3. Aggiungi onMount per creare l'istanza del modale
     onMount(() => {
         if (typeof bootstrap !== 'undefined' && modalElement) {
             modalInstance = new bootstrap.Modal(modalElement);
         }
+        onDestroy(() => {
+            // Ora questo codice verrà registrato solo sul client,
+            // risolvendo l'errore sul server.
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+            document.body.classList.remove('modal-open');
+        });
     });
 
-    // 4. Aggiungi onDestroy come rete di sicurezza per la pulizia
-    onDestroy(() => {
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-            backdrop.remove();
-        }
-        document.body.classList.remove('modal-open');
-    });
 
 
 
@@ -50,8 +52,12 @@
 
             // 1. Controlliamo se il server ha risposto con un redirect
             if (result.type === 'redirect') {
-                // 2. QUESTO è il momento perfetto per la pulizia.
-                // La risposta è arrivata, ma la navigazione non è ancora partita.
+				console.log('Redirect rilevato a:', result.location);
+                            
+				// 1. AGGIUNGI QUESTA RIGA PER PRIMA COSA
+				// Rimuove il focus da qualsiasi elemento attivo (il nostro pulsante)
+				if (document.activeElement) document.activeElement.blur();
+
                 if (modalInstance) {
                     modalInstance.hide();
                 }
@@ -60,6 +66,9 @@
                     backdrop.remove();
                 }
                 document.body.classList.remove('modal-open');
+
+				// invalidiamo il modalInstance per evitare ulteriori operazioni su di esso
+				// await invalidateAll();
             }
 
             // 3. Ora diciamo a SvelteKit di procedere con l'aggiornamento/redirect
