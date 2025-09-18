@@ -8,6 +8,8 @@
     import { initNotifiche, mostraNotifica, presetsPomodoro } from '$lib/utils/notification.js';
 
     let { data } = $props();
+    // controllare se data viene aggiornato ogni volta che viene fatto il redirect con enhance
+
     // 2. Usiamo $effect per il console.log reattivo
     $effect(() => {
         console.log('Dati caricati (con $effect):', data);
@@ -49,7 +51,6 @@
             aggiornaDislocamento(durataStudioSecondi, durataStudioSecondi);
         }
     });
-    
     
     // --- Le tue funzioni rimangono invariate ---
     function aggiornaTempoVisualizzato(totaleSecondi) {
@@ -189,6 +190,7 @@
         <circle cx="50" cy="50" {r} fill="white" />
         <circle cx="50" cy="50" {r} fill="none" stroke="gray" stroke-width="2" />
         <circle
+            class="progress-ring" 
             cx="50"
             cy="50"
             {r}
@@ -261,4 +263,14 @@
     .btn:hover {
         background-color: #e0e0e0;
     }
+
+        .progress-ring {
+        /* Applica una transizione fluida alla proprietà 'stroke-dashoffset' */
+        transition: stroke-dashoffset 1s linear;
+    }
+
+    .btn:hover {
+        background-color: #e0e0e0;
+    }
+
 </style>
