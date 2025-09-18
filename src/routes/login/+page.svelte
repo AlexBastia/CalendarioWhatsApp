@@ -1,6 +1,11 @@
 <script>
 	import { enhance } from '$app/forms';
+	import { onMount } from 'svelte';
+	console.log("pera zio")
 
+	onMount(()=>{
+		console.log("zio pera")
+	});
 	//TODO: capisci cosa fa sta roba
 	//export let form;
 	let { form } = $props();

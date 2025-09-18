@@ -5,7 +5,7 @@
 
 <h1 class="mb-4">Crea Nuovo Evento</h1>
 
-<Even<tForm 
+<EventForm 
     pomodoroPresets={data.pomodori}
     formAction="/calendario?/saveEvent"
 />

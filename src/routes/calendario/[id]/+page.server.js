@@ -1,4 +1,4 @@
-import { Evento } from '$lib/models/Evento.js';
+import { Evento } from '$lib/models/Event.js';
 import { Pomodoro } from '$lib/models/Pomodoro.js';
 import { error, redirect } from '@sveltejs/kit';
 

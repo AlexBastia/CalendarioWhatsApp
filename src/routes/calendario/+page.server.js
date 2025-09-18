@@ -1,136 +1,157 @@
-import { Evento } from "$lib/models/Event.js"
-import { redirect } from "@sveltejs/kit";
-import { goto } from "$app/navigation";
-import mongoose from "mongoose";
+import { Evento } from '$lib/models/Event.js';
+import { Pomodoro } from '$lib/models/Pomodoro.js'; // Aggiunto per caricarlo nel form
+import { redirect, fail } from '@sveltejs/kit';
+import { startOfDay, set, differenceInMilliseconds, add } from 'date-fns';
 
-export async function load(event) {
-
-  if (event.locals.user === null) {
-    return redirect(301, "/login");
+/**
+ * Funzione LOAD: Carica sia gli eventi che i preset pomodoro per l'utente loggato.
+ */
+export async function load({ locals }) {
+  if (!locals.user) {
+    redirect(301, '/login');
   }
 
-  const rugeElements = await Evento.find({});
-  // const eventi = JSON.parse(JSON.stringify(rugeElement));
+  // FIX: Cerca solo gli elementi dell'utente loggato
+  const eventiUtente = await Evento.find({ userID: locals.user.id });
+  const pomodoriUtente = await Pomodoro.find({ userID: locals.user.id });
 
   return {
-    events: rugeElements.map((rugeElement) => ({
-      id: rugeElement._id.toString(),
-      title: rugeElement.title,
-      note: rugeElement.note,
-      start: rugeElement.start,
-      end: rugeElement.end
-
+    events: eventiUtente.map((evento) => ({
+      _id: evento._id.toString(),
+      title: evento.title,
+      start: evento.start,
+      end: evento.end,
+      // Aggiungi altri campi se necessari nel frontend
+      eventType: evento.eventType,
+      pomodoroPreset: evento.pomodoroPreset?.toString()
+    })),
+    // Passa i preset pomodoro al frontend per popolarli nel form
+    pomodori: pomodoriUtente.map((p) => ({
+      _id: p._id.toString(),
+      title: p.title
     }))
   };
 }
 
 export const actions = {
-  createEvent: async ({ locals, request, url }) => {
-    if (locals.user === null) {
-      return redirect(301, "/login");
-    }
+  /**
+   * Azione unificata per CREARE e AGGIORNARE un evento.
+   * Gestisce sia eventi STANDARD che POMODORO.
+   */
+  saveEvent: async ({ locals, request }) => {
+    if (!locals.user) {
+    redirect(301, '/login');
+  }
     const formData = await request.formData();
+    const data = Object.fromEntries(formData);
 
-    let dateStart;
-    let dateEnd;
-    const title = formData.get('title');
-    const note = formData.get('note');
-    const allDay = formData.get('allDay') === 'on';
-    const location = formData.get('location');
+    const allDay = data.allDay === 'on';
+    let start, end;
 
     if (allDay) {
-      dateStart = new Date(formData.get('dateStart'));
-      dateEnd = dateStart;
+      start = new Date(data.dateStart + 'T00:00:00');
+      end = new Date(data.dateStart + 'T23:59:59');
+    } else {
+      start = new Date(`${data.dateStart}T${data.timeStart}`);
+      end = new Date(`${data.dateStart}T${data.timeEnd}`);
     }
 
-    else {
-      dateStart = new Date(`${formData.get('dateStart')}T${formData.get('timeStart')}`);
-      dateEnd = new Date(`${formData.get('dateStart')}T${formData.get('timeEnd')}`);
-    }
-
-
-    // Log dei dati ricevuti
-
-    console.log(`Orario: ${dateStart.getHours()}:${dateStart.getMinutes()}`);
-    console.log(`Orario: ${dateEnd.getHours()}:${dateEnd.getMinutes()}`);
-
-    const event = new Evento({
-      title: title,
-      start: dateStart,
-      end: dateEnd,
-      place: location,
+    // Prepara il pacchetto di dati da salvare, includendo i campi pomodoro
+    const eventData = {
+      title: data.title,
+      note: data.note,
+      start: start,
+      end: end,
+      place: data.location,
       allDay: allDay,
-      note: note
-    });
+      eventType: data.eventType,
+      pomodoroPreset: data.eventType === 'POMODORO' ? data.pomodoroPreset : null,
+      status: data.eventType === 'POMODORO' ? 'PIANIFICATO' : null,
+      userID: locals.user.id 
+    };
+    
+    const eventId = data.id || null;
 
-    console.log(event);
-    const saved = await event.save();
-
-    if (!saved) return { success: false };
-
-    redirect(303, `${url.origin}${url.pathname}/${saved._id.toString()}`);
-  },
-  updateEvent: async ({ locals, request }) => {
-    if (locals.user === null) {
-      throw fail(401);
-    }
-    const formData = await request.formData();
-
-    let dateStart;
-    let dateEnd;
-    const id = new mongoose.Types.ObjectId(formData.get('id'));
-    const title = formData.get('title');
-    const note = formData.get('note');
-    const allDay = formData.get('allDay') === 'on';
-    const location = formData.get('location');
-
-    if (allDay) {
-      dateStart = new Date(formData.get('dateStart'));
-      dateEnd = dateStart;
+    if (eventId) {
+      // Se c'è un ID, aggiorna l'evento esistente
+      await Evento.findOneAndUpdate({ _id: eventId, userID: locals.user.id }, eventData);
+    } else {
+      // Altrimenti, crea un nuovo evento
+      await Evento.create(eventData);
     }
 
-    else {
-      dateStart = new Date(`${formData.get('dateStart')}T${formData.get('timeStart')}`);
-      dateEnd = new Date(`${formData.get('dateStart')}T${formData.get('timeEnd')}`);
-    }
-
-
-    // Log dei dati ricevuti
-
-    console.log(`Orario: ${dateStart.getHours()}:${dateStart.getMinutes()}`);
-    console.log(`Orario: ${dateEnd.getHours()}:${dateEnd.getMinutes()}`);
-
-    const event = await Evento.findOneAndUpdate(
-      { _id: id },
-      {
-        title: title,
-        start: dateStart,
-        end: dateEnd,
-        place: location,
-        allDay: allDay,
-        note: note
-      },
-      { new: true }
-    );
-
-    console.log(event);
-
-    redirect(303, `${url.origin}`);
-
+    // Reindirizza l'utente al calendario dopo l'operazione
+    throw redirect(303, '/calendario');
   },
 
   deleteEvent: async ({ locals, request }) => {
-    if (locals.user === null) {
-      return fail(401);
-    }
-    const data = await request.formData();
+    if (!locals.user) {
+    redirect(301, '/login');
+  }
+    const formData = await request.formData();
+    const eventId = formData.get('id');
 
-    const id = new mongoose.Types.ObjectId(data.get('id'));
-    const idk = await Evento.deleteOne({ _id: id });
+    // FIX di sicurezza: assicurati che l'utente possa eliminare solo i propri eventi
+    await Evento.deleteOne({ _id: eventId, userID: locals.user.id });
 
-    return { success: true }
+    // Reindirizza anche dopo l'eliminazione
+    throw redirect(303, '/calendario');
+  },
+
+  updatePomStatus : async ({request, locals}) => {
+   if (!locals.user) {
+    redirect(301, '/login');
   }
 
+    const formData = await request.formData();
+    const eventId = formData.get('eventId');
+    const newStatus = formData.get('status');
 
+    await Evento.findByIdAndUpdate({
+      _id: eventId, userID: locals.user.id 
+    },  
+    {$set:{
+      status: newStatus 
+    }});
 
-}
+    throw redirect(303, '/calendario');
+  },
+
+  hanldePom: async ({ locals }) =>{
+    if (!locals.user) {
+    redirect(301, '/login');
+  }
+
+    const oggi = startOfDay();
+
+    const eventi = await Evento.find({
+      userID: locals.user.id,
+            eventType: 'POMODORO',
+            status: 'PIANIFICATO',
+            start: { $lt: oggi }
+    });
+
+    for (const evento of eventi){
+      const vecchiaDataInizio = new Date(evento.start);
+      const vecchiaDataFine = new Date(evento.end);
+
+      const durataMs = differenceInMilliseconds(vecchiaDataFine, vecchiaDataInizio);
+
+      const nuovaDataInizio = set(oggi, {
+        hours: vecchiaDataInizio.getHours(),
+        minutes: vecchiaDataInizio.getMinutes(),
+        seconds: vecchiaDataInizio.getSeconds()
+      });
+            
+      const nuovaDataFine = add(nuovaDataInizio, { milliseconds: durataMs });
+
+      await Evento.findByIdAndUpdate(evento._id, {
+        $set: {
+          start: nuovaDataInizio,
+          end: nuovaDataFine
+        }
+      });
+    }
+
+  }
+};

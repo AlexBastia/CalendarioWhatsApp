@@ -5,6 +5,8 @@ import { verifyPasswordHash } from "$lib/server/password";
 import { createSession, generateSessionToken, setSessionTokenCookie } from "$lib/server/session";
 
 export function load(event) {
+  console.log("login page.server.js");
+  console.log(event.locals);
   if (event.locals.session !== null && event.locals.user !== null) {
     return redirect(302, "/");
   }

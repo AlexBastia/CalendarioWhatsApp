@@ -4,15 +4,12 @@
     
     let { data } = $props();
 
-    // Prepariamo l'oggetto 'evento' per il form.
-    // Questo è necessario per formattare correttamente le date per gli input HTML.
     let eventoPerForm = {
         ...data.evento,
-        // Converte la data di inizio in 'yyyy-MM-dd'
         dateStart: data.evento.start ? format(new Date(data.evento.start), 'yyyy-MM-dd') : '',
-        // Converte l'ora di inizio in 'HH:mm'
+        
         timeStart: data.evento.start ? format(new Date(data.evento.start), 'HH:mm') : '',
-        // Fai lo stesso per la data/ora di fine, se presente
+
         dateEnd: data.evento.end ? format(new Date(data.evento.end), 'yyyy-MM-dd') : '',
         timeEnd: data.evento.end ? format(new Date(data.evento.end), 'HH:mm') : ''
     };
@@ -30,3 +27,4 @@
 <form method="POST" action="/calendario?/deleteEvent" class="mt-4">
     <button class="btn btn-danger" type="submit">Elimina Evento</button>
 </form>
+

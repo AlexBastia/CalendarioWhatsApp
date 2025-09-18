@@ -180,7 +180,7 @@
                     <!-- si inserisce il cuazzo di evento, inoltre se clicchi all'evento ti manda alla pagina dell'evento -->
                     <!-- ho sostituito il div con un button perche` a svelte non piaceva, in piu` ho scoperto questa cosa carina dell'aria-label grazie a chatgpt e siccome Vitali ha detto a lezione che adora il supporto per non vedenti l'ho aggiunta-->
                     <button class="bg-primary" 
-                    onclick={() => goto(`/calendario/${event.id}`)} 
+                    onclick={() => goto(`/calendario/${event._id}`)} 
                     style="cursor: pointer; width: 100%; text-align: left;"
                     aria-label="Vai al dettaglio dell'evento {event.title}">
                     {event.title}

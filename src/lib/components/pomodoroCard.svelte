@@ -1,4 +1,8 @@
 <script>
+  import { enhance } from '$app/forms'; 
+  import { invalidateAll } from '$app/navigation';
+
+  export let pomodoroId;
     /** Titolo del Pomodoro */
     export let title;
     /** Stringa che descrive la durata della sessione di studio (es. "25 minuti") */
@@ -17,57 +21,69 @@
     export let onDelete = () => {};
   </script>
   
-  <div class="card h-100 pomodoro-card shadow-sm">
-    <button
-      type="button"
-      class="btn btn-sm btn-outline-danger border-0 position-absolute top-0 end-0 m-2 p-1 pomodoro-card-action-btn delete-btn"
-      aria-label="Elimina Pomodoro"
-      title="Elimina Pomodoro"
-      on:click|stopPropagation={onDelete}
-    >
-      <i class="bi bi-trash-fill" style="font-size: 1rem;"></i>
-    </button>
-  
-    <div
-      class="card-body d-flex flex-column"
-      on:click={onClick}
-      on:keydown={(e) => e.key === 'Enter' && onClick()}
-      role="button"
-      tabindex="0"
-      aria-label={`Dettagli per ${title}`}
-    >
-      <div class="flex-grow-1 mb-3">
-        <h5 class="card-title mb-3 text-primary">
-          {#if icon}<i class="bi {icon} me-2"></i>{/if}
-          {title}
-        </h5>
-        <p class="card-text small mb-1">
-          <i class="bi bi-play-circle-fill me-1 text-success"></i>
-          <strong>Studio:</strong> {durata}
-        </p>
-        <p class="card-text small mb-1">
-          <i class="bi bi-pause-circle-fill me-1 text-warning"></i>
-          <strong>Pausa:</strong> {pausa}
-        </p>
-        <p class="card-text small mb-0">
-          <i class="bi bi-arrow-repeat me-1 text-info"></i>
-          <strong>Cicli:</strong> {cicli}
-        </p>
-      </div>
-  
-      <div class="mt-auto text-end">
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary pomodoro-card-action-btn edit-btn"
-          on:click|stopPropagation={onEdit}
-          aria-label="Modifica Pomodoro"
-          title="Modifica Pomodoro"
-        >
-          <i class="bi bi-pencil-square me-1"></i>Modifica
-        </button>
-      </div>
-    </div>
-  </div>
+<div class="card h-100 pomodoro-card shadow-sm">
+	<form method="POST" action="/pomodoro?/deletePomodoro"
+    use:enhance={async () => {
+      return async ({ result, update }) => {
+        console.log("Form submission result: ", result);
+        if (result.type === 'success') {
+          console.log("Pomodoro eliminato con successo, invalidating data...");
+          await invalidateAll(); // Invalida tutti i dati caricati per forzare il refresh
+        }
+      };
+    }}
+  >
+		<input type="hidden" name="id" value={pomodoroId} />
+		<button
+			type="submit"
+			class="btn btn-sm btn-outline-danger border-0 position-absolute top-0 end-0 m-2 p-1 pomodoro-card-action-btn delete-btn"
+			aria-label="Elimina Pomodoro"
+			title="Elimina Pomodoro"
+		>
+			<i class="bi bi-trash-fill" style="font-size: 1rem;"></i>
+		</button>
+	</form>
+
+	<div
+		class="card-body d-flex flex-column"
+		on:click={onClick}
+		on:keydown={(e) => e.key === 'Enter' && onClick()}
+		role="button"
+		tabindex="0"
+		aria-label={`Dettagli per ${title}`}
+	>
+		<div class="flex-grow-1 mb-3">
+			<h5 class="card-title mb-3 text-primary">
+				{#if icon}<i class="bi {icon} me-2"></i>{/if}
+				{title}
+			</h5>
+			<p class="card-text small mb-1">
+				<i class="bi bi-play-circle-fill me-1 text-success"></i>
+				<strong>Studio:</strong> {durata}
+			</p>
+			<p class="card-text small mb-1">
+				<i class="bi bi-pause-circle-fill me-1 text-warning"></i>
+				<strong>Pausa:</strong> {pausa}
+			</p>
+			<p class="card-text small mb-0">
+				<i class="bi bi-arrow-repeat me-1 text-info"></i>
+				<strong>Cicli:</strong> {cicli}
+			</p>
+		</div>
+
+		<div class="mt-auto text-end">
+			<button
+				type="button"
+				class="btn btn-sm btn-outline-secondary pomodoro-card-action-btn edit-btn"
+				on:click|stopPropagation={onEdit}
+				aria-label="Modifica Pomodoro"
+				title="Modifica Pomodoro"
+			>
+				<i class="bi bi-pencil-square me-1"></i>Modifica
+			</button>
+		</div>
+	</div>
+</div>
   
   <style>
     .pomodoro-card {

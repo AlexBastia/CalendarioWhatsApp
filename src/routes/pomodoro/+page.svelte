@@ -1,19 +1,19 @@
 <script>
     let { data, form } = $props();
+    import { fail, redirect } from '@sveltejs/kit';
     import { goto } from '$app/navigation';
     import FloatingButton from '$lib/components/btn.svelte';
     import PomodoroCard from '$lib/components/pomodoroCard.svelte';
     import PomodoroModal from '$lib/components/pomodoroModal.svelte';
 
     console.log(data);
-    let pomodori = data.pomodori;
     console.log(form);
 
-    let tempStudio;
-    let title;
-    let tempPausa;
-    let cicli;
-    let editPomodoroId = null; // Aggiungi una variabile per l'ID del pomodoro da modificare
+    let tempStudio = $state();
+    let title = $state(''); // È buona norma dare un valore iniziale
+    let tempPausa = $state();
+    let cicli = $state();
+    let editPomodoroId = $state(null);
 </script>
 
 <header class="container d-flex justify-content-between align-items-center">
@@ -23,9 +23,11 @@
 <main>
     <div class="container mt-4">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-4">
-            {#each pomodori as pomodoro}
+            {#each data.pomodori as pomodoro}
+
                 <div class="col">
                     <PomodoroCard
+                        pomodoroId={pomodoro._id}
                         title={pomodoro.title}
                         durata={`${new Date(pomodoro.timeStudy).getMinutes()} minuti`}
                         pausa={`${new Date(pomodoro.timeBreak).getMinutes()} minuti`}
@@ -49,7 +51,7 @@
                             fetch(`/pomodoro/${pomodoro._id}`, {
                                 method: 'DELETE',
                                 headers: {
-                                    'Content-Type': 'application/json'
+                                    'Ct-Type': 'application/json'
                                 }
                             }).then(() => {
                                 goto('/pomodoro');
@@ -57,6 +59,7 @@
                         }}
                     />
                 </div>
+
             {/each}
         </div>
     </div>
@@ -86,6 +89,7 @@
         title={title}
         tempStudio={tempStudio}
         tempPausa={tempPausa}
-        formAction={`/pomodoro?/editPomodoro?id=${editPomodoroId}`}
+        formMethod="POST"
+        formAction={`/pomodoro?/editPomodoro&id=${editPomodoroId}`}
     ></PomodoroModal>
 </main>

@@ -11,6 +11,7 @@
 
     let { data } = $$props;
     let pomData = data.pomodoro[0];
+    const eventId = $page.url.searchParams.get('eventId');
 
     // Dati iniziali dal DB
     let title = pomData.title;
@@ -102,6 +103,7 @@
         console.log('Sessione terminata');
         aggiornaTempoVisualizzato(durataStudioSecondi);
         aggiornaDislocamento(durataStudioSecondi, durataStudioSecondi);
+        await aggiornaStatoEvento('COMPLETATO');
     }
 
     function fermaTutto() {
@@ -112,6 +114,21 @@
         secondiRimanenti = durataStudioSecondi;
         aggiornaTempoVisualizzato(secondiRimanenti);
         aggiornaDislocamento(secondiRimanenti, durataStudioSecondi);
+        aggiornaStatoEvento('INCOMPLETO');
+    }
+
+    async function aggiornaStatoEvento(status) {
+        if (!eventId) return; // Se non c'è un eventId, non fare nulla
+
+        const formData = new FormData();
+        formData.append('eventId', eventId);
+        formData.append('status', status);
+
+        // Invia i dati all'azione 'updateStatus'
+        await fetch('/calendario?/updateStatus', {
+            method: 'POST',
+            body: formData
+        });
     }
 
     onMount(async ()=>{
