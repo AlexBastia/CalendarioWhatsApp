@@ -4,12 +4,11 @@ export const pomodoroSchema = new mongoose.Schema({
     timeStudy: Date, 
     timeBreak: Date,
     userID: mongoose.Schema.Types.ObjectId,
-    sharedUsers: [
-        {
-          email: String,
-          userID: mongoose.Schema.Types.ObjectId
-        }
-    ],
+    sharedUsers: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+
     title: String,
     cycles: Number
   });

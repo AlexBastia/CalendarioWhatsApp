@@ -1,5 +1,6 @@
 import { Pomodoro } from '$lib/models/Pomodoro.js'; 
-import { redirect, error } from '@sveltejs/kit'; 
+import { User } from '$lib/models/User';
+import { redirect, error, fail } from '@sveltejs/kit'; 
 
 
 export async function load(event) {
@@ -14,7 +15,10 @@ export async function load(event) {
         
         const pomodoroDoc = await Pomodoro.findOne({
             _id: pomodoroId
-        });
+        })
+        .populate('sharedUsers', 'username email _id') // e username
+        .lean(); // per ottenere un plain JavaScript object
+        
 
         if (!pomodoroDoc) {
             throw error(404, { message: 'ziopera' });
@@ -34,6 +38,48 @@ export async function load(event) {
 }
 
 export const actions = {
+    removeUser: async ({ request, params, locals }) => {
+        const formData = await request.formData();
+        const userIdToRemove = formData.get('userId');
+
+        await Pomodoro.updateOne(
+            { _id: params.id, userID: locals.user._id }, // Condizione di sicurezza: solo il proprietario può rimuovere
+            { $pull: { sharedUsers: userIdToRemove } }
+        );
+        return { success: true, message: 'Utente rimosso' };
+    },    
+    addUser: async ({ request, params, locals }) => {
+        const formData = await request.formData();
+        const email = formData.get('email');
+
+        // ... (fai i tuoi controlli sull'email e sull'utente come nel file delle note)
+        const user = await User.findOne({ email: email });
+        if (!user) return fail(404, { message: 'Utente non trovato', error: true });
+        if (user._id.equals(locals.user._id)) return fail(400, { message: 'Non puoi condividere con te stesso', error: true });
+
+        const pomodoro = await Pomodoro.findById(params.id);
+        if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
+
+        // Controlla se l'utente è già presente
+        if (pomodoro.sharedUsers.some(id => id.equals(user._id))) {
+            return fail(400, { message: 'Già condiviso con questo utente', error: true });
+        }
+
+        console.log(pomodoro.userID + ' e ' + locals.user._id);
+
+        console.log(pomodoro.userID.equals(locals.user._id));
+
+        // controlla se l'id è dello user che ha creato il pomodoro
+        if (pomodoro.userID.equals(locals.user._id)) {
+            return fail(400, { message: 'Non puoi condividere con il creatore', error: true });
+        }
+
+        // Aggiungi solo l'ID
+        pomodoro.sharedUsers.push(user._id);
+        await pomodoro.save();
+        return { success: true, message: 'Utente aggiunto!' };
+    },
+
     updatePomodoro: async ({ request, params, locals }) => { // <-- 1. Aggiungi 'locals' qui
         console.log('evviva');
         const data = await request.formData();

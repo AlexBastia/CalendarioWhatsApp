@@ -14,6 +14,10 @@
     let tempPausa = $state();
     let cicli = $state();
     let editPomodoroId = $state(null);
+
+        // riferimenti ai modali
+    let createModalRef;
+    let editModalRef;
 </script>
 
 <header class="container d-flex justify-content-between align-items-center">
@@ -43,9 +47,8 @@
                             tempPausa = new Date(pomodoro.timeBreak).getMinutes();
                             cicli = pomodoro.cycles;
                             editPomodoroId = pomodoro._id; // Imposta l'ID del pomodoro da modificare
-                            const modal = new bootstrap.Modal(document.getElementById('editPomodoro'));
 
-                            modal.show();
+                            editModalRef?.show();
                         }}
                         onDelete={() => {
                             fetch(`/pomodoro/${pomodoro._id}`, {
@@ -61,6 +64,25 @@
                 </div>
 
             {/each}
+
+            {#each data.sharedPomodori as pomodoroCondiviso}
+            
+                <div class="col">
+                    <PomodoroCard
+                        pomodoroId={pomodoroCondiviso._id}
+                        title={pomodoroCondiviso.title}
+                        durata={`${new Date(pomodoroCondiviso.timeStudy).getMinutes()} minuti`}
+                        pausa={`${new Date(pomodoroCondiviso.timeBreak).getMinutes()} minuti`}
+                        cicli={pomodoroCondiviso.cycles}
+                        onClick={() => {
+                            goto(`/pomodoro/${pomodoroCondiviso._id}`);
+                        }}
+                        icon="bi-clock-fill"
+                        isShared={true}
+                    />
+                </div>
+                
+            {/each}
         </div>
     </div>
 
@@ -71,25 +93,28 @@
 
     <!-- modale per la creazione di un pomodorino -->
     <PomodoroModal
-        id="createPomodoro"
-        titleModal="Crea Pomodoro"
-        {cicli}
-        formAction="/pomodoro?/createPomodoro"
-        formMethod="POST"
-        {title}
-        {tempStudio}
-        {tempPausa}
-    ></PomodoroModal>
+    id="createPomodoro"
+    titleModal="Crea Pomodoro"
+    {cicli}
+    formAction="/pomodoro?/createPomodoro"
+    formMethod="POST"
+    {title}
+    {tempStudio}
+    {tempPausa}
+    bind:this={createModalRef}
+    />
 
-    <!-- modale per la modifica di un pomodorino -->
-    <PomodoroModal
-        id="editPomodoro"
-        titleModal="Modifica Pomodoro"
-        cicli={cicli}
-        title={title}
-        tempStudio={tempStudio}
-        tempPausa={tempPausa}
-        formMethod="POST"
-        formAction={`/pomodoro?/editPomodoro&id=${editPomodoroId}`}
-    ></PomodoroModal>
+
+   <PomodoroModal
+    id="editPomodoro"
+    titleModal="Modifica Pomodoro"
+    cicli={cicli}
+    title={title}
+    tempStudio={tempStudio}
+    tempPausa={tempPausa}
+    formMethod="POST"
+    formAction={`/pomodoro?/editPomodoro&id=${editPomodoroId}`}
+    bind:this={editModalRef}
+/>
+
 </main>

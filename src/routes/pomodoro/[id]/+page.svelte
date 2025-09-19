@@ -1,21 +1,30 @@
 <script>
     import { onMount } from 'svelte';
+    import BtnPom from '$lib/components/BtnPom.svelte';
     import WhatsappIcon from '$lib/assets/svgs/whatsapp.svg';
     import PlayIcon from '$lib/assets/svgs/playfill.svg';
     import PauseIcon from '$lib/assets/svgs/pause.svg';
     import { page } from '$app/stores';
+    import SharePomodoro from '$lib/components/SharePomodoro.svelte';
     import PomodoroModal from '$lib/components/pomodoroModal.svelte';
     import { initNotifiche, mostraNotifica, presetsPomodoro } from '$lib/utils/notification.js';
-
+    
     let { data } = $props();
-    // controllare se data viene aggiornato ogni volta che viene fatto il redirect con enhance
 
+    let mostraModaleForm = $state(false);
+
+    
+
+
+    // controllare se data viene aggiornato ogni volta che viene fatto il redirect con enhance
+    
     // 2. Usiamo $effect per il console.log reattivo
     $effect(() => {
         console.log('Dati caricati (con $effect):', data);
     });
     
     // 3. Tutte le dichiarazioni reattive (:) diventano costanti con $derived
+    let shareModal = $state();
     const pomData = $derived(data.pomodoro && data.pomodoro.length > 0 ? data.pomodoro[0] : null);
 
     const eventId = $page.url.searchParams.get('eventId');
@@ -163,6 +172,15 @@
     class="container d-flex flex-column align-items-center justify-content-center"
     style="height: 100vh;"
 >
+    <BtnPom
+        ariaLabel="Condividi Pomodoro"
+        iconSrc={WhatsappIcon}
+        on:click={() => {
+            shareModal.show()
+        }}
+    >
+    </BtnPom>
+
     <button
         type="button"
         class="btn btn-primary mb-3"
@@ -171,6 +189,13 @@
     >
         Impostazioni Timer
     </button>
+
+
+    <SharePomodoro
+        bind:this={shareModal}
+        pomodoro={pomData} formAction={`?/sharePomodoro`}
+        form={$page.form}
+    />
 
     <PomodoroModal
         id="settingsModal"
@@ -211,49 +236,39 @@
     </svg>
 
     {#if !timerAttivo}
-        <button
-            type="button"
-            class="btn p-5 m-2 rounded-circle"
-            aria-label="Inizia Pomodoro"
-            on:click={() => eseguiCicli()}
-        >
-            <img src={PlayIcon} alt="Inizia Pomodoro" />
-        </button>
+        <div class="d-flex justify-content-around">
+            <BtnPom 
+                ariaLabel="Avvia Pomodoro" 
+                iconSrc={PlayIcon} 
+                on:click={() => {
+                   
+                        eseguiCicli();
+                    
+                }} 
+            />
+        </div>
     {/if}
 
     {#if timerAttivo}
         <div class="d-flex justify-content-around">
-            <button
-                type="button"
-                class="btn p-5 m-2 rounded-circle"
-                aria-label="Pausa/Riprendi"
-                on:click={() => (inPausa = !inPausa)}
-            >
-                {#if inPausa}
-                    <img src={PlayIcon} alt="Riprendi Pomodoro" />
-                {:else}
-                    <img src={PauseIcon} alt="Metti in Pausa Pomodoro" />
-                {/if}
-            </button>
-            <button
-                type="button"
-                class="btn p-5 m-2 rounded-circle"
-                aria-label="Ferma Pomodoro"
-                on:click={fermaTutto}
-            >
-                <img src={WhatsappIcon} alt="Ferma Pomodoro" />
-            </button>
-            <button
-                type="button"
-                class="btn p-5 m-2 rounded-circle"
-                aria-label="Ricomincia Ciclo"
-                on:click={() => {
-                    clearInterval(intervallo); // CORRETTO: clearInterval
-                    eseguiCicli(cicloCorrente);
-                }}
-            >
-                <img src={WhatsappIcon} alt="Ricomincia Ciclo" />
-            </button>
+        <BtnPom
+            ariaLabel="Pausa/Riprendi"
+            iconSrc={inPausa ? PlayIcon : PauseIcon}
+            on:click={() => (inPausa = !inPausa)}
+        />
+        <BtnPom
+            ariaLabel="Ferma Pomodoro"
+            iconSrc={WhatsappIcon}
+            on:click={fermaTutto}
+        />
+        <BtnPom
+            ariaLabel="Ricomincia Ciclo"
+            iconSrc={WhatsappIcon}
+            on:click={() => {
+                clearInterval(intervallo);
+                eseguiCicli(cicloCorrente);
+            }}
+        />
         </div>
     {/if}
 </div>
@@ -264,8 +279,7 @@
         background-color: #e0e0e0;
     }
 
-        .progress-ring {
-        /* Applica una transizione fluida alla proprietà 'stroke-dashoffset' */
+    .progress-ring {
         transition: stroke-dashoffset 1s linear;
     }
 
