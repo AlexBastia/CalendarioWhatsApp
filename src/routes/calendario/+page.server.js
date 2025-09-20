@@ -3,13 +3,48 @@ import { Pomodoro } from '$lib/models/Pomodoro.js'; // Aggiunto per caricarlo ne
 import { redirect, fail } from '@sveltejs/kit';
 import { startOfDay, set, differenceInMilliseconds, add } from 'date-fns';
 
-/**
- * Funzione LOAD: Carica sia gli eventi che i preset pomodoro per l'utente loggato.
- */
+async function updatePom(userId) {
+  const today = startOfDay(new Date());
+
+
+  const events2update = await Evento.find({
+    userID: userId,
+    eventType: 'POMODORO',
+    status: 'PIANIFICATO',
+    start: { $lt: (today) }
+  });
+
+  for (const evento of events2update) {
+    const oldStart = new Date(evento.start);
+    const oldFinish = new Date(evento.end);
+
+    // calola la durata (in ms)
+    const durataMs = differenceInMilliseconds(oldFinish, oldStart);
+
+    // crea nuove date
+    const newStart = set(today, {
+      hours: oldStart.getHours(),
+      minutes: oldStart.getMinutes(),
+      seconds: oldStart.getSeconds()
+    });
+
+    // roba
+    const newFinish = add(newStart, { milliseconds: durataMs });
+
+    await Evento.findByIdAndUpdate(evento._id, {
+      $set: {
+        start: newStart,
+        end: newFinish
+      }
+    });
+  }
+}
+
 export async function load({ locals }) {
   if (!locals.user) {
     redirect(301, '/login');
   }
+  await updatePom(locals.user.id);
 
   // FIX: Cerca solo gli elementi dell'utente loggato
   const eventiUtente = await Evento.find({ userID: locals.user.id });
@@ -115,43 +150,5 @@ export const actions = {
     }});
 
     throw redirect(303, '/calendario');
-  },
-
-  hanldePom: async ({ locals }) =>{
-    if (!locals.user) {
-    redirect(301, '/login');
-  }
-
-    const oggi = startOfDay();
-
-    const eventi = await Evento.find({
-      userID: locals.user.id,
-            eventType: 'POMODORO',
-            status: 'PIANIFICATO',
-            start: { $lt: oggi }
-    });
-
-    for (const evento of eventi){
-      const vecchiaDataInizio = new Date(evento.start);
-      const vecchiaDataFine = new Date(evento.end);
-
-      const durataMs = differenceInMilliseconds(vecchiaDataFine, vecchiaDataInizio);
-
-      const nuovaDataInizio = set(oggi, {
-        hours: vecchiaDataInizio.getHours(),
-        minutes: vecchiaDataInizio.getMinutes(),
-        seconds: vecchiaDataInizio.getSeconds()
-      });
-            
-      const nuovaDataFine = add(nuovaDataInizio, { milliseconds: durataMs });
-
-      await Evento.findByIdAndUpdate(evento._id, {
-        $set: {
-          start: nuovaDataInizio,
-          end: nuovaDataFine
-        }
-      });
-    }
-
   }
 };
