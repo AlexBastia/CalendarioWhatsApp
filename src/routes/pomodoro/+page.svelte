@@ -50,25 +50,21 @@
 
                             editModalRef?.show();
                         }}
-                        onDelete={() => {
-                            fetch(`/pomodoro/${pomodoro._id}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Ct-Type': 'application/json'
-                                }
-                            }).then(() => {
-                                goto('/pomodoro');
-                            });
-                        }}
+                        deleteAction="/pomodoro?/deletePomodoro"
                     />
                 </div>
 
             {/each}
-
-            {#each data.sharedPomodori as pomodoroCondiviso}
+        </div>
+        <!-- posto per i pomodori condivisi con me -->
+        
+        <h2 class="mt-5">Pomodori condivisi con me</h2>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-4">
+         {#each data.sharedPomodori as pomodoroCondiviso}
             
                 <div class="col">
                     <PomodoroCard
+                        deleteAction="/pomodoro?/delPomFromSU"
                         pomodoroId={pomodoroCondiviso._id}
                         title={pomodoroCondiviso.title}
                         durata={`${new Date(pomodoroCondiviso.timeStudy).getMinutes()} minuti`}

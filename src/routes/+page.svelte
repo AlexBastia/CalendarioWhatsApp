@@ -5,4 +5,5 @@
 	<li><a href="/pomodoro">Pomodoro</a></li>
 	<li><a href="/signup">Signup</a></li>
 	<li><a href="/login">Login</a></li>
+	<li><a href="/logout">Logout</a></li>
 </ul>

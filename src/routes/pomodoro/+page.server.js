@@ -17,7 +17,10 @@ export async function load(event) {
 
 
     // pomodori condivisi
-    const sharedPomodori = await Pomodoro.find({ $or: [{ userID: { $ne: event.locals.user._id } }, { "sharedUsers.userId": event.locals.user._id }] }) // Find notes that are public or shared with the user
+    const sharedPomodori = await Pomodoro.find({
+        userID: { $ne: event.locals.user._id }, 
+        sharedUsers: event.locals.user._id      
+    }); 
 
 
 
@@ -73,13 +76,51 @@ export const actions = {
             return redirect(303, `/pomodoro/${saved._id.toString()}`)
     },
 
+    
+    delPomFromSU: async ({request, locals}) => {
+        if (!locals.user) {
+            return fail(401);
+        }
+        console.log('ci sono, del su');
+        const data = await request.formData();
+        const id = data.get('id');
 
+        try {
+            const pomodoro = await Pomodoro.findById(id);
+            if (!pomodoro) {
+                return fail(404, { message: "Pomodoro non trovato" });
+            }
+
+            console.log('prima', pomodoro);
+
+            console.log(pomodoro.sharedUsers, locals.user._id);
+
+            
+
+            const newSU = pomodoro.sharedUsers.filter(user => 
+                !user.equals(locals.user._id)
+            ); // SI ROMPE QUI
+
+            console.log('zio pera', newSU);
+
+            // Rimuovi l'utente dagli sharedUsers
+            pomodoro.sharedUsers = newSU;
+            await pomodoro.save();
+
+            return { success: true };
+
+        } catch(e){
+            console.error('errore')
+            return fail(500, { message: "Errore" });
+        }
+    },
     deletePomodoro: async ({ request, locals }) => {
         if (!locals.user) {
             return fail(401);
         }
         const data = await request.formData();
         const id = data.get('id');
+        console.log('iai')
 
         try {
             const result = await Pomodoro.deleteOne({ _id: id, userID: locals.user._id });

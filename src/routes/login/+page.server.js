@@ -7,9 +7,7 @@ import { createSession, generateSessionToken, setSessionTokenCookie } from "$lib
 export function load(event) {
   console.log("login page.server.js");
   console.log(event.locals);
-  if (event.locals.session !== null && event.locals.user !== null) {
-    return redirect(302, "/");
-  }
+  
   return {};
 }
 

@@ -15,26 +15,18 @@
 	export let submitButtonText = 'Salva';
 
 	let modal;
-
-	// --- LOGICA AGGIUNTA PER IL PIANIFICATORE ---
-	let minutiInput = 120; // Valore di default per l'input dei minuti
-	let suggerimenti = []; // Array per contenere i suggerimenti generati
+	let minutiInput = 120; 
+	let suggerimenti = []; 
 
 	function calcolaSuggerimenti() {
 		suggerimenti = suggerisciCicli(minutiInput);
 	}
 
-	/**
-	 * Applica un suggerimento, aggiornando i valori del form
-	 * @param {import('$lib/utils/pomodoroPlanner.js').Suggerimento} proposta
-	 */
 	function applicaSuggerimento(proposta) {
 		timeStudy = proposta.studio;
 		timeBreak = proposta.pausa;
 		cicli = proposta.cicli;
 	}
-	// --- FINE LOGICA AGGIUNTA ---
-
 	export function show() {
 		modal.show();
 	}

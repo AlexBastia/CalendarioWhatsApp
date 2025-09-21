@@ -52,12 +52,21 @@ export const actions = {
         const email = formData.get('email');
 
         const user = await User.findOne({ email: email });
+        console.log('trovato ',user);
         if (!user) return fail(404, { message: 'Utente non trovato', error: true });
         if (user._id.equals(locals.user._id)) return fail(400, { message: 'Non puoi condividere con te stesso', error: true });
 
         const pomodoro = await Pomodoro.findById(params.id);
+        if (!pomodoro) {
+            console.log('pomodoro non trovato');
+            return fail(404, { message: 'Pomodoro non trovato', error: true });
+        }
+        else{
+            console.log('pomodoro trovato:', pomodoro);
+        }
         if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
 
+        console.log('sharedUsers:', pomodoro.sharedUsers);
         if (pomodoro.sharedUsers.some(id => id.equals(user._id))) {
             return fail(400, { message: 'Già condiviso con questo utente', error: true });
         }
@@ -66,11 +75,12 @@ export const actions = {
 
         console.log(pomodoro.userID.equals(locals.user._id));
 
-        if (pomodoro.userID.equals(locals.user._id)) {
+        if (pomodoro.userID.equals(user._id)) {
             return fail(400, { message: 'Non puoi condividere con il creatore', error: true });
         }
 
         pomodoro.sharedUsers.push(user._id);
+        console.log('prima di salvare', pomodoro.sharedUsers);
         await pomodoro.save();
         return { success: true, message: 'Utente aggiunto!' };
     },

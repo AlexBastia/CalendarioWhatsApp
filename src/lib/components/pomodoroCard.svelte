@@ -17,17 +17,19 @@
     export let icon = '';
     /** Funzione da eseguire per modificare il Pomodoro */
     export let onEdit = () => {};
-    /** Funzione da eseguire per eliminare il Pomodoro */
-    export let onDelete = () => {};
+
+    export let deleteAction = ''; 
+
+    console.log(`dele: ${deleteAction}`);
   </script>
   
 <div class="card h-100 pomodoro-card shadow-sm">
-	<form method="POST" action="/pomodoro?/deletePomodoro"
+	<form method="POST" action={deleteAction}
     use:enhance={async () => {
       return async ({ result, update }) => {
         console.log("Form submission result: ", result);
         if (result.type === 'success') {
-          console.log("Pomodoro eliminato con successo, invalidating data...");
+          console.log("fatto delete");
           await invalidateAll(); // Invalida tutti i dati caricati per forzare il refresh
         }
       };
@@ -47,7 +49,6 @@
 	<div
 		class="card-body d-flex flex-column"
 		on:click={onClick}
-		on:keydown={(e) => e.key === 'Enter' && onClick()}
 		role="button"
 		tabindex="0"
 		aria-label={`Dettagli per ${title}`}

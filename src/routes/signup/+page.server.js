@@ -5,9 +5,6 @@ import { verifyPasswordStrength } from "$lib/server/password";
 import { createSession, generateSessionToken, setSessionTokenCookie } from "$lib/server/session";
 
 export function load(event) {
-  if (event.locals.session !== null && event.locals.user !== null) {
-    return redirect(302, "/");
-  }
   return {};
 }
 
