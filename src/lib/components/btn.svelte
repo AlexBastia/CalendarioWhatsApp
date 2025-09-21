@@ -38,20 +38,8 @@
     </div>
   </div>
     
-  <style>
-    /*
-      La combinazione di classi Bootstrap (`rounded-circle`, `p-0`) e gli stili inline
-      (`font-size: 4em; line-height: 64px;`) dovrebbe rendere il pulsante circolare
-      e dimensionato correttamente attorno all'icona.
-      L'icona `bi-plus-circle-fill` dovrebbe scalare con `font-size`.
-      `line-height: 64px` imposta l'altezza del box del pulsante a 64px.
-      Se `font-size: 4em` (assumendo un font base di 16px, quindi 64px) fa sì che l'icona
-      sia larga e alta 64px, il pulsante sarà un cerchio perfetto.
-      Questo è il comportamento tipico per le icone Bootstrap.
-    */
+<style>
     button:disabled {
       cursor: not-allowed;
-      /* Bootstrap dovrebbe già applicare stili per i pulsanti disabilitati,
-         ma puoi aggiungere ulteriori personalizzazioni qui se necessario. */
     }
-  </style>
+</style>
