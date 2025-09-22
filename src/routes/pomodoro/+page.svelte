@@ -60,8 +60,10 @@
         
         <h2 class="mt-5">Pomodori condivisi con me</h2>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-4">
-         {#each data.sharedPomodori as pomodoroCondiviso}
-            
+        {#if !data.sharedPomodori || data.sharedPomodori.length === 0}
+            <p class="text-muted">Nessun pomodoro condiviso con te.</p>
+        {:else}
+            {#each data.sharedPomodori as pomodoroCondiviso}
                 <div class="col">
                     <PomodoroCard
                         deleteAction="/pomodoro?/delPomFromSU"
@@ -79,6 +81,7 @@
                 </div>
                 
             {/each}
+        {/if}
         </div>
     </div>
 
@@ -89,15 +92,15 @@
 
     <!-- modale per la creazione di un pomodorino -->
     <PomodoroModal
-    id="createPomodoro"
-    titleModal="Crea Pomodoro"
-    {cicli}
-    formAction="/pomodoro?/createPomodoro"
-    formMethod="POST"
-    {title}
-    {tempStudio}
-    {tempPausa}
-    bind:this={createModalRef}
+        id="createPomodoro"
+        titleModal="Crea Pomodoro"
+        {cicli}
+        formAction="/pomodoro?/createPomodoro"
+        formMethod="POST"
+        {title}
+        {tempStudio}
+        {tempPausa}
+        bind:this={createModalRef}
     />
 
 
