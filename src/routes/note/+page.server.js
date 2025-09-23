@@ -1,105 +1,115 @@
-import { Note } from "$lib/models/Note";
-import { error, fail, redirect } from "@sveltejs/kit";
-import { getCurrTime, truncateNoteText } from "$lib/server/utilities";
-import { TITLE_MAX_LEN, TEXT_MAX_LEN } from "$lib/server/constants";
-import mongoose from "mongoose";
-import { User } from "$lib/models/User";
-import { List } from "$lib/models/List";
+import { Note } from '$lib/models/Note';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { getCurrTime, truncateNoteText, withAuth } from '$lib/server/utilities';
+import { TITLE_MAX_LEN, TEXT_MAX_LEN } from '$lib/server/constants';
+import mongoose from 'mongoose';
+import { User } from '$lib/models/User';
+import { List } from '$lib/models/List';
 
 export async function load(event) {
+	if (event.locals.user === null) {
+		return redirect(307, '/login');
+	}
 
-  if (event.locals.user === null) {
-    return redirect(301, "/login");
-  }
+	const userDataP = User.findById({ _id: event.locals.user._id }, { tags: 1 });
+	const notesP = Note.find({ userID: event.locals.user._id }, { text: 0 });
+	const listsP = List.find({ userID: event.locals.user._id });
+	const sharedNotesP = Note.find(
+		{
+			$or: [
+				{ isPublic: true, userID: { $ne: event.locals.user._id } },
+				{ 'sharedUsers.userID': event.locals.user._id }
+			]
+		},
+		{ text: 0 }
+	);
 
-  const notes = await Note.find({ userID: event.locals.user._id }, { text: 0 });
-  if (!notes) return error(404, { message: "Non e' stato possibile caricare le note" })
+	let userData, notes, lists, sharedNotes;
+	try {
+		[userData, notes, lists, sharedNotes] = await Promise.all([
+			userDataP,
+			notesP,
+			listsP,
+			sharedNotesP
+		]);
+	} catch (err) {
+		error(500);
+	}
 
-  const lists = await List.find({ userID: event.locals.user._id });
-  if (!lists) return error(404, { message: "Non e' stato possibile caricare le liste" })
-
-  const sharedNotes = await Note.find({ $or: [{ isPublic: true, userID: { $ne: event.locals.user._id } }, { "sharedUsers.userID": event.locals.user._id }] }, { text: 0 }) // Find notes that are public or shared with the user
-
-  const userData = await User.findById({ _id: event.locals.user._id }, { tags: 1 })
-
-  if (!userData) return fail(404)
-
-  const userTags = userData.tags
-  return {
-    lists: JSON.parse(JSON.stringify(lists)),
-    notePreviews: JSON.parse(JSON.stringify(notes)),
-    sharedNotePreviews: JSON.parse(JSON.stringify(sharedNotes)),
-    userTags: JSON.parse(JSON.stringify(userTags))
-  }
+	const userTags = userData.tags;
+	return {
+		lists: JSON.parse(JSON.stringify(lists)),
+		notePreviews: JSON.parse(JSON.stringify(notes)),
+		sharedNotePreviews: JSON.parse(JSON.stringify(sharedNotes)),
+		userTags: JSON.parse(JSON.stringify(userTags))
+	};
 }
 
 export const actions = {
+	// CREATE Note
+	create: withAuth(async (event) => {
+		const data = await event.request.formData();
 
-  create: async (event) => {
-    if (event.locals.user === null) {
-      return fail(401);
-    }
+		let title = data.get('title').substring(0, TITLE_MAX_LEN) || '';
+		const text = data.get('text').substring(0, TEXT_MAX_LEN) || '';
+		const tagIDs = data.get('tagIDs') || [];
 
-    const data = await event.request.formData();
+		if (data.get('copy')) {
+			title = (title || '') + '|duplicato';
+			title.substring(0, TITLE_MAX_LEN);
+		}
 
-    let title = data.get('title').substring(0, TITLE_MAX_LEN) || '';
-    const text = data.get('text').substring(0, TEXT_MAX_LEN) || '';
-    const tagIDs = data.get('tagIDs') || [];
+		const newNote = new Note({
+			title,
+			text,
+			charNum: text.length,
+			tagIDs,
+			textStart: truncateNoteText(text),
+			timeCreation: getCurrTime(),
+			timeLastModified: getCurrTime(),
+			userID: event.locals.user._id
+		});
 
-    const textStart = truncateNoteText(text);
-    const charNum = text.length;
+		const saved = await newNote.save();
+		if (!saved) return fail(500, { failed: true });
 
+		redirect(303, `/note/${saved._id.toString()}`);
+	}),
 
-    const newNote = new Note({
-      title,
-      text,
-      charNum,
-      tagIDs,
-      textStart,
-      timeCreation: getCurrTime(),
-      timeLastModified: getCurrTime(),
-      userID: event.locals.user._id
-    });
+	// CREATE Tag
+	createTag: withAuth(async (event) => {
+		const data = await event.request.formData();
 
-    const saved = await newNote.save();
+		const tagName = data.get('tagName');
 
-    if (!saved) return fail(404, { notAvailable: true });
+		if (!tagName) return fail(400, { missing: true });
+		if (tagName.trim() === '') return fail(400, { tagName, invalid: true });
 
-    return redirect(303, `/note/${saved._id.toString()}`)
-  },
-  
-  createTag: async (event) => {
-    if (event.locals.user === null) {
-      return fail(401)
-    }
+		const res = await User.updateOne(
+			{ _id: event.locals.user._id },
+			{
+				$push: { tags: { name: tagName, noteIDs: [] } }
+			}
+		);
+		if (!res) return fail(500, { tagName, failed: true });
+		return { success: true };
+	}),
 
-    const data = await event.request.formData();
+	// DELETE Tag
+	deleteTag: withAuth(async (event) => {
+		const data = await event.request.formData();
 
-    const tagName = data.get('tagName');
+		const tagID = data.get('id');
 
-    if (tagName === null) return fail(404);
-    if (tagName.trim() === '') return fail(422, { message: 'Name not valid' })
+		if (!tagID) return fail(400, { tagID, missing: true });
 
-    await User.updateOne({ _id: event.locals.user._id }, {
-      $push: { tags: { name: tagName, noteIDs: [] } }
-    })
-  },
-
-  deleteTag: async (event) => {
-    if (event.locals.user === null) {
-      return fail(401)
-    }
-
-    const data = await event.request.formData();
-    console.log(data)
-
-    const tagID = data.get('id');
-
-    if (tagID === null) return fail(404);
-
-    await User.updateOne({ _id: event.locals.user._id }, {
-      $pull: { tags: { _id: tagID } }
-    })
-  },
-
-}
+		const res = await User.updateOne(
+			{ _id: event.locals.user._id },
+			{
+				$pull: { tags: { _id: tagID } }
+			}
+		);
+		if (!res) return fail(500, { tagID, failed: true });
+		return { success: true };
+	})
+};

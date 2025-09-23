@@ -47,11 +47,6 @@
 		id="noteForm"
 		method="POST"
 		action="?/update"
-		use:enhance={() => {
-			return () => {
-				goto('/note');
-			};
-		}}
 	>
 		<div>
 			<textarea

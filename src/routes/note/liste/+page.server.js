@@ -1,13 +1,9 @@
 import { List } from "$lib/models/List";
-import { getCurrTime } from "$lib/server/utilities";
+import { getCurrTime, withAuth } from "$lib/server/utilities";
 import { redirect, fail } from "@sveltejs/kit";
 
 export const actions = {
-  create: async (event) => {
-    if (event.locals.user === null) {
-      return fail(401);
-    }
-
+  create: withAuth(async (event) => {
     const newList = new List({
       title: '',
       charNum: 0,
@@ -18,9 +14,8 @@ export const actions = {
     });
 
     const saved = await newList.save();
+    if (!saved) return fail(500, { failed: true });
 
-    if (!saved) return fail(404, { notAvailable: true });
-
-    return redirect(303, `note/liste/${saved._id.toString()}`)
-  }
+    redirect(303, `note/liste/${saved._id.toString()}`)
+  })
 }

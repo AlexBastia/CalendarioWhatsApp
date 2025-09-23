@@ -1,6 +1,6 @@
 import { Note } from '$lib/models/Note';
 import { error, redirect, fail } from '@sveltejs/kit';
-import { truncateNoteText, getCurrTime } from '$lib/server/utilities';
+import { truncateNoteText, getCurrTime, withAuth } from '$lib/server/utilities';
 import { TITLE_MAX_LEN, TEXT_MAX_LEN } from '$lib/server/constants';
 import { User } from '$lib/models/User';
 import { Types } from 'mongoose';
@@ -12,29 +12,34 @@ export async function load(event) {
 		return redirect(307, '/login');
 	}
 
-	// Per evitare errori di casting di mongoose
 	if (!Types.ObjectId.isValid(event.params.id)) {
-		error(404, { message: 'Appunto non trovato' });
+		error(422, { message: 'Appunto non trovato' });
 	}
 
-	let note = await Note.findById({ _id: event.params.id });
-	if (!note) error(404, { message: 'Appunto non trovato' });
+	const noteP = Note.findById({ _id: event.params.id });
+	const userDataP = User.findById({ _id: event.locals.user._id }, { tags: 1 });
 
-	// Non uso codice 401 per idUtente sbagliato perche'
-	// comunica all'utente che l'id appunto esiste
+	let note, userData;
+	try {
+		[note, userData] = await Promise.all([noteP, userDataP]);
+	} catch (error) {
+		error(500);
+	}
+
+	// Check user access
 	const userIsAuthor = note.userID.equals(event.locals.user._id);
 	const noteIsShared =
 		(note.isPublic && !userIsAuthor) ||
 		note.sharedUsers.some((usr) => usr.userID.equals(event.locals.user._id));
-	if (!noteIsShared && !userIsAuthor) error(404, { message: 'Appunto non trovato' });
+	if (!noteIsShared && !userIsAuthor) error(500);
 
-	const userData = await User.findById({ _id: event.locals.user._id }, { tags: 1 });
-
-	let sharedUserData = null;
-	if (noteIsShared)
-		sharedUserData = await User.findById({ _id: note.userID }, { username: 1, email: 1, _id: 1 });
-
-	if (!userData) return fail(404);
+	if (noteIsShared) {
+		const sharedUserData = await User.findById(
+			{ _id: note.userID },
+			{ username: 1, email: 1, _id: 1 }
+		);
+		if (!sharedUserData) return fail(500);
+	}
 
 	const userTags = userData.tags;
 	const noteTags = [];
@@ -42,7 +47,7 @@ export async function load(event) {
 		if (tag.noteIDs.some((id) => id.toString() === event.params.id)) noteTags.push(tag);
 	});
 	return {
-		sharedUserData: JSON.parse(JSON.stringify(sharedUserData)),
+		sharedUserData: noteIsShared ? JSON.parse(JSON.stringify(sharedUserData)) : null,
 		noteIsShared,
 		note: JSON.parse(JSON.stringify(note)),
 		userTags: JSON.parse(JSON.stringify(userTags)),
@@ -51,13 +56,10 @@ export async function load(event) {
 }
 
 export const actions = {
-	update: async (event) => {
-		if (event.locals.user === null) {
-			return fail(401, { noSession: true });
-		}
-		// Per evitare errori di casting di mongoose
+	// UPDATE Note
+	update: withAuth(async (event) => {
 		if (!Types.ObjectId.isValid(event.params.id)) {
-			error(404, { message: 'Appunto non trovato' });
+			error(422, { message: 'Appunto non trovato' });
 		}
 
 		const data = await event.request.formData();
@@ -86,59 +88,41 @@ export const actions = {
 				timeLastModified
 			}
 		);
+		if (!note) return fail(500, { failed: true });
 
-		if (!note) return fail(404, { notAvailable: true });
+		redirect(303, '/note');
+	}),
 
-		if (data.get('copy')) {
-			title = (title || '') + '|duplicato';
-			title.substring(0, TITLE_MAX_LEN);
-
-			const newNote = new Note({
-				title,
-				text,
-				charNum,
-				tagIDs: [],
-				textStart,
-				timeCreation: getCurrTime(),
-				timeLastModified: getCurrTime(),
-				userID: event.locals.user._id,
-				sharedUsers: []
-			});
-
-			const saved = await newNote.save();
-
-			if (!saved) return fail(404, { notAvailable: true });
-		}
-
-		// return redirect(303, '/note')
-	},
-	delete: async (event) => {
-		if (event.locals.user === null) {
-			return fail(401, { noSession: true });
-		}
-		// Per evitare errori di casting di mongoose
+	// DELETE Note
+	delete: withAuth(async (event) => {
 		if (!Types.ObjectId.isValid(event.params.id)) {
-			error(404, { message: 'Appunto non trovato' });
+			error(422, { message: 'Appunto non trovato' });
 		}
 
 		const id = event.params.id;
 		const res = await Note.deleteOne({ userID: event.locals.user._id, _id: id });
 
-		if (!res.ok) return fail(404);
+		if (!res) return fail(500, { failed: true });
 
-		return { success: true };
-	},
-	updateTags: async (event) => {
-		if (event.locals.user === null) {
-			return fail(401, { noSession: true });
-		}
+		redirect(303, '/note');
+	}),
+
+	// UPDATE Tags
+	updateTags: withAuth(async (event) => {
 		if (!Types.ObjectId.isValid(event.params.id)) {
-			error(404, { message: 'Appunto non trovato' });
+			error(422, { message: 'Appunto non trovato' });
 		}
 
-		const formData = await event.request.formData();
-		const userData = await User.findById({ _id: event.locals.user._id }, { tags: 1 });
-		if (!userData) return fail(404);
+		const formDataP = event.request.formData();
+		const userDataP = User.findById({ _id: event.locals.user._id }, { tags: 1 });
+
+		let formData, userData;
+		try {
+			[formData, userData] = await Promise.all([formDataP, userDataP]);
+		} catch (error) {
+			return fail(500, { failed: true });
+		}
+
 		userData.tags.forEach((tag) => {
 			if (formData.get(`${tag._id}`)) {
 				if (!tag.noteIDs.some((id) => id.toString() === event.params.id))
@@ -149,13 +133,12 @@ export const actions = {
 		});
 
 		await User.updateOne({ _id: event.locals.user._id }, { tags: userData.tags });
-	},
-	addUser: async (event) => {
-		if (event.locals.user === null) {
-			return fail(401, { noSession: true });
-		}
+	}),
+
+	// ADD Sharing User
+	addUser: withAuth(async (event) => {
 		if (!Types.ObjectId.isValid(event.params.id)) {
-			error(404, { message: 'Appunto non trovato' });
+			error(422, { message: 'Appunto non trovato' });
 		}
 
 		const formData = await event.request.formData();
@@ -164,7 +147,7 @@ export const actions = {
 		if (!email || !verifyEmailInput(email)) return fail(400, { email, invalid: true });
 
 		const user = await getUserFromEmail(email);
-		if (!user) return fail(400, { email, invalid: true });
+		if (!user) return fail(500, { email, failed: true });
 
 		if (user._id.equals(event.locals.user._id)) return fail(400, { email, sameUser: true });
 
@@ -172,63 +155,72 @@ export const actions = {
 			{ _id: event.params.id, userID: event.locals.user._id },
 			{ sharedUsers: 1 }
 		);
-		if (!note) error(404, { message: 'Appunto non trovato' });
+		if (!note) fail(500, { email, failed: true });
 
 		if (note.sharedUsers.some((usr) => usr.userID.equals(user._id)))
 			return fail(400, { email, alreadyAdded: true });
 
 		const usrInfo = { email, userID: user._id.toString() };
-		await Note.findOneAndUpdate(
-			{ _id: event.params.id },
+		const res = await Note.findOneAndUpdate(
+			{ _id: event.params.id, userID: event.locals.user._id },
 			{
 				$push: { sharedUsers: usrInfo }
 			}
 		);
-	},
-	removeUser: async (event) => {
-		if (event.locals.user === null) {
-			return fail(401, { noSession: true });
-		}
+		if (!res) return fail(500, { failed: true });
+
+		return { success: true };
+	}),
+
+	// REMOVE Sharing User
+	removeUser: withAuth(async (event) => {
 		if (!Types.ObjectId.isValid(event.params.id)) {
-			error(404, { message: 'Appunto non trovato' });
+			error(422, { message: 'Appunto non trovato' });
 		}
 
 		const formData = await event.request.formData();
-		const id = formData.get('id');
+		const removeID = formData.get('id');
 
-		if (!Types.ObjectId.isValid(id)) return fail(400, { invalidID: true });
+		if (!Types.ObjectId.isValid(removeID)) return fail(422, { removeID, invalid: true });
 
+		let res;
 		if (!formData.get('isOwner')) {
-			await Note.findOneAndUpdate(
-				{ _id: event.params.id, userID: id },
-				{
-					$pull: { sharedUsers: { userID: event.locals.user._id } }
-				}
-			);
+			res = await removeSharedUser(removeID, event.locals.user._id);
 		} else {
-			await Note.findOneAndUpdate(
-				{ _id: event.params.id, userID: event.locals.user._id },
-				{
-					$pull: { sharedUsers: { userID: id } }
-				}
-			);
+			res = await removeSharedUser(event.locals.user._id, removeID);
 		}
-	},
-	setPublic: async (event) => {
-		if (event.locals.user === null) {
-			return fail(401, { noSession: true });
-		}
+		if (!res) return fail(500, { failed: true });
+
+		return { success: true };
+	}),
+
+	// UPDATE Note's Public status
+	setPublic: withAuth(async (event) => {
 		if (!Types.ObjectId.isValid(event.params.id)) {
-			error(404, { message: 'Appunto non trovato' });
+			error(422, { message: 'Appunto non trovato' });
 		}
 		const formData = await event.request.formData();
 		const isPublic = !!formData.get('isPublic');
 
-		await Note.findOneAndUpdate(
+		const res = await Note.findOneAndUpdate(
 			{ _id: event.params.id, userID: event.locals.user._id },
 			{
 				isPublic
 			}
 		);
-	}
+		if (!res) return fail(500, { failed: true });
+
+		return { success: true };
+	})
 };
+
+// userID: ID of user who owns the Note to be modified
+// removeID: ID of user to be removed from Shared of Note
+async function removeSharedUser(userID, removeID) {
+	return await Note.findOneAndUpdate(
+		{ _id: event.params.id, userID },
+		{
+			$pull: { sharedUsers: { userID: removeID } }
+		}
+	);
+}
