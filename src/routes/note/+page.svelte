@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { enhance } from '$app/forms';
 	import { filterPreviews, sortPreviews } from './utilities';
-	import NoteModalCategorie from '$lib/components/NoteModalCategorie.svelte';
+	import NoteTagModalHome from '$lib/components/NoteTagModalHome.svelte';
 	import PreviewNote from '$lib/components/PreviewNote.svelte';
 	import Alert from '$lib/components/Alert.svelte';
 
@@ -198,9 +198,9 @@
 		<form method="POST" action="/note/liste?/create" id="createListForm" use:enhance></form>
 
 		<!-- Modals -->
-		<NoteModalCategorie userTags={data.userTags} />
+		<NoteTagModalHome userTags={data.userTags} form={form}/>
 	</main>
-	{#if form?.failed || form?.missing || form?.invalid}
+	{#if form?.failed}
 		<Alert type={'warning'} message={'Operazione fallita'} />
 	{/if}
 </div>

@@ -1,7 +1,9 @@
 <script>
   import { timingStore } from '$lib/stores/timing.js';
-    let today = $derived($timingStore);
 
+  let {children} = $props();
+
+  let today = $derived($timingStore);
 </script>
   
 <style>
@@ -19,7 +21,7 @@
     
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#">Home</a>
               </li>
               <li class="nav-item">
@@ -30,7 +32,7 @@
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="#">Contact</a>
-              </li>
+              </li> -->
             </ul>
           </div>
         </div>
@@ -38,6 +40,6 @@
 </header>
   
 <main>
-    <slot />
+  {@render children()}
 </main>
   

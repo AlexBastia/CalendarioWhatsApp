@@ -1,65 +1,52 @@
 <script>
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import { marked } from 'marked';
-	import DOMPurify from 'dompurify';
-	import { formatDate } from '../utilities';
+	import ListItemModal from '$lib/components/ListItemModal.svelte';
 	import NoteTagModal from '$lib/components/NoteTagModal.svelte';
-	import NoteShareModal from '$lib/components/NoteShareModal.svelte';
-	import NoteActionDropdown from '$lib/components/NoteActionDropdown.svelte';
+	import { formatDate } from '../../utilities';
 
 	let { data } = $props();
-	let isMDView = $state(false);
-	let mdContent = '';
-
-	const toggleMDView = () => {
-		if (!isMDView) {
-			mdContent = DOMPurify.sanitize(marked.parse(document.getElementById('noteText').value));
-		}
-		isMDView = !isMDView;
-	};
-
-	const copyText = () => {
-		const title = document.getElementById('noteTitle').value;
-		const text = document.getElementById('noteText').value;
-		navigator.clipboard.writeText(title + '\n\n' + text);
-	};
 </script>
 
 <header class="container d-flex justify-content-end">
-	<button class="btn fs-4" aria-label="View markdown" onclick={() => toggleMDView()}>
-		{#if !isMDView}
-			<i class="bi bi-book-half"></i>
-		{:else}
-			<i class="bi bi-pencil-fill"></i>
-		{/if}
-	</button>
-	<NoteActionDropdown isShared={data.noteIsShared} {copyText} sharingId={data.sharedUserData?._id} />
+	<form
+		method="POST"
+		action="?/delete"
+		use:enhance={() => {
+			return () => {
+				goto('/note');
+			};
+		}}
+	>
+		<button class="dropdown-item text-danger fs-4" type="submit" aria-label="delete note"
+			><i class="bi bi-trash"></i></button
+		>
+	</form>
 </header>
 
 <main class="container">
-	{#if data.noteIsShared}
-		<small class="text-muted"
-			>Shared from {data.sharedUserData?.username || 'Unkown'} ({data.sharedUserData?.email})</small
-		>
-	{/if}
 	<form
-		id="noteForm"
+		id="listForm"
 		method="POST"
-		action="?/update"
+		action="?/updateTitle"
+		use:enhance={() => {
+			return () => {
+				goto('/note');
+			};
+		}}
 	>
 		<div>
 			<textarea
 				class="w-100 fs-1 fw-bold mb-0 border-0"
 				name="title"
-				id="noteTitle"
-				value={data.note.title}
+				id="listTitle"
+				value={data.list.title}
 				placeholder="Titolo"
 				maxlength="50"
 				rows="1"
 				style="resize: none; outline: none;"
 			></textarea>
-			<div class="categorie">
+			<div class="tags">
 				<!-- Button trigger tag modal -->
 				<button
 					type="button"
@@ -76,23 +63,9 @@
 			</div>
 
 			<p class="text-muted fs-6">
-				{formatDate(data.note.timeCreation)} | {formatDate(data.note.timeLastModified)}
+				{formatDate(data.list.timeCreation)} | {formatDate(data.list.timeLastModified)}
 			</p>
 		</div>
-		<textarea
-			class="w-100 border-0"
-			name="text"
-			id="noteText"
-			value={data.note.text}
-			placeholder="Testo..."
-			maxlength="10000"
-			style="outline: 0; resize: none; height: 70vh; display: {isMDView ? 'none' : 'block'};"
-		></textarea>
-
-		{#if isMDView}
-			<div class="md-container">{@html mdContent}</div>
-		{/if}
-
 		<button
 			class="btn position-fixed float-end rounded-circle bg-light p-0 text-primary"
 			aria-label="Save and go back"
@@ -101,8 +74,29 @@
 			<i class="bi bi-check-circle-fill" style="font-size: 4em; line-height: 64px;"></i>
 		</button>
 	</form>
+	<ul class="list-group list-group-flush">
+		{#each data.list.items as item (item._id)}
+			<li class="list-group-item">
+				<form action="?/removeItem" method="POST" class="d-flex align-items-center" use:enhance>
+					<button
+						class="btn"
+						type="submit"
+						name="id"
+						value={item._id}
+						aria-label="Set item completed"><i class="bi bi-circle"></i></button
+					>
+					<h4>{item.descr}</h4>
+				</form>
+			</li>
+		{/each}
+		<li class="list-group-item">
+			<button class="btn" type="button" data-bs-toggle="modal" data-bs-target="#listItemModal"
+				><i class="bi bi-plus-lg"></i> Aggiungi</button
+			>
+		</li>
+	</ul>
 
 	<!-- Modals -->
-	<NoteShareModal note={data.note} user={data.user} />
-	<NoteTagModal userTags={data.userTags} noteTags={data.noteTags}/>
+	<NoteTagModal userTags={data.userTags} noteTags={data.noteTags} />
+	<ListItemModal />
 </main>

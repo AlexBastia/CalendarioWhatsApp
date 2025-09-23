@@ -1,9 +1,11 @@
 <script>
     import TimeMachine from '$lib/components/timeMachine.svelte';
+    
+    let {children} = $props();
 </script>
 
 <main>
-    <slot />
+    {@render children()}
 </main>
 
 <!-- <TimeMachine /> -->

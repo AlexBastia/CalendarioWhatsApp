@@ -1,11 +1,12 @@
 import { redirect } from "@sveltejs/kit"
+import { Notifica } from "$lib/models/Notification";
 
-export function load(event) {
+export async function load(event) {
   if (event.locals.user === null) {
     redirect(302, "/login")
   }
 
-  const unreadNotifications = Notifica.find({ destinatario: event.locals.user._id, letta: false });
+  const unreadNotifications = await Notifica.find({ destinatario: event.locals.user._id, letta: false });
   return { unreadNotifications: JSON.parse(JSON.stringify(unreadNotifications)) }; 
 }
 
@@ -16,16 +17,16 @@ export const actions = {
     const notificaId = data.get("notificaId");
     const userId = locals.user._id;
 
-    const pomodoro = Pomodoro.findById(pomodoroId);
+    const pomodoro = await Pomodoro.findById(pomodoroId);
     // devo controllare se l'utente sia in sheredUSer
     if (!pomodoro.sharedUsers.includes(userId)) {
       // il pomdooro non contiene già l'utente possiamo inserirlo in sharedUsers
       pomodoro.sharedUsers.push(userId);
-      Pomodoro.save(pomodoro);
+      await Pomodoro.save(pomodoro);
     }
     
     // cancella notifica
-    Notifica.deleteOne({ _id: notificaId, destinatario: userId });
+    await Notifica.deleteOne({ _id: notificaId, destinatario: userId });
     
     return { success: true, messaggio: "Pomodoro accettato con successo" };
   },
@@ -36,7 +37,7 @@ export const actions = {
     const userId = locals.user._id;
 
     // cancella notifica
-    Notifica.deleteOne({ _id: notificaId, destinatario: userId });
+    await Notifica.deleteOne({ _id: notificaId, destinatario: userId });
     
     return { success: true, messaggio: "Notifica eliminata con successo" };
   }

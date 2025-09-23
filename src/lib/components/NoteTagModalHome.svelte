@@ -1,7 +1,7 @@
 <script>
 	import { enhance } from '$app/forms';
 
-  let {userTags} = $props()
+	let { userTags, form } = $props();
 </script>
 
 <!-- Modal Categorie -->
@@ -22,13 +22,21 @@
 			</div>
 			<div class="modal-body">
 				<form method="POST" action="/note?/createTag" use:enhance>
-					<div class="input-group">
-						<input type="text" name="tagName" placeholder="Nome categoria" class="form-control" />
+					<div class="input-group has-validation">
+						<input
+							type="text"
+							name="tagName"
+							placeholder="Nome categoria"
+							class="form-control {(form?.missing || form?.invalid) ? "is-invalid" : ""}"
+							value={form?.tagName ?? ''}
+							aria-describedby="validation"
+							required
+						/>
 						<button type="submit" class="btn btn-outline-secondary">Aggiungi</button>
+						<div class="invalid-feedback">Inserire un nome valido.</div>
 					</div>
 				</form>
 				<div class="list-group list-group-flush">
-					
 					{#each userTags as tag, i (tag._id)}
 						<form
 							method="POST"
