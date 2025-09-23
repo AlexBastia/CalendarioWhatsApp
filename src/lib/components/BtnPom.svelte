@@ -1,12 +1,10 @@
 <script>
-  export let iconSrc;
-  export let ariaLabel;
-  export let extraClasses = '';
+  let {iconSrc, ariaLabel, extraClasses} = $props();
 </script>
 
 <button
   type="button"
-  class="btn p-5 m-2 rounded-circle {extraClasses}"
+  class="btn rounded-circle {extraClasses}"
   aria-label={ariaLabel}
   on:click
 >
