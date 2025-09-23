@@ -29,7 +29,7 @@ export const presetsPomodoro = {
 // CORRETTA: La funzione è ora async e gestisce i permessi
 export async function initNotifiche() {
     if (Notification.permission === "granted") {
-        return true; // L'utente ha già dato il permesso
+        return true; // L'ute<nte ha già dato il permesso
     }
 
     if (Notification.permission !== "denied") {

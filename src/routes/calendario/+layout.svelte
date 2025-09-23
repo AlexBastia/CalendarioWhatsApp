@@ -1,5 +1,6 @@
 <script>
-    let today = new Date();
+  import { timingStore } from '$lib/stores/timing.js';
+    let today = $derived($timingStore);
 
 </script>
   

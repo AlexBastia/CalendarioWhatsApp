@@ -1,5 +1,6 @@
 <script>
   import { goto } from '$app/navigation';
+  import { timingStore } from '$lib/stores/timing.js';
   import { 
     addDays, 
     addMonths, 
@@ -24,8 +25,8 @@
 
   console.log(data);
   
-  // inizi con la data corrente
-  let currentDate = $state(new Date()); // Data corrente
+  // inizi data dello store
+  let currentDate = $derived($timingStore);
   //modalita` di visualizzazione, il default e` settimanale
   let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
   

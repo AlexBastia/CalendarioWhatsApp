@@ -1,18 +1,11 @@
 import { writable } from "svelte/store";
 
-
-/**
- * Crea lo store per la nostra Time Machine.
- * Questo store gestisce un singolo oggetto Date che rappresenta l'ora "attuale"
- * di tutta l'applicazione.
- */
-
 function createTimingStore() {
     const { subscribe, set, update } = writable(new Date());
 
     return{
-        subscribe,
-        setTime: (date) =>{
+        subscribe, // permette di vedere il valore
+        setTime: (date) =>{ // imposta la data a quella passata
             if (date instanceof Date){
                 set(date);
             } else {
@@ -23,3 +16,5 @@ function createTimingStore() {
         resetTime: () => set(new Date())
     }
 }
+
+export const timingStore = createTimingStore();

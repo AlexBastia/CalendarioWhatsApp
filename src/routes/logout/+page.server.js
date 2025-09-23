@@ -12,5 +12,5 @@ export const load = async (event) => {
 
     deleteSessionTokenCookie(event);
 
-    throw redirect(302, '/');
+    throw redirect(302, '/login');
 };
