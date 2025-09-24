@@ -4,8 +4,11 @@
 	import { enhance } from '$app/forms';
 	import { filterPreviews, sortPreviews } from './utilities';
 	import NoteTagModalHome from '$lib/components/NoteTagModalHome.svelte';
+	import NoteNewModal from '$lib/components/NoteNewModal.svelte';
 	import PreviewNote from '$lib/components/PreviewNote.svelte';
 	import Alert from '$lib/components/Alert.svelte';
+	import { timingStore } from '$lib/stores/timing';
+	import Btn from '$lib/components/btn.svelte';
 
 	let { data, form } = $props();
 
@@ -163,42 +166,15 @@
 		</div>
 
 		<!-- New Note/List button dropup -->
-		<div class="position-fixed" style="bottom: 1em; right: 0.6em;z-index: 1050">
-			<div class="btn-group dropup float-end">
-				<button
-					type="button"
-					class="btn text-primary bg-light rounded-circle p-0 d-flex align-items-center justify-content-center"
-					aria-label="Add note"
-					style="font-size: 4em; width: 1em; height: 1em; "
-					data-bs-toggle="dropdown"
-					aria-expanded="false"
-				>
-					<i class="bi bi-plus-circle-fill"></i>
-				</button>
-				<ul class="dropdown-menu">
-					<li>
-						<button form="createNoteForm" type="submit" class="dropdown-item"
-							><i class="bi bi-fonts me-2"></i>Text</button
-						>
-					</li>
-					<li>
-						<button form="createListForm" type="submit" class="dropdown-item"
-							><i class="bi bi-list-check me-2"></i>List</button
-						>
-					</li>
-				</ul>
-			</div>
-		</div>
-
+		<Btn modalTarget={'#noteNewModal'} />
 		<!-- Hidden Forms -->
 		<form method="POST" action="?/create" id="createNoteForm" use:enhance>
-			<input name="title" type="hidden" value="" />
-			<input name="text" type="hidden" value="" />
+			<input type="hidden" name="time" value={$timingStore} />
 		</form>
-		<form method="POST" action="/note/liste?/create" id="createListForm" use:enhance></form>
 
 		<!-- Modals -->
-		<NoteTagModalHome userTags={data.userTags} form={form}/>
+		<NoteTagModalHome userTags={data.userTags} {form} />
+		<NoteNewModal />
 	</main>
 	{#if form?.failed}
 		<Alert type={'warning'} message={'Operazione fallita'} />
