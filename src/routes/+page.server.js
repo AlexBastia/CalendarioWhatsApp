@@ -29,7 +29,7 @@ export const actions = {
     }
     
     // cancella notifica
-    await Notifica.deleteOne({ _id: notificaId, destinatario: userId });
+    await Notifica.deleteOne({ _id: notificaId  });
     
     return { success: true, messaggio: "Pomodoro accettato con successo" };
   },
