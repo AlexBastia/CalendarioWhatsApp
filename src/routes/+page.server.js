@@ -1,5 +1,6 @@
 import { redirect } from "@sveltejs/kit"
 import { Notifica } from "$lib/models/Notification";
+import { Pomodoro } from "$lib/models/Pomodoro.js";
 
 export async function load(event) {
   if (event.locals.user === null) {
@@ -14,15 +15,17 @@ export const actions = {
   acceptPomodoro: async ({ request, locals }) => {
     const data = await request.formData();
     const pomodoroId = data.get("pomodoroId");
-    const notificaId = data.get("notificaId");
+    const notificaId = data.get("notificationId");
+    console.log(pomodoroId, notificaId)
     const userId = locals.user._id;
 
-    const pomodoro = await Pomodoro.findById(pomodoroId);
+    const pomodoro = await Pomodoro.findById({_id: pomodoroId});
+    console.log(pomodoro);
     // devo controllare se l'utente sia in sheredUSer
     if (!pomodoro.sharedUsers.includes(userId)) {
       // il pomdooro non contiene già l'utente possiamo inserirlo in sharedUsers
       pomodoro.sharedUsers.push(userId);
-      await Pomodoro.save(pomodoro);
+      await pomodoro.save();
     }
     
     // cancella notifica

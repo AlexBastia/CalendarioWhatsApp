@@ -25,12 +25,12 @@
                                         ()=>{return async ({ result, update }) => {
                                         if (result.type === 'success') {
                                             // Rimuovi la notifica accettata dalla lista
-                                            notifications = notifications.filter(n => n.id !== notification.id);
+                                            notifications = notifications.filter(n => n.id !== notification._id);
                                             // Eventualmente aggiorna altre parti dell'interfaccia
                                             await update();
                                         }}
                                     }}>
-                                    <input type="hidden" name="notificationId" value={notification.id} />
+                                    <input type="hidden" name="notificationId" value={notification._id} />
                                     <input type="hidden" name="pomodoroId" value={notification.riferimento} />
                                     <button type="submit" class="btn btn-sm btn-primary me-2">Accetta</button>
                                 </form>
@@ -38,12 +38,12 @@
                                         ()=>{return async ({ result, update }) => {
                                         if (result.type === 'success') {
                                             // Rimuovi la notifica accettata dalla lista
-                                            notifications = notifications.filter(n => n.id !== notification.id);
+                                            notifications = notifications.filter(n => n.id !== notification._id);
                                             // Eventualmente aggiorna altre parti dell'interfaccia
                                             await update();
                                         }}
                                     }} class="d-inline-block">
-                                    <input type="hidden" name="notificationId" value={notification.id} />
+                                    <input type="hidden" name="notificationId" value={notification._id} />
                                     <button type="submit" class="btn btn-sm btn-secondary">Rifiuta</button>
                                 </form>
                             </div>
