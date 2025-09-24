@@ -79,7 +79,7 @@ export const actions = {
       if (!pomodoro) return fail(404, { message: 'Pomodoro non trovato', error: true });
 
       if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
-      if (pomodoro.sharedUsers.some(id => id.equals(userID))) return fail(403, { message: 'Già conviso', error: true });
+      if (pomodoro.sharedUsers.some(id => id.equals(user._id))) return fail(403, { message: 'Già conviso', error: true });
 
       // const notificationSchema = new Schema({
       //   destinatario: { type: Types.ObjectId, ref: 'User', required: true },
