@@ -36,7 +36,7 @@ export const actions = {
 
   deleteNotification: async ({ request, locals }) => {
     const data = await request.formData();
-    const notificaId = data.get("notificaId");
+    const notificaId = data.get("notificationId");
     const userId = locals.user._id;
 
     // cancella notifica
