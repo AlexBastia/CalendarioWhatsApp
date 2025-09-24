@@ -1,5 +1,6 @@
 <script>
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
@@ -7,10 +8,17 @@
 	import NoteTagModal from '$lib/components/NoteTagModal.svelte';
 	import NoteShareModal from '$lib/components/NoteShareModal.svelte';
 	import NoteActionDropdown from '$lib/components/NoteActionDropdown.svelte';
+	import Alert from '$lib/components/Alert.svelte';
 
 	let { data, form } = $props();
 	let isMDView = $state(false);
-	let mdContent = '';
+	let mdContent = $state();
+
+	let localForm = $state();
+
+	const updateLocalForm = (val) => {
+		localForm = val;
+	}
 
 	const toggleMDView = () => {
 		if (!isMDView) {
@@ -67,7 +75,7 @@
 						type="button"
 						class="btn p-0"
 						data-bs-toggle="modal"
-						data-bs-target="#tagModal"
+						data-bs-target="#noteTagModal"
 						aria-label="Add tag"
 					>
 						{#each data.noteTags as tag}
@@ -106,9 +114,9 @@
 
 		<!-- Modals -->
 		<NoteShareModal note={data.note} user={data.user} />
-		<NoteTagModal userTags={data.userTags} noteTags={data.noteTags} />
+		<NoteTagModal userTags={data.userTags} noteTags={data.noteTags} {localForm} {updateLocalForm} />
 	</main>
-	{#if form?.failed || form?.success}
+	{#if localForm?.failed }
 		<Alert type={'warning'} message={'Operazione fallita'} />
 	{/if}
 </div>

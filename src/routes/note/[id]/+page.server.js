@@ -1,6 +1,6 @@
 import { Note } from '$lib/models/Note';
 import { error, redirect, fail } from '@sveltejs/kit';
-import { truncateNoteText, getCurrTime, withAuth } from '$lib/server/utilities';
+import { truncateNoteText, getCurrTime, withAuth, updateTagsForItem } from '$lib/server/utilities';
 import { TITLE_MAX_LEN, TEXT_MAX_LEN } from '$lib/server/constants';
 import { User } from '$lib/models/User';
 import { Types } from 'mongoose';
@@ -109,30 +109,7 @@ export const actions = {
 
 	// UPDATE Tags
 	updateTags: withAuth(async (event) => {
-		if (!Types.ObjectId.isValid(event.params.id)) {
-			error(422, { message: 'Appunto non trovato' });
-		}
-
-		const formDataP = event.request.formData();
-		const userDataP = User.findById({ _id: event.locals.user._id }, { tags: 1 });
-
-		let formData, userData;
-		try {
-			[formData, userData] = await Promise.all([formDataP, userDataP]);
-		} catch (error) {
-			return fail(500, { failed: true });
-		}
-
-		userData.tags.forEach((tag) => {
-			if (formData.get(`${tag._id}`)) {
-				if (!tag.noteIDs.some((id) => id.toString() === event.params.id))
-					tag.noteIDs.push(event.params.id);
-			} else {
-				tag.noteIDs = tag.noteIDs.filter((id) => id.toString() !== event.params.id);
-			}
-		});
-
-		await User.updateOne({ _id: event.locals.user._id }, { tags: userData.tags });
+		return await updateTagsForItem(event, event.params.id);
 	}),
 
 	// ADD Sharing User
@@ -185,9 +162,9 @@ export const actions = {
 
 		let res;
 		if (!formData.get('isOwner')) {
-			res = await removeSharedUser(removeID, event.locals.user._id);
+			res = await removeSharedUser(removeID, event.locals.user._id, event.params.id);
 		} else {
-			res = await removeSharedUser(event.locals.user._id, removeID);
+			res = await removeSharedUser(event.locals.user._id, removeID, event.params.id);
 		}
 		if (!res) return fail(500, { failed: true });
 
@@ -216,9 +193,9 @@ export const actions = {
 
 // userID: ID of user who owns the Note to be modified
 // removeID: ID of user to be removed from Shared of Note
-async function removeSharedUser(userID, removeID) {
+async function removeSharedUser(userID, removeID, noteID) {
 	return await Note.findOneAndUpdate(
-		{ _id: event.params.id, userID },
+		{ _id: noteID, userID },
 		{
 			$pull: { sharedUsers: { userID: removeID } }
 		}

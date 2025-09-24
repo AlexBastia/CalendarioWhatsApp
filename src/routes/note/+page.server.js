@@ -50,13 +50,13 @@ export const actions = {
   create: withAuth(async (event) => {
     const data = await event.request.formData();
 
-    let title = data.get('title').substring(0, TITLE_MAX_LEN) || '';
-    const text = data.get('text').substring(0, TEXT_MAX_LEN) || '';
-    const tagIDs = data.get('tagIDs') || [];
-    const timeCreation = data.get('time')
+    let title = (data.get('title') ?? '').substring(0, TITLE_MAX_LEN);
+    const text = (data.get('text') ?? '').substring(0, TEXT_MAX_LEN);
+    const tagIDs = data.get('tagIDs') ?? [];
+    const timeCreation = data.get('time') ?? getCurrTime();
 
     if (data.get('copy')) {
-      title = (title || '') + '|duplicato';
+      title = (title ?? '') + '|duplicato';
       title.substring(0, TITLE_MAX_LEN);
     }
 

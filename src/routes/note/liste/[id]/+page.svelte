@@ -6,6 +6,12 @@
 	import { formatDate } from '../../utilities';
 
 	let { data } = $props();
+
+	let localForm = $state();
+
+	const updateLocalForm = (val) => {
+		localForm = val
+	}
 </script>
 
 <header class="container d-flex justify-content-end">
@@ -52,7 +58,7 @@
 					type="button"
 					class="btn p-0"
 					data-bs-toggle="modal"
-					data-bs-target="#tagModal"
+					data-bs-target="#noteTagModal"
 					aria-label="Add tag"
 				>
 					{#each data.noteTags as tag}
@@ -97,6 +103,6 @@
 	</ul>
 
 	<!-- Modals -->
-	<NoteTagModal userTags={data.userTags} noteTags={data.noteTags} />
+	<NoteTagModal userTags={data.userTags} noteTags={data.noteTags} {localForm} {updateLocalForm}/>
 	<ListItemModal />
 </main>

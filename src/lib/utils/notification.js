@@ -2,6 +2,8 @@
 
 import {Tasks } from '$lib/models/Task'
 
+const defaultIcon = "🔥";
+
 const presetUrgenza = {
 
 	attivitaImminente: {
