@@ -7,14 +7,18 @@
 	let modalInstance = null;
 
 	onMount(() => {
-		if (typeof bootstrap !== 'undefined' && modalElement) {
-			modalInstance = new bootstrap.Modal(modalElement);
+		// Only run bootstrap DOM code in the browser
+		if (typeof window !== 'undefined' && typeof window.bootstrap !== 'undefined' && modalElement) {
+			const bs = window.bootstrap;
+			modalInstance = new bs.Modal(modalElement);
 
-			// Assicuriamoci di ripulire correttamente al termine della chiusura
+			// Ensure we clean up backdrops when the modal is hidden
 			modalElement.addEventListener('hidden.bs.modal', () => {
-				const backdrops = document.querySelectorAll('.modal-backdrop');
-				backdrops.forEach((b) => b.remove());
-				document.body.classList.remove('modal-open');
+				if (typeof document !== 'undefined') {
+					const backdrops = document.querySelectorAll('.modal-backdrop');
+					backdrops.forEach((b) => b.remove());
+					document.body.classList.remove('modal-open');
+				}
 			});
 		}
 	});
@@ -35,7 +39,12 @@
 		// Se necessario, rimuoviamo la classe fade così lo hide() è sincrono senza animazione
 		// utile per evitare che il modal venga smontato mentre è in transizione
 		try {
-			if (disableFadeBeforeHide && modalElement && modalElement.classList.contains('fade')) {
+			if (
+				disableFadeBeforeHide &&
+				modalElement &&
+				typeof window !== 'undefined' &&
+				modalElement.classList.contains('fade')
+			) {
 				modalElement.classList.remove('fade');
 			}
 		} catch (e) {
@@ -47,9 +56,11 @@
 		} catch (e) {
 			// Se Bootstrap fallisce (es. elemento già rimosso), eseguiamo una pulizia di fallback
 			console.warn('Modal hide failed, doing fallback cleanup', e);
-			const backdrops = document.querySelectorAll('.modal-backdrop');
-			backdrops.forEach((b) => b.remove());
-			document.body.classList.remove('modal-open');
+			if (typeof document !== 'undefined') {
+				const backdrops = document.querySelectorAll('.modal-backdrop');
+				backdrops.forEach((b) => b.remove());
+				document.body.classList.remove('modal-open');
+			}
 		}
 	}
 
@@ -64,9 +75,11 @@
 				modalInstance = null;
 			}
 		} finally {
-			const backdrops = document.querySelectorAll('.modal-backdrop');
-			backdrops.forEach((b) => b.remove());
-			document.body.classList.remove('modal-open');
+			if (typeof document !== 'undefined') {
+				const backdrops = document.querySelectorAll('.modal-backdrop');
+				backdrops.forEach((b) => b.remove());
+				document.body.classList.remove('modal-open');
+			}
 		}
 	});
 </script>
