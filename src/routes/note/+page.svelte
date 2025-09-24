@@ -167,6 +167,7 @@
 
 		<!-- New Note/List button dropup -->
 		<Btn modalTarget={'#noteNewModal'} />
+
 		<!-- Hidden Forms -->
 		<form method="POST" action="?/create" id="createNoteForm" use:enhance>
 			<input type="hidden" name="time" value={$timingStore} />
