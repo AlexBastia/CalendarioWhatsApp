@@ -3,6 +3,7 @@ import { Pomodoro } from '$lib/models/Pomodoro.js';
 import { Notifica } from '$lib/models/Notification.js';
 import { User } from '$lib/models/User';
 import { redirect, error, fail } from '@sveltejs/kit';
+import { previousMondayWithOptions } from 'date-fns/fp';
 
 export async function load(event) {
   if (!event.locals.user) {
@@ -33,7 +34,6 @@ export async function load(event) {
 }
 
 export const actions = {
-  // Rimuove SOLO la notifica (se presente) — non tocca pomodoro.sharedUsers
   removeUser: async ({ request, params, locals }) => {
     if (!locals.user) return fail(401, { message: 'Non autorizzato', error: true });
 
@@ -79,6 +79,28 @@ export const actions = {
       if (!pomodoro) return fail(404, { message: 'Pomodoro non trovato', error: true });
 
       if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
+      if (pomodoro.sharedUsers.some(id => id.equals(user._id))) return fail(403, { message: 'Già conviso', error: true });
+
+      // const notificationSchema = new Schema({
+      //   destinatario: { type: Types.ObjectId, ref: 'User', required: true },
+      //   mittente: { type: Types.ObjectId, ref: 'User' },
+      //   letta: { type: Boolean, default: false, required: true },
+      //   tipo: {
+      //     type: String,
+      //     enum: ['CONDIVISIONE_POMODORO', 'INVITO_EVENTO', 'NUOVA_ATTIVITA'],
+      //     required: true
+      //   },
+      //   riferimento: { type: Types.ObjectId, required: true }
+      // },
+      // {
+      //   timestamps: true 
+      // });
+
+      // devo controllare se è già stata inviata una notifica con la stessa conf
+      if(Notifica.find({mittente: locals.user._id,destinatario: user._id,tipo: "CONDIVISIONE_POMODORO",riferimento: pomodoro._id})){
+        console.log('f');
+        return fail(403, {message: 'notifica già inviata', error: true});
+      }
 
       // crea la notifica (non aggiungiamo sharedUsers qui)
       const notifica = new Notifica({

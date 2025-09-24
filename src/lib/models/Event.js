@@ -5,15 +5,11 @@ const eventSchema = new Schema(
         title: String,
         start: {
             type: Date,
-            required: function() { 
-                return this.eventType !== 'ATTIVITA'; 
-            }
+            required: true
         },
         end: {
             type: Date,
-            required: function() { 
-                return this.eventType !== 'ATTIVITA'; 
-            }
+            required: true
         },
         place: String,
         allDay: Boolean,
@@ -26,13 +22,9 @@ const eventSchema = new Schema(
         }],
         eventType: {
             type: String,
-            enum: ['STANDARD', 'POMODORO', 'ATTIVITA'],
+            enum: ['STANDARD', 'POMODORO'],
             default: 'STANDARD',
             required: true
-        },
-        deadline:{
-            type: Date,
-            required: function() { return this.eventType === 'ATTIVITA'; }
         },
         pomodoroPreset: {
             type: Types.ObjectId,
@@ -44,7 +36,7 @@ const eventSchema = new Schema(
             type: String,
             enum: ['PIANIFICATO', 'COMPLETATO', 'INCOMPLETO'],
             default: 'PIANIFICATO',
-            required: function() { return this.eventType === 'POMODORO' || this.eventType === 'ATTIVITA' ; }
+            required: function() { return this.eventType === 'POMODORO' }
         }
     }
 );

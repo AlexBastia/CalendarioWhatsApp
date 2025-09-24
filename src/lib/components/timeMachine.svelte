@@ -85,7 +85,7 @@
 <style>
     .dimension-time-machine {
         bottom: 1rem;
-        right: 1rem;
+        left: 1rem;
         width: 300px; /* Larghezza fissa per leggibilità */
     }
 </style>
