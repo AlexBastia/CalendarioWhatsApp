@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import { Schema, Types, model } from "mongoose";
 
 const attivitaSchema = new mongoose.Schema(
 	{
@@ -32,5 +32,5 @@ const attivitaSchema = new mongoose.Schema(
 	}
 );
 
-// Esporta il modello, creandolo se non esiste già
-export const Attivita = mongoose.models.Attivita || mongoose.model('Attivita', attivitaSchema);
+export const Tasks = model('Tasks', attivitaSchema);
+
