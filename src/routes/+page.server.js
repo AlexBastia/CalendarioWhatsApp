@@ -1,15 +1,23 @@
 import { redirect } from "@sveltejs/kit"
 import { Notifica } from "$lib/models/Notification";
 import { Pomodoro } from "$lib/models/Pomodoro.js";
+import {computeLevel} from '$lib/utils/UpdateTasks.js';
+import { getNotificationForTsks } from "$lib/utils/notification.js";
 import { fail } from "assert";
+import { timingStore } from '$lib/stores/timing.js'
 
 export async function load(event) {
   if (event.locals.user === null) {
     redirect(302, "/login")
   }
 
-  const unreadNotifications = await Notifica.find({ destinatario: event.locals.user._id, letta: false });
-  return { unreadNotifications: JSON.parse(JSON.stringify(unreadNotifications)) }; 
+
+  const unreadNotifications = await Notifica.find({ destinatario: event.locals.user._id});
+  await computeLevel(user.locals.user._id, $timingStore);
+  const notificationsForTasks = getNotificationForTsks(event.locals.user._id);
+
+  return { unreadNotifications: JSON.parse(JSON.stringify(unreadNotifications)) };
+
 }
 
 export const actions = {

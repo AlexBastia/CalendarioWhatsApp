@@ -1,5 +1,11 @@
 <script>
 	import NotificationBell from "$lib/components/NotificationBell.svelte";
+
+	let {unreadNotifications, notificationTasks} = $props();
+
+	for (const notification of notificationTasks){
+		
+	}
 </script>
 
 <main>
