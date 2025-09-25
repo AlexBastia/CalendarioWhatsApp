@@ -3,9 +3,10 @@
 
 	let {unreadNotifications, notificationTasks} = $props();
 
-	for (const notification of notificationTasks){
+	// Dice che non e' iterabile
+	// for (const notification of notificationTasks){
 		
-	}
+	// }
 </script>
 
 <main>

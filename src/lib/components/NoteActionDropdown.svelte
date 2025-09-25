@@ -24,7 +24,7 @@
 					type="button"
 					class="dropdown-item"
 					data-bs-toggle="modal"
-					data-bs-target="#shareModal"
+					data-bs-target="#noteShareModal"
 				>
 					<i class="bi bi-share me-2"></i> Condividi
 				</button>

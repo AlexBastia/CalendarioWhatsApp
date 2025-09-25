@@ -2,8 +2,7 @@
 	import { enhance } from '$app/forms';
 	import Modal from '$lib/components/Modal.svelte';
 
-	let { userTags, noteTags } = $props();
-	let form = $state(null);
+	let { userTags, noteTags, localForm, updateLocalForm } = $props();
 </script>
 
 <Modal title={'Categorie'} id={'noteTagModal'}>
@@ -12,8 +11,9 @@
 			method="POST"
 			action="/note?/createTag"
 			use:enhance={(submit) =>
-				({ result }) => {
-					form = result.data;
+				({ result, update }) => {
+					updateLocalForm(result.data);
+					update();
 				}}
 		>
 			<div class="input-group has-validation">
@@ -21,8 +21,8 @@
 					type="text"
 					name="tagName"
 					placeholder="Nome categoria"
-					class="form-control {form?.missing || form?.invalid ? 'is-invalid' : ''}"
-					value={form?.tagName ?? ''}
+					class="form-control {localForm?.missing || localForm?.invalid ? 'is-invalid' : ''}"
+					value={localForm?.tagName ?? ''}
 					required
 				/>
 				<button type="submit" class="btn btn-outline-secondary">Aggiungi</button>

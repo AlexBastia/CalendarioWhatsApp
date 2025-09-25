@@ -1,6 +1,7 @@
 import { List } from '$lib/models/List';
 import { error, redirect, fail } from '@sveltejs/kit';
 import { getCurrTime, withAuth } from '$lib/server/utilities';
+import { updateTagsForItem } from '$lib/server/utilities';
 import { TITLE_MAX_LEN, TEXT_MAX_LEN } from '$lib/server/constants';
 import { User } from '$lib/models/User';
 import { Types } from 'mongoose';
@@ -97,6 +98,12 @@ export const actions = {
 
 		return { success: true };
 	}),
+
+	// UPDATE Tags (for this list)
+	updateTags: withAuth(async (event) => {
+		return await updateTagsForItem(event, event.params.id);
+	}),
+
 
 	// DELETE List
 	delete: withAuth(async (event) => {

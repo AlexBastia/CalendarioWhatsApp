@@ -20,7 +20,7 @@ const attivitaSchema = new Schema(
 			default: 'todo' 
 		},
 		userId: {
-			type: mongoose.Schema.Types.ObjectId,
+			type: Types.ObjectId,
 			required: true,
 			ref: 'User'
 		},

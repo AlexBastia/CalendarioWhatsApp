@@ -13,7 +13,7 @@ export async function load(event) {
 
 
   const unreadNotifications = await Notifica.find({ destinatario: event.locals.user._id});
-  await computeLevel(user.locals.user._id, $timingStore);
+  await computeLevel(event.locals.user._id, timingStore);
   const notificationsForTasks = getNotificationForTsks(event.locals.user._id);
 
   return { unreadNotifications: JSON.parse(JSON.stringify(unreadNotifications)) };
