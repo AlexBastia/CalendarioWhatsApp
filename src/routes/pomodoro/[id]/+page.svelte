@@ -8,6 +8,7 @@ import { page } from '$app/stores';
 import SharePomodoro from '$lib/components/SharePomodoro.svelte';
 import PomodoroModal from '$lib/components/pomodoroModal.svelte';
 import { initNotifiche, mostraNotifica, presetsPomodoro } from '$lib/utils/notification.js';
+import { Tasks } from '$lib/models/Task';
 
 let { data } = $props();
 

@@ -11,11 +11,15 @@ export async function load(event) {
   }
 
   const pomodoroId = event.params.id;
+  console.log(`Caricamento Pomodoro [${pomodoroId}] per utente ${event.locals.user.username}`);
 
   try {
+    console.log(`Eseguo findOne per Pomodoro [${pomodoroId}]`);
     const pomodoroDoc = await Pomodoro.findOne({ _id: pomodoroId })
       .populate('sharedUsers', 'username email _id')
       .lean();
+    console.log('Pomodoro trovato:', pomodoroDoc);
+    
 
     if (!pomodoroDoc) {
       throw error(404, { message: 'Pomodoro non trovato' });

@@ -3,84 +3,122 @@
     // Definiamo le "props" che il componente può ricevere
     export let event = {
         // Valori di default per un evento nuovo
+        _id: null,
         title: '',
         note: '',
         allDay: false,
         eventType: 'STANDARD',
-        place: 'Villaggio della Foglia'
+        place: '',
+        dateStart: new Date().toISOString().slice(0, 10), // Default a oggi
+        timeStart: '09:00',
+        timeEnd: '10:00'
     };
     export let formAction;
     export let pomodoroPresets = [];
+
+    // Funzione per gestire l'annullamento, torna alla pagina precedente o a una home
+    function handleCancel() {
+        // Puoi personalizzare il redirect, ad esempio a '/calendario'
+        history.back();
+    }
 </script>
 
-<form method="POST" action={formAction}>
-    {#if event._id}
-        <input name="id" type="hidden" value={event._id} />
-    {/if}
-
-    <div class="form-row">
-        <div class="col-md-4 mb-3">
-            <label for="title">Titolo evento</label>
-            <input type="text" class="form-control" id="title" name="title" placeholder="Titolo" bind:value={event.title} required>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label for="note">Descrizione</label>
-            <input type="text" class="form-control" id="note" name="note" placeholder="Descrizione" bind:value={event.note}>
-        </div>
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h4 class="my-1">{#if event._id}Modifica Evento{:else}Crea Nuovo Evento{/if}</h4>
     </div>
+    <div class="card-body">
+        <form method="POST" action={formAction} class="needs-validation" novalidate>
+            {#if event._id}
+                <input name="id" type="hidden" value={event._id} />
+            {/if}
 
-    <div class="mb-3">
-        <label for="eventType" class="form-label">Tipo di Evento</label>
-        <select class="form-select" name="eventType" bind:value={event.eventType}>
-            <option value="STANDARD">Standard</option>
-            <option value="POMODORO">Pomodoro</option>
-        </select>
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="title" name="title" placeholder="Titolo dell'evento" bind:value={event.title} required>
+                        <label for="title">Titolo</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="note" name="note" placeholder="Aggiungi una descrizione" bind:value={event.note}>
+                        <label for="note">Descrizione (opzionale)</label>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <select class="form-select" id="eventType" name="eventType" bind:value={event.eventType}>
+                            <option value="STANDARD">📅 Evento Standard</option>
+                            <option value="POMODORO">🍅 Sessione Pomodoro</option>
+                        </select>
+                        <label for="eventType">Tipo di Evento</label>
+                    </div>
+                </div>
+
+                {#if event.eventType === 'POMODORO'}
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" id="pomodoroPreset" name="pomodoroPreset" bind:value={event.pomodoroPreset} required>
+                                <option value="" disabled selected>Scegli un preset...</option>
+                                {#each pomodoroPresets as preset}
+                                    <option value={preset._id}>{preset.title}</option>
+                                {/each}
+                            </select>
+                            <label for="pomodoroPreset">Preset Pomodoro</label>
+                        </div>
+                    </div>
+                {/if}
+                
+                <div class="col-12">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="location" name="location" placeholder="Es: Aula 2.3, Casa, Online" bind:value={event.place} required>
+                        <label for="location">Luogo</label>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="col-12">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="allDay" name="allDay" bind:checked={event.allDay}>
+                        <label class="form-check-label" for="allDay">Tutto il giorno</label>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <label for="dateStart" class="form-label">Data</label>
+                    <input type="date" id="dateStart" name="dateStart" class="form-control form-control-lg" bind:value={event.dateStart} required>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="timeStart" class="form-label">Inizio</label>
+                    <input type="time" id="timeStart" name="timeStart" class="form-control form-control-lg" bind:value={event.timeStart} disabled={event.allDay}>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="timeEnd" class="form-label">Fine</label>
+                    <input type="time" id="timeEnd" name="timeEnd" class="form-control form-control-lg" bind:value={event.timeEnd} disabled={event.allDay}>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <div class="d-flex justify-content-end align-items-center gap-2">
+                <button type="button" class="btn btn-secondary" on:click={handleCancel}>Annulla</button>
+
+                {#if event.eventType === 'POMODORO' && event._id}
+                    <button type="button" class="btn btn-success" on:click={() => goto(`/pomodoro/${event.pomodoroPreset}?eventId=${event._id}`)}>
+                        <i class="bi bi-play-circle-fill me-2"></i>Avvia Sessione
+                    </button>
+                {/if}
+
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-check-lg me-2"></i>Salva Evento
+                </button>
+            </div>
+        </form>
     </div>
-
-    {#if event.eventType === 'POMODORO'}
-        <div class="mb-3">
-            <label for="pomodoroPreset" class="form-label">Preset Pomodoro</label>
-            <select class="form-select" name="pomodoroPreset" bind:value={event.pomodoroPreset} required>
-                <option value="" disabled selected>Scegli un preset...</option>
-                {#each pomodoroPresets as preset}
-                    <option value={preset._id}>{preset.title}</option>
-                {/each}
-            </select>
-        </div>
-    {/if}
-
-    <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="allDay" name="allDay" bind:checked={event.allDay}>
-        <label class="form-check-label" for="allDay">Tutto il giorno</label>
-    </div>
-
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <label for="dateStart" class="form-label">Data inizio</label>
-            <input type="date" id="dateStart" name="dateStart" class="form-control" bind:value={event.dateStart} required>
-            <input type="time" id="timeStart" name="timeStart" disabled={event.allDay}>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label for="timeEnd" class="form-label">Ora fine</label>
-            <input type="time" id="timeEnd" name="timeEnd" disabled={event.allDay}>
-        </div>
-    </div>
-
-    <div class="form-row">
-        <div class="col-md-6 mb-3">
-            <label for="location">Posto</label>
-            <input type="text" class="form-control" id="location" name="location" placeholder="Posto" bind:value={event.place} required>
-        </div>
-    </div>
-
-    <div class="d-flex align-items-center gap-2 mt-4">
-        <button class="btn btn-primary" type="submit">Salva Evento</button>
-
-        {#if event.eventType === 'POMODORO' && event._id}
-            <button type="button" class="btn btn-success" on:click={() => goto(`/pomodoro/${event.pomodoroPreset}?eventId=${event._id}`)}>
-                Avvia Sessione Pomodoro
-            </button>
-        {/if}
-    </div>
-
-</form>
+</div>
