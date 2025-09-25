@@ -146,21 +146,23 @@
 		<div class="container mt-4">
 			<div class="row g-4">
 				{#each filteredPreviews as preview (preview._id)}
-					{#if preview.items}
-						<PreviewNote
-							{preview}
-							userTags={data.userTags}
-							href={`/note/liste/${preview._id}`}
-							mainText={'Numero elementi: ' + preview.items.length || 'No items'}
-						/>
-					{:else}
-						<PreviewNote
-							{preview}
-							userTags={data.userTags}
-							href={`/note/${preview._id}`}
-							mainText={preview.textStart || 'No text'}
-						/>
-					{/if}
+					<div class="col">
+						{#if preview.items}
+							<PreviewNote
+								{preview}
+								userTags={data.userTags}
+								href={`/note/liste/${preview._id}`}
+								mainText={'Numero elementi: ' + preview.items.length || 'No items'}
+							/>
+						{:else}
+							<PreviewNote
+								{preview}
+								userTags={data.userTags}
+								href={`/note/${preview._id}`}
+								mainText={preview.textStart || 'No text'}
+							/>
+						{/if}
+					</div>
 				{/each}
 			</div>
 		</div>
@@ -183,10 +185,8 @@
 				type="submit"><i class="bi bi-list-check me-2"></i>List</button
 			>
 
-			<button
-				class="btn btn-primary flex-fill"
-				form="createNoteForm"
-				type="submit"><i class="bi bi-fonts me-2"></i>Text</button
+			<button class="btn btn-primary flex-fill" form="createNoteForm" type="submit"
+				><i class="bi bi-fonts me-2"></i>Text</button
 			>
 		</SelectionModal>
 	</main>

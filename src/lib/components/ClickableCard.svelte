@@ -2,7 +2,10 @@
 	let { children, title, href } = $props();
 </script>
 
-<div class="card h-100 clickable-card shadow-sm position-relative">
+<div
+	class="card h-100 clickable-card shadow-sm position-relative"
+	style="max-width: 400px; min-width: 100px;"
+>
 	<a class="card-link" {href} aria-label={`Dettagli per ${title}`} tabindex="0"></a>
 	<div class="card-body d-flex flex-column">
 		{@render children()}
