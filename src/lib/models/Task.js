@@ -1,6 +1,6 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose from 'mongoose';
 
-const attivitaSchema = new mongoose.Schema(
+const attivitaSchema = new Schema(
 	{
 		title: {
 			type: String,
@@ -33,4 +33,3 @@ const attivitaSchema = new mongoose.Schema(
 );
 
 export const Tasks = model('Tasks', attivitaSchema);
-
