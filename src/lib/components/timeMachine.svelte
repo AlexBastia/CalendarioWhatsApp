@@ -1,48 +1,56 @@
 <script>
     import { timingStore } from '$lib/stores/timing.js';
-    import { format } from 'date-fns'; // Rimosso parse che non era usato
-    import { get } from 'svelte/store';
+    import { format } from 'date-fns';
 
-    // Otteniamo il valore iniziale dallo store
-    let currentTime = $state(($timingStore));
-    
-    // Variabili locali per gli input
-    let dateInput = $state($timingStore)
-    let timeInput = $state($timingStore)
+    // 1. Usa $derived per creare valori che dipendono dallo store.
+    // Si aggiorneranno automaticamente quando timingStore cambia.
+    let currentTime = $derived($timingStore);
+    let dateInput = $derived(format(currentTime, 'yyyy-MM-dd'));
+    let timeInput = $derived(format(currentTime, 'HH:mm'));
 
-    // Sottoscrizione allo store per aggiornamenti esterni
-    $effect(() => {
-        const unsubscribe = timingStore.subscribe(value => {
-            currentTime = value;
-            dateInput = format(value, 'yyyy-MM-dd');
-            timeInput = format(value, 'HH:mm');
-        });
-        
-        // Cleanup function
-        return () => unsubscribe();
-    });
 
-    // Funzione per applicare le modifiche allo store
-    function applyChanges() {
-        // Combiniamo data e ora dalle stringhe degli input in un unico oggetto Date
+        // 2. Funzione per applicare e SALVARE le modifiche
+    async function applyChanges() {
         const combinedString = `${dateInput}T${timeInput}`;
         const newDate = new Date(combinedString);
         
-        // Verifichiamo che la data sia valida
         if (!isNaN(newDate.getTime())) {
+            // Aggiorna lo store locale (la UI sarà istantanea)
             timingStore.setTime(newDate);
-        } else {
-            console.error('Data non valida');
+
+            // INVIA IL NUOVO ORARIO AL SERVER
+            try {
+                await fetch('/api/virtual-time', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ virtualTime: newDate.toISOString() })
+                });
+            } catch (err) {
+                console.error("Errore nel salvare l'orario sul server:", err);
+            }
         }
     }
 
-    // Funzione per il reset
-    function handleReset() {
+    // 3. Funzione per resettare e SALVARE il reset
+    async function handleReset() {
+        // Resetta lo store locale
         timingStore.resetTime();
+
+        // DI' AL SERVER DI CANCELLARE L'ORARIO SIMULATO
+        try {
+            await fetch('/api/virtual-time', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ virtualTime: null }) // Invia null per resettare
+            });
+        } catch (err) {
+            console.error("Errore nel resettare l'orario sul server:", err);
+        }
     }
+
 </script>
 
-<div class="p-3 shadow rounded position-fixed z-3 bg-black dimension-time-machine text-light">
+<div class="p-3 shadow rounded position-fixed z-3 bg-black dimension-time text-light">
     <h6 class="text-center mb-3">
         <i class="bi bi-clock-history"></i> Time Machine
     </h6>

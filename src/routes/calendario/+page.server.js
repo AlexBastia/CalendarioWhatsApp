@@ -2,7 +2,8 @@ import { Evento } from '$lib/models/Event.js';
 import { Pomodoro } from '$lib/models/Pomodoro.js'; // Aggiunto per caricarlo nel form
 import { redirect, fail } from '@sveltejs/kit';
 import { startOfDay, set, differenceInMilliseconds, add } from 'date-fns';
-import { timingStore } from '$lib/stores/timing.js'
+import { Tasks } from '$lib/models/Task.js';
+
 
 
 async function updateTask(userId) {
@@ -11,8 +12,7 @@ async function updateTask(userId) {
 
 
 async function updatePom(userId) {
-  const today = startOfDay($timingSotre);
-
+  const today = startOfDay(get(timingSotre));
 
   const events2update = await Evento.find({
     userID: userId,
