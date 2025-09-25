@@ -4,12 +4,13 @@
 	import { goto } from '$app/navigation';
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
-	import { formatDate } from '../utilities';
 	import NoteTagModal from '$lib/components/NoteTagModal.svelte';
 	import NoteShareModal from '$lib/components/NoteShareModal.svelte';
 	import NoteActionDropdown from '$lib/components/NoteActionDropdown.svelte';
 	import Alert from '$lib/components/Alert.svelte';
 	import Btn from '$lib/components/btn.svelte';
+	import TagDisplayButton from '$lib/components/TagDisplayButton.svelte';
+	import DateDisplay from '$lib/components/DateDisplay.svelte';
 
 	let { data, form } = $props();
 	let isMDView = $state(false);
@@ -70,25 +71,11 @@
 					rows="1"
 					style="resize: none; outline: none;"
 				></textarea>
-				<div class="categorie">
-					<!-- Button trigger tag modal -->
-					<button
-						type="button"
-						class="btn p-0"
-						data-bs-toggle="modal"
-						data-bs-target="#noteTagModal"
-						aria-label="Add tag"
-					>
-						{#each data.noteTags as tag}
-							<span class="badge bg-secondary me-1">{tag.name}</span>
-						{/each}
-						<i class="bi bi-plus-circle"></i>
-					</button>
+				<div class="tags">
+					<TagDisplayButton tags={data.noteTags} modalId={'noteTagModal'} />
 				</div>
 
-				<p class="text-muted fs-6">
-					{formatDate(data.note.timeCreation)} | {formatDate(data.note.timeLastModified)}
-				</p>
+				<DateDisplay date1={data.note.timeCreation} date2={data.note.timeLastModified}/>
 			</div>
 			<textarea
 				class="w-100 border-0"

@@ -2,9 +2,11 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import Btn from '$lib/components/btn.svelte';
+	import DateDisplay from '$lib/components/DateDisplay.svelte';
+	import ListItem from '$lib/components/ListItem.svelte';
 	import ListItemModal from '$lib/components/ListItemModal.svelte';
 	import NoteTagModal from '$lib/components/NoteTagModal.svelte';
-	import { formatDate } from '../../utilities';
+	import TagDisplayButton from '$lib/components/TagDisplayButton.svelte';
 
 	let { data } = $props();
 
@@ -54,40 +56,17 @@
 				style="resize: none; outline: none;"
 			></textarea>
 			<div class="tags">
-				<!-- Button trigger tag modal -->
-				<button
-					type="button"
-					class="btn p-0"
-					data-bs-toggle="modal"
-					data-bs-target="#noteTagModal"
-					aria-label="Add tag"
-				>
-					{#each data.noteTags as tag}
-						<span class="badge bg-secondary me-1">{tag.name}</span>
-					{/each}
-					<i class="bi bi-plus-circle"></i>
-				</button>
+				<TagDisplayButton tags={data.noteTags} modalId={'noteTagModal'} />
 			</div>
 
-			<p class="text-muted fs-6">
-				{formatDate(data.list.timeCreation)} | {formatDate(data.list.timeLastModified)}
-			</p>
+			<DateDisplay date1={data.list.timeCreation} date2={data.list.timeLastModified}/>
 		</div>
 		<Btn ariaLabel={'Save and go back'} submissionForm={'listForm'}/>
 	</form>
 	<ul class="list-group list-group-flush">
 		{#each data.list.items as item (item._id)}
 			<li class="list-group-item">
-				<form action="?/removeItem" method="POST" class="d-flex align-items-center" use:enhance>
-					<button
-						class="btn"
-						type="submit"
-						name="id"
-						value={item._id}
-						aria-label="Set item completed"><i class="bi bi-circle"></i></button
-					>
-					<h4>{item.descr}</h4>
-				</form>
+				<ListItem {item}/>
 			</li>
 		{/each}
 		<li class="list-group-item">
