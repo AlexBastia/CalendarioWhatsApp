@@ -1,6 +1,6 @@
 import { Schema, Types, model } from 'mongoose';
 
-const attivitaSchema = new Schema(
+const attivitaSchema = new mongoose.Schema(
 	{
 		title: {
 			type: String,
@@ -20,7 +20,7 @@ const attivitaSchema = new Schema(
 			default: 'todo' 
 		},
 		userId: {
-			type: Types.ObjectId,
+			type: mongoose.Types.ObjectId,
 			required: true,
 			ref: 'User'
 		},
@@ -32,4 +32,4 @@ const attivitaSchema = new Schema(
 	}
 );
 
-export const Tasks = model('Tasks', attivitaSchema);
+export const Tasks = mongoose.model('Tasks', attivitaSchema);

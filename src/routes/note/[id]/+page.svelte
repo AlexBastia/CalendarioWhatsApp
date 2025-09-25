@@ -4,11 +4,13 @@
 	import { goto } from '$app/navigation';
 	import { marked } from 'marked';
 	import DOMPurify from 'dompurify';
-	import { formatDate } from '../utilities';
 	import NoteTagModal from '$lib/components/NoteTagModal.svelte';
 	import NoteShareModal from '$lib/components/NoteShareModal.svelte';
 	import NoteActionDropdown from '$lib/components/NoteActionDropdown.svelte';
 	import Alert from '$lib/components/Alert.svelte';
+	import Btn from '$lib/components/btn.svelte';
+	import TagDisplayButton from '$lib/components/TagDisplayButton.svelte';
+	import DateDisplay from '$lib/components/DateDisplay.svelte';
 
 	let { data, form } = $props();
 	let isMDView = $state(false);
@@ -18,7 +20,7 @@
 
 	const updateLocalForm = (val) => {
 		localForm = val;
-	}
+	};
 
 	const toggleMDView = () => {
 		if (!isMDView) {
@@ -69,25 +71,11 @@
 					rows="1"
 					style="resize: none; outline: none;"
 				></textarea>
-				<div class="categorie">
-					<!-- Button trigger tag modal -->
-					<button
-						type="button"
-						class="btn p-0"
-						data-bs-toggle="modal"
-						data-bs-target="#noteTagModal"
-						aria-label="Add tag"
-					>
-						{#each data.noteTags as tag}
-							<span class="badge bg-secondary me-1">{tag.name}</span>
-						{/each}
-						<i class="bi bi-plus-circle"></i>
-					</button>
+				<div class="tags">
+					<TagDisplayButton tags={data.noteTags} modalId={'noteTagModal'} />
 				</div>
 
-				<p class="text-muted fs-6">
-					{formatDate(data.note.timeCreation)} | {formatDate(data.note.timeLastModified)}
-				</p>
+				<DateDisplay date1={data.note.timeCreation} date2={data.note.timeLastModified}/>
 			</div>
 			<textarea
 				class="w-100 border-0"
@@ -103,20 +91,14 @@
 				<div class="md-container">{@html mdContent}</div>
 			{/if}
 
-			<button
-				class="btn position-fixed float-end rounded-circle bg-light p-0 text-primary"
-				aria-label="Save and go back"
-				style="bottom: 1em; right: 0.6em"
-			>
-				<i class="bi bi-check-circle-fill" style="font-size: 4em; line-height: 64px;"></i>
-			</button>
+			<Btn ariaLabel={'Save and go back'} submissionForm={'noteForm'} />
 		</form>
 
 		<!-- Modals -->
 		<NoteShareModal note={data.note} user={data.user} />
 		<NoteTagModal userTags={data.userTags} noteTags={data.noteTags} {localForm} {updateLocalForm} />
 	</main>
-	{#if localForm?.failed }
+	{#if localForm?.failed}
 		<Alert type={'warning'} message={'Operazione fallita'} />
 	{/if}
 </div>

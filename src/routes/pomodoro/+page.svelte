@@ -36,9 +36,7 @@
                         durata={`${new Date(pomodoro.timeStudy).getMinutes()} minuti`}
                         pausa={`${new Date(pomodoro.timeBreak).getMinutes()} minuti`}
                         cicli={pomodoro.cycles}
-                        onClick={() => {
-                            goto(`/pomodoro/${pomodoro._id}`);
-                        }}
+                        href={`/pomodoro/${pomodoro._id}`}
                         icon="bi-clock-fill"
                         onEdit={() => {
                             console.log('Modifica pomodoro');
@@ -72,9 +70,7 @@
                         durata={`${new Date(pomodoroCondiviso.timeStudy).getMinutes()} minuti`}
                         pausa={`${new Date(pomodoroCondiviso.timeBreak).getMinutes()} minuti`}
                         cicli={pomodoroCondiviso.cycles}
-                        onClick={() => {
-                            goto(`/pomodoro/${pomodoroCondiviso._id}`);
-                        }}
+                        href={`/pomodoro/${pomodoroCondiviso._id}`}
                         icon="bi-clock-fill"
                         isShared={true}
                     />

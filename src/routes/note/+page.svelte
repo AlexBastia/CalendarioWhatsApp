@@ -4,7 +4,7 @@
 	import { enhance } from '$app/forms';
 	import { filterPreviews, sortPreviews } from './utilities';
 	import NoteTagModalHome from '$lib/components/NoteTagModalHome.svelte';
-	import NoteNewModal from '$lib/components/NoteNewModal.svelte';
+	import SelectionModal from '$lib/components/SelectionModal.svelte';
 	import PreviewNote from '$lib/components/PreviewNote.svelte';
 	import Alert from '$lib/components/Alert.svelte';
 	import { timingStore } from '$lib/stores/timing';
@@ -175,7 +175,20 @@
 
 		<!-- Modals -->
 		<NoteTagModalHome userTags={data.userTags} {form} />
-		<NoteNewModal />
+		<SelectionModal>
+			<button
+				class="btn btn-primary flex-fill"
+				form="createNoteForm"
+				formaction="/note/liste?/create"
+				type="submit"><i class="bi bi-list-check me-2"></i>List</button
+			>
+
+			<button
+				class="btn btn-primary flex-fill"
+				form="createNoteForm"
+				type="submit"><i class="bi bi-fonts me-2"></i>Text</button
+			>
+		</SelectionModal>
 	</main>
 	{#if form?.failed}
 		<Alert type={'warning'} message={'Operazione fallita'} />
