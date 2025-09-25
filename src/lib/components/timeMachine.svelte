@@ -1,15 +1,16 @@
 <script>
     import { timingStore } from '$lib/stores/timing.js';
-    import { format } from 'date-fns';
+    import { format } from 'date-fns'; 
 
-    // 1. Usa $derived per creare valori che dipendono dallo store.
-    // Si aggiorneranno automaticamente quando timingStore cambia.
+    // 1. Questa variabile rimane il nostro "orologio" principale (oggetto Date)
     let currentTime = $derived($timingStore);
-    let dateInput = $derived(format(currentTime, 'yyyy-MM-dd'));
-    let timeInput = $derived(format(currentTime, 'HH:mm'));
 
+    // 2. Creiamo due variabili separate per le stringhe degli input
+    let dateInput = $state(format(currentTime, 'yyyy-MM-dd'));
+    let timeInput = $state(format(currentTime, 'HH:mm'));
 
-        // 2. Funzione per applicare e SALVARE le modifiche
+    // 3. Usiamo $effect per mantenere le stringhe sincronizzate con l'orologio
+    // Funzione per applicare le modifiche allo store
     async function applyChanges() {
         const combinedString = `${dateInput}T${timeInput}`;
         const newDate = new Date(combinedString);
@@ -17,6 +18,7 @@
         if (!isNaN(newDate.getTime())) {
             // Aggiorna lo store locale (la UI sarà istantanea)
             timingStore.setTime(newDate);
+            console.log("Nuovo orario impostato:", newDate);
 
             // INVIA IL NUOVO ORARIO AL SERVER
             try {
@@ -47,17 +49,16 @@
             console.error("Errore nel resettare l'orario sul server:", err);
         }
     }
-
 </script>
 
-<div class="p-3 shadow rounded position-fixed z-3 bg-black dimension-time text-light">
+<div class="p-3 shadow rounded position-fixed z-3 bg-black dimension-time-machine text-light">
     <h6 class="text-center mb-3">
         <i class="bi bi-clock-history"></i> Time Machine
     </h6>
     
     <div class="current-time-display text-center mb-3">
         <span class="badge bg-secondary fs-6">
-            {format(currentTime, 'dd/MM/yyyy HH:mm:ss')}
+            {format(currentTime, 'dd/MM/yyyy HH:mm')}
         </span>
     </div>
 
