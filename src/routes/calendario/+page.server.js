@@ -4,16 +4,83 @@ import { redirect, fail } from '@sveltejs/kit';
 import { startOfDay, set, differenceInMilliseconds, add } from 'date-fns';
 import { Tasks } from '$lib/models/Task.js';
 
+/*
+import { Schema, Types, model } from 'mongoose';
+const attivitaSchema = Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+    },
+    deadline: {
+      type: Date,
+      required: true
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ['todo', 'done'], 
+      default: 'todo' 
+    },
+    userId: {
+      type: Types.ObjectId,
+      required: true,
+      ref: 'User'
+    },
+    lastNotificationLevel: {
+      type: String,
+      enum: ['Nessuna', 'Imminente', 'Oggi', 'Scaduta'],
+      default: 'Nessuna'
+    }
+  }
+);
+export const Tasks = model('Tasks', attivitaSchema);
+
+Il Flusso Concettuale di updateTask
+La tua funzione, quando viene chiamata (ad esempio, dalla load principale), deve seguire questi passaggi:
+
+Trova le Attività a Rischio: Cerca nel database tutte le attività per userId che soddisfano due condizioni contemporaneamente:
+
+Hanno lo stato 'Da Fare' (o 'todo').
+
+La loro data di scadenza (deadline) è precedente alla data attuale (today).
+
+Aggiorna il Loro Stato: Per ognuna di queste attività trovate, esegui un'operazione di aggiornamento sul database per cambiare il loro campo status da 'Da Fare' a un nuovo stato che potremmo chiamare 'In Ritardo'.
+
+Non Fare Nulla Altrimenti: Se un'attività non è ancora scaduta, la funzione semplicemente la ignora.
+
+Il risultato è che, dopo l'esecuzione di questa funzione, il tuo database conterrà una distinzione chiara tra attività ancora da fare e attività che sono ufficialmente in ritardo. Potrai poi usare questo nuovo stato nell'interfaccia per mostrarle in modo diverso (ad esempio, con un'icona rossa o in una sezione separata "Da Recuperare").
+
+Per poter implementare questa logica, il primo passo è assicurarsi che il tuo schema Mongoose per le Attività possa gestire questo nuovo stato. Al momento probabilmente hai solo 'Da Fare' e 'Completata'. Vuoi che ti mostri come aggiornare lo schema e poi ti scriva il codice per la funzione updateTask basandoci su quello?
+*/
 
 
-async function updateTask(userId) {
-    
+async function updateTask(userId, today) {
+  const startOfToday = startOfDay(today);
+  // Trova tutte le attività con stato 'todo' e deadline precedente a oggi
+  const tasksToUpdate = await Tasks.find({
+    userId: userId,
+    status: 'todo',
+    deadline: { $lt: startOfToday }
+  });
+
+  for (const task of tasksToUpdate) {
+    await Tasks.findByIdAndUpdate(task._id, {
+      $set: { status: 'late' } // Aggiorna lo stato a 'in ritardo'
+    });
+  }
+
 }
 
 
-async function updatePom(userId) {
-  const today = startOfDay(get(timingSotre));
+async function updatePom(userId, today) {
 
+  const startOfToday = startOfDay(today);
+
+  // Trova tutti i pomodori pianificati per oggi o prima
   const events2update = await Evento.find({
     userID: userId,
     eventType: 'POMODORO',
@@ -51,7 +118,14 @@ export async function load({ locals }) {
   if (!locals.user) {
     redirect(301, '/login');
   }
-  await updatePom(locals.user.id);
+  if (locals.user.virtualTime) {
+    var today = new Date(locals.user.virtualTime);
+  } else {
+    var today = new Date()
+  }
+
+  await updatePom(locals.user.id, today);
+  await updateTask(locals.user.id, today);
 
   // FIX: Cerca solo gli elementi dell'utente loggato
   const eventiUtente = await Evento.find({ userID: locals.user.id });
@@ -126,6 +200,38 @@ export const actions = {
     throw redirect(303, '/calendario');
   },
 
+  saveTask: async ({ locals, request }) => {
+    if (!locals.user) {
+      redirect(301, '/login');
+    }
+    const formData = await request.formData();
+    const data = Object.fromEntries(formData);
+
+    if (!data.title || !data.deadline) {
+        return fail(400, { message: 'Titolo e scadenza sono obbligatori.' });
+    }
+
+    const taskData = {
+      title: data.title,
+      description: data.description,
+      deadline: new Date(data.deadline + 'T23:59:59'), // Imposta la scadenza alla fine del giorno
+      status: 'todo', // Nuove attività sono sempre 'todo'
+      userId: locals.user.id 
+    };
+
+    const taskId = data.id || null;
+
+    if (taskId) {
+      // Se c'è un ID, aggiorna l'attività esistente
+      await Tasks.findOneAndUpdate({ _id: taskId, userId: locals.user.id }, taskData);
+    } else {
+      // Altrimenti, crea una nuova attività
+      await Tasks.create(taskData);
+    }
+
+    // Reindirizza l'utente al calendario dopo l'operazione
+    throw redirect(303, '/calendario');
+  },
   deleteEvent: async ({ locals, request }) => {
     if (!locals.user) {
     redirect(301, '/login');

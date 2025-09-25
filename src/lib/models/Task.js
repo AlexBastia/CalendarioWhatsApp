@@ -1,35 +1,33 @@
-import { Schema, Types, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const attivitaSchema = Schema(
-	{
-		title: {
-			type: String,
-			required: true,
-		},
-		description: {
-			type: String,
-		},
-		deadline: {
-			type: Date,
-			required: true
-		},
-		status: {
-			type: String,
-			required: true,
-			enum: ['todo', 'done'], 
-			default: 'todo' 
-		},
-		userId: {
-			type: Types.ObjectId,
-			required: true,
-			ref: 'User'
-		},
-		lastNotificationLevel: {
-			type: String,
-			enum: ['Nessuna', 'Imminente', 'Oggi', 'Scaduta'],
-			default: 'Nessuna'
-		}
-	}
-);
+const attivitaSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true,
+    },
+    description: {
+        type: String,
+    },
+    deadline: {
+        type: Date,
+        required: true
+    },
+    status: {
+        type: String,
+        required: true,
+        enum: ['todo', 'done', 'late'], 
+        default: 'todo' 
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId, // Usa il percorso completo
+        required: true,
+        ref: 'User'
+    },
+    lastNotificationLevel: {
+        type: String,
+        enum: ['Nessuna', 'Imminente', 'Oggi', 'Scaduta'],
+        default: 'Nessuna'
+    }
+});
 
-export const Tasks = model('Tasks', attivitaSchema);
+export const Tasks =  mongoose.model('Tasks', attivitaSchema);
