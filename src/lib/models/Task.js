@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import mongoose from 'mongoose';
 
 const attivitaSchema = new Schema(
 	{
@@ -33,4 +33,3 @@ const attivitaSchema = new Schema(
 );
 
 export const Tasks = model('Tasks', attivitaSchema);
-
