@@ -9,6 +9,7 @@
 	import NoteShareModal from '$lib/components/NoteShareModal.svelte';
 	import NoteActionDropdown from '$lib/components/NoteActionDropdown.svelte';
 	import Alert from '$lib/components/Alert.svelte';
+	import Btn from '$lib/components/btn.svelte';
 
 	let { data, form } = $props();
 	let isMDView = $state(false);
@@ -18,7 +19,7 @@
 
 	const updateLocalForm = (val) => {
 		localForm = val;
-	}
+	};
 
 	const toggleMDView = () => {
 		if (!isMDView) {
@@ -103,20 +104,14 @@
 				<div class="md-container">{@html mdContent}</div>
 			{/if}
 
-			<button
-				class="btn position-fixed float-end rounded-circle bg-light p-0 text-primary"
-				aria-label="Save and go back"
-				style="bottom: 1em; right: 0.6em"
-			>
-				<i class="bi bi-check-circle-fill" style="font-size: 4em; line-height: 64px;"></i>
-			</button>
+			<Btn ariaLabel={'Save and go back'} submissionForm={'noteForm'} />
 		</form>
 
 		<!-- Modals -->
 		<NoteShareModal note={data.note} user={data.user} />
 		<NoteTagModal userTags={data.userTags} noteTags={data.noteTags} {localForm} {updateLocalForm} />
 	</main>
-	{#if localForm?.failed }
+	{#if localForm?.failed}
 		<Alert type={'warning'} message={'Operazione fallita'} />
 	{/if}
 </div>

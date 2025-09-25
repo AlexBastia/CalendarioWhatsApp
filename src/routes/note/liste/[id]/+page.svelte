@@ -1,6 +1,7 @@
 <script>
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import Btn from '$lib/components/btn.svelte';
 	import ListItemModal from '$lib/components/ListItemModal.svelte';
 	import NoteTagModal from '$lib/components/NoteTagModal.svelte';
 	import { formatDate } from '../../utilities';
@@ -72,13 +73,7 @@
 				{formatDate(data.list.timeCreation)} | {formatDate(data.list.timeLastModified)}
 			</p>
 		</div>
-		<button
-			class="btn position-fixed float-end rounded-circle bg-light p-0 text-primary"
-			aria-label="Save and go back"
-			style="bottom: 1em; right: 0.6em"
-		>
-			<i class="bi bi-check-circle-fill" style="font-size: 4em; line-height: 64px;"></i>
-		</button>
+		<Btn ariaLabel={'Save and go back'} submissionForm={'listForm'}/>
 	</form>
 	<ul class="list-group list-group-flush">
 		{#each data.list.items as item (item._id)}
