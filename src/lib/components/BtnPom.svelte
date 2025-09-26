@@ -6,7 +6,6 @@
   type="button"
   class="btn rounded-circle {extraClasses}"
   aria-label={ariaLabel}
-  on:click
 >
   <img src={iconSrc} alt={ariaLabel} />
 </button>

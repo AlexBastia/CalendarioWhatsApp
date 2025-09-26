@@ -38,7 +38,6 @@
         // Resetta lo store locale
         timingStore.resetTime();
 
-        // DI' AL SERVER DI CANCELLARE L'ORARIO SIMULATO
         try {
             await fetch('/api/virtual-time', {
                 method: 'POST',

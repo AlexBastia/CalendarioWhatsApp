@@ -2,6 +2,7 @@
   import Btn from '$lib/components/btn.svelte';
   import { goto } from '$app/navigation';
   import { timingStore } from '$lib/stores/timing.js';
+  import SelectionModal from '$lib/components/SelectionModal.svelte';
   import { 
     format, getMonth, getYear, startOfMonth, endOfMonth, 
     addDays, addMonths, subMonths, subDays, startOfWeek, 
@@ -13,11 +14,7 @@
   let {data} = $props();
   
   let currentDate = $derived($timingStore);
-  let viewMode = $state('monthly'); // Ho messo 'monthly' come default per vederlo subito
-  
-  function goToForm(){
-    goto('/calendario/addEvent');
-  }
+  let viewMode = $state('monthly'); 
 
   function toggleView() {
     viewMode = viewMode === 'daily' ? 'weekly' 
@@ -146,12 +143,38 @@
     {/each}
   </div>
 {/if}
-<Btn 
-    ariaLabel="Aggiungi Nuovo Evento" 
-    modalTarget="" 
-    submissionForm=""
-    on:click={goToForm}
-/>
+
+<SelectionModal
+    titleModal="Seleziona cosa vuoi aggiungere"
+    idModal="eventTypeModal"
+>
+    <button
+        type="button"
+        class="btn btn-primary me-2"
+        data-bs-dismiss="modal"
+        onclick={() => goto('/calendario/addEvent')}
+    >
+        <i class="bi bi-calendar-plus"></i> Evento
+    </button>
+    <button
+        type="button"
+        class="btn btn-success"
+        data-bs-dismiss="modal"
+        onclick={
+          
+          () => {
+            console.log('siva')  
+            goto('/calendario/addTask')
+          }
+        }
+    >
+        <i class="bi bi-list-task"></i> Attività
+    </button>
+</SelectionModal>
+<Btn modalTarget="#eventTypeModal" ariaLabel="Aggiungi evento o attività" >
+</Btn>
+
+
 <div class="mt-4 d-flex justify-content-between">
     <div>
         <button class="btn btn-outline-primary" onclick={goBack}>

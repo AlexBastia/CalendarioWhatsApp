@@ -1,7 +1,9 @@
 <script>
     import { goto } from '$app/navigation';
+    import { timingStore } from '$lib/stores/timing';
     // Definiamo le "props" che il componente può ricevere
-    export let event = {
+
+    let {event = {
         // Valori di default per un evento nuovo
         _id: null,
         title: '',
@@ -9,12 +11,10 @@
         allDay: false,
         eventType: 'STANDARD',
         place: '',
-        dateStart: new Date().toISOString().slice(0, 10), // Default a oggi
+        dateStart: $timingStore? $timingStore: new Date().toISOString().slice(0, 10), // Default a oggi
         timeStart: '09:00',
         timeEnd: '10:00'
-    };
-    export let formAction;
-    export let pomodoroPresets = [];
+    }, formAction, pomodoroPresets = []} = $props();
 
     // Funzione per gestire l'annullamento, torna alla pagina precedente o a una home
     function handleCancel() {
@@ -107,10 +107,10 @@
 
             <hr class="my-4">
             <div class="d-flex justify-content-end align-items-center gap-2">
-                <button type="button" class="btn btn-secondary" on:click={handleCancel}>Annulla</button>
+                <button type="button" class="btn btn-secondary" onclick={handleCancel}>Annulla</button>
 
                 {#if event.eventType === 'POMODORO' && event._id}
-                    <button type="button" class="btn btn-success" on:click={() => goto(`/pomodoro/${event.pomodoroPreset}?eventId=${event._id}`)}>
+                    <button type="button" class="btn btn-success" onclick={() => goto(`/pomodoro/${event.pomodoroPreset}?eventId=${event._id}`)}>
                         <i class="bi bi-play-circle-fill me-2"></i>Avvia Sessione
                     </button>
                 {/if}

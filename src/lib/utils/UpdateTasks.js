@@ -15,6 +15,7 @@ export async function computeLevel(userID, now){
         userId: userID,
         status: 'todo'
     })
+	console.log(`Computing levels for user ${userID} at time ${now}`);
     if (!tasks || tasks.length === 0) {
 		return [];
 	}

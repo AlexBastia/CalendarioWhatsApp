@@ -7,17 +7,27 @@ import { fail } from "assert";
 import { timingStore } from '$lib/stores/timing.js'
 
 export async function load(event) {
-  if (event.locals.user === null) {
+  if (!event.locals.user === null) {
     redirect(302, "/login")
   }
 
+  console.log
+
+  console.log("Loading notifications for user:", event.locals.user._id);
 
   const unreadNotifications = await Notifica.find({ destinatario: event.locals.user._id});
-  await computeLevel(event.locals.user._id, timingStore);
+
+  console.log("Found notifications:", unreadNotifications);
+  console.log(event.locals.user._id)
+  if (event.locals.user.virtualTime){
+    await computeLevel(event.locals.user._id, event.locals.user.virtualTime);
+  }
+  else{
+    await computeLevel(event.locals.user._id, new Date());
+  }
   const notificationsForTasks = getNotificationForTsks(event.locals.user._id);
 
-  return { unreadNotifications: JSON.parse(JSON.stringify(unreadNotifications)) };
-
+  return { unreadNotifications: JSON.parse(JSON.stringify(unreadNotifications)), notificationTasks: notificationsForTasks };
 }
 
 export const actions = {
