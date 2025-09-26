@@ -115,21 +115,25 @@ async function updatePom(userId, today) {
 }
 
 export async function load({ locals }) {
+  // CORREZIONE 1: Usa 'throw redirect'
   if (!locals.user) {
-    redirect(301, '/login');
+    throw redirect(303, '/login');
   }
-  if (locals.user.virtualTime) {
-    var today = new Date(locals.user.virtualTime);
-  } else {
-    var today = new Date()
-  }
+  
+  const today = locals.user.virtualTime ? new Date(locals.user.virtualTime) : new Date();
 
-  await updatePom(locals.user.id, today);
-  await updateTask(locals.user.id, today);
+  // Esegue gli aggiornamenti in parallelo per efficienza
+  await Promise.all([
+      updatePom(locals.user.id, today),
+      updateTask(locals.user.id, today)
+  ]);
 
-  // FIX: Cerca solo gli elementi dell'utente loggato
-  const eventiUtente = await Evento.find({ userID: locals.user.id });
-  const pomodoriUtente = await Pomodoro.find({ userID: locals.user.id });
+  // CORREZIONE 2: Carica anche le 'Tasks'
+  const [eventiUtente, attivitaUtente, pomodoriUtente] = await Promise.all([
+    Evento.find({ userID: locals.user.id }).lean(),
+    Tasks.find({ userId: locals.user.id }).lean(), // Aggiunto!
+    Pomodoro.find({ userID: locals.user.id }).lean()
+  ]);
 
   return {
     events: eventiUtente.map((evento) => ({
@@ -137,11 +141,16 @@ export async function load({ locals }) {
       title: evento.title,
       start: evento.start,
       end: evento.end,
-      // Aggiungi altri campi se necessari nel frontend
       eventType: evento.eventType,
       pomodoroPreset: evento.pomodoroPreset?.toString()
     })),
-    // Passa i preset pomodoro al frontend per popolarli nel form
+    // Aggiungi questo al return object!
+    tasks: attivitaUtente.map((task) => ({
+      _id: task._id.toString(),
+      title: task.title,
+      deadline: task.deadline,
+      status: task.status
+    })),
     pomodori: pomodoriUtente.map((p) => ({
       _id: p._id.toString(),
       title: p.title

@@ -1,3 +1,4 @@
+<!-- btn.svelte -->
 <script>
 	let { ariaLabel = 'Attiva Azione', modalTarget, submissionForm } = $props();
 </script>
