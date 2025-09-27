@@ -1,10 +1,10 @@
 <script>
 	import Modal from '$lib/components/Modal.svelte';
 
-	let { children } = $props();
+	let { children, idModal= 'noteNewModal', titleModal = 'Choose note type' } = $props();
 </script>
 
-<Modal title={'Choose note type'} id={'noteNewModal'}>
+<Modal title={titleModal} id={idModal}>
 	{#snippet body()}
 		<div class="d-flex">
 			{@render children()}

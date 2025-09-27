@@ -1,5 +1,11 @@
 <script>
-    let {formAction, task} = $props();
+    import {timingStore} from '$lib/stores/timing';
+    let { task = {
+        title: '',
+        description: '',
+        deadline: $timingStore ? $timingStore.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10) // Default a oggi
+    }, formAction} = $props();
+    
 
     // Funzione per tornare indietro
     function handleCancel() {
@@ -64,7 +70,7 @@
 
             <hr class="my-4">
             <div class="d-flex justify-content-end align-items-center gap-2">
-                <button type="button" class="btn btn-secondary" on:click={handleCancel}>
+                <button type="button" class="btn btn-secondary" onclick={handleCancel}>
                     Annulla
                 </button>
                 <button class="btn btn-primary" type="submit">

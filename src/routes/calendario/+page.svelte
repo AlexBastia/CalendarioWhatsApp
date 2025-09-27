@@ -1,38 +1,20 @@
 <script>
+  import Btn from '$lib/components/btn.svelte';
   import { goto } from '$app/navigation';
   import { timingStore } from '$lib/stores/timing.js';
+  import SelectionModal from '$lib/components/SelectionModal.svelte';
   import { 
-    addDays, 
-    addMonths, 
-    subMonths, 
-    subDays, 
-    startOfWeek, 
-    format, 
-    getMonth, 
-    getYear, 
-    startOfMonth, 
-    endOfMonth, 
-    eachDayOfInterval,
-    endOfWeek,
-    isSameMonth,
-    isSameDay
-  } from 'date-fns';
+    format, getMonth, getYear, startOfMonth, endOfMonth, 
+    addDays, addMonths, subMonths, subDays, startOfWeek, 
+    eachDayOfInterval, endOfWeek, isSameMonth, isSameDay, 
+    isToday } from 'date-fns';
   import "bootstrap/dist/css/bootstrap.min.css";
-  import { onMount } from 'svelte';
 
   let week = ['dom','lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
   let {data} = $props();
-
-  console.log(data);
   
-  // inizi data dello store
   let currentDate = $derived($timingStore);
-  //modalita` di visualizzazione, il default e` settimanale
-  let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
-  
-  function goToForm(){
-    goto('/calendario/addEvent');
-  }
+  let viewMode = $state('monthly'); 
 
   function toggleView() {
     viewMode = viewMode === 'daily' ? 'weekly' 
@@ -52,20 +34,17 @@
         : addMonths(currentDate, 1);
   }
 
-  //ritorna un array con i giorni della settimana corrente, da domenica a sabato
   function getWeekDays(date) {
     let sunday = startOfWeek(date);
     let saturday = addDays(sunday, 6);
     return eachDayOfInterval({start: sunday, end: saturday});
   }
 
-  // Nuova funzione per ottenere tutti i giorni da mostrare nel calendario mensile
   function getMonthCalendarDays(date) {
     const monthStart = startOfMonth(date);
     const monthEnd = endOfMonth(date);
     const calendarStart = startOfWeek(monthStart);
     const calendarEnd = endOfWeek(monthEnd);
-    
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   }
 
@@ -73,7 +52,7 @@
   let monthCalendarDays = $derived(getMonthCalendarDays(currentDate));
 </script>
 
-<div class="d-flex align-items-center gap-2">
+<div class="d-flex align-items-center gap-2 mb-4">
   <label for="view-mode" class="form-label">Vista:</label>
   <select id="view-mode" class="form-select w-auto" bind:value={viewMode}>
     <option value="daily">Giornaliera</option>
@@ -83,86 +62,78 @@
 </div>
 
 {#if viewMode === 'daily'}
-  <div class="grid">
-    <div class="row py-5">
-      <div class="col" id="{format(currentDate, 'yyyy-MM-dd')}">
-        {format(currentDate, 'dd EEEE')}
+  <div class="card">
+    <div class="card-header fs-4 {isToday(currentDate) ? 'today' : ''}">
+        {format(currentDate, 'dd MMMM yyyy, EEEE')}
+    </div>
+    <div class="list-group list-group-flush">
         {#each data.events as event}
-          {#if format(event.start, 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd')}
-                <button 
-                  class="bg-primary text-white p-1 mt-2" 
-                  onclick={() => goto(`/calendario/${event.id}`)} 
-                  style="cursor: pointer; width: 100%; text-align: left;"
-                  aria-label="Vai al dettaglio dell'evento {event.title}">
-                  {event.title}
-                </button>
-          {/if}
+            {#if isSameDay(event.start, currentDate)}
+                <div classa="list-group-item">📅 {event.title}</div>
+            {/if}
         {/each}
-      </div>
+        {#each data.tasks as task}
+            {#if isSameDay(task.deadline, currentDate) && task.status !== 'late'}
+                <div classa="list-group-item {task.status === 'late' ? 'task-late' : ''}">📝 {task.title}</div>
+            {/if}
+        {/each}
+        {#if isToday(currentDate)}
+            {#each data.tasks as task}
+                {#if task.status === 'late'}
+                    <div classa="list-group-item task-late">🚨 {task.title} (Scaduta)</div>
+                {/if}
+            {/each}
+        {/if}
     </div>
   </div>
-  <p>Giorno: {format(currentDate, 'dd/MM/yyyy')}</p>
 
 {:else if viewMode === 'weekly'}
   <div class="container-fluid">
-    <div class="row py-2">
+    <div class="row text-center fw-bold border-bottom pb-2 mb-2">
       {#each week as day}
-        <div class="col text-center">
-          <strong>{day}</strong>
+        <div class="col">{day}</div>
+      {/each}
+    </div>
+    <div class="row">
+      {#each weekDays as day}
+        <div class="col border p-2 {isToday(day) ? 'today' : ''}" style="min-height: 120px;">
+          <p class="text-center">{format(day, 'd')}</p>
+          {#each data.events as event}
+            {#if isSameDay(event.start, day)}
+              <div class="badge bg-primary w-100 mb-1">📅 {event.title}</div>
+            {/if}
+          {/each}
+          {#each data.tasks as task}
+            {#if isSameDay(task.deadline, day)}
+              <div class="badge w-100 mb-1 {task.status === 'late' ? 'bg-danger' : 'bg-success'}">📝 {task.title}</div>
+            {/if}
+          {/each}
         </div>
       {/each}
     </div>
-    <div class="row py-5">
-      {#each weekDays as d}
-        <div class="col-1 col-sm col-md-1 col-lg-1  border p-3" id="{format(d, 'yyyy-MM-dd')}">
-          <p class="text-center">{format(d, 'dd EEEE')}</p>
-          {#each data.events as event}
-            {#if event.start && format(event.start, 'yyyy-MM-dd') === format(d, 'yyyy-MM-dd')}
-              <button class="bg-primary"
-                onclick={() => goto(`/calendario/${event.id}`)} 
-                aria-label="Vai al dettaglio dell'evento {event.title}">
-                {event.title}
-              </button>
-            {/if}
-          {/each}
-       </div>
-      {/each}
-    </div>
-  <!-- Data della settimana -->
-  <p class="text-center">Settimana di: {format(currentDate, 'dd/MM/yyyy')}</p>
-</div>
+  </div>
 
 {:else}
-  <!-- VISUALIZZAZIONE MENSILE REFACTORIZZATA -->
-  <div class="grid">
-    <!-- Intestazione con i giorni della settimana -->
-    <div class="row py-2">
+  <div class="container-fluid">
+    <div class="row text-center fw-bold border-bottom pb-2 mb-2">
       {#each week as day}
-        <div class="col">
-          {day}
-        </div>        
+        <div class="col">{day}</div>
       {/each}
     </div>
-
-    <!-- Calendario mensile usando date-fns -->
     {#each Array(Math.ceil(monthCalendarDays.length / 7)) as _, weekIndex}
-      <div class="row py-5">
+      <div class="row">
         {#each monthCalendarDays.slice(weekIndex * 7, (weekIndex + 1) * 7) as day}
-          <div class="col {!isSameMonth(day, currentDate) ? 'bg-primary' : ''}" 
-               id="{format(day, 'yyyy-MM-dd')}">
-            <!-- Mostra il numero del giorno -->
-            {format(day, 'd')}
-            
-            <!-- Mostra gli eventi solo per i giorni del mese corrente -->
+          <div class="col border p-2 {isToday(day) ? 'today' : ''} {!isSameMonth(day, currentDate) ? 'text-muted bg-light' : ''}" style="min-height: 120px;">
+            <p>{format(day, 'd')}</p>
             {#if isSameMonth(day, currentDate)}
               {#each data.events as event}
-                {#if event.start && isSameDay(event.start, day)}
-                  <button class="bg-primary" 
-                    onclick={() => goto(`/calendario/${event._id || event.id}`)} 
-                    style="cursor: pointer; width: 100%; text-align: left;"
-                    aria-label="Vai al dettaglio dell'evento {event.title}">
-                    {event.title}
-                  </button>
+                {#if isSameDay(event.start, day)}
+                  <div class="badge bg-primary w-100 mb-1">📅 {event.title}</div>
+                {/if}
+              {/each}
+              {#each data.tasks as task}
+                {#if isSameDay(task.deadline, day)}
+                  <div class="badge w-100 mb-1 {task.status === 'late' ? 'bg-danger' : 'bg-success'}">📝 {task.title}</div>
                 {/if}
               {/each}
             {/if}
@@ -171,16 +142,62 @@
       </div>
     {/each}
   </div>
-
-  <p>mese: {currentDate.getMonth() + 1} anno: {currentDate.getFullYear()}</p>
 {/if}
 
-<button class="btn btn-outline-primary" onclick={goBack}>
-  <i class="bi bi-download"></i> indietro
-</button>
+<SelectionModal
+    titleModal="Seleziona cosa vuoi aggiungere"
+    idModal="eventTypeModal"
+>
+    <button
+        type="button"
+        class="btn btn-primary me-2"
+        data-bs-dismiss="modal"
+        onclick={() => goto('/calendario/addEvent')}
+    >
+        <i class="bi bi-calendar-plus"></i> Evento
+    </button>
+    <button
+        type="button"
+        class="btn btn-success"
+        data-bs-dismiss="modal"
+        onclick={
+          
+          () => {
+            console.log('siva')  
+            goto('/calendario/addTask')
+          }
+        }
+    >
+        <i class="bi bi-list-task"></i> Attività
+    </button>
+</SelectionModal>
+<Btn modalTarget="#eventTypeModal" ariaLabel="Aggiungi evento o attività" >
+</Btn>
 
-<button class="btn btn-outline-primary" onclick={goAhead}>
-  <i class="bi bi-download"></i> avanti
-</button>
 
-<button class="btn btn-primary" onclick={goToForm}>aggiungi evento</button>
+<div class="mt-4 d-flex justify-content-between">
+    <div>
+        <button class="btn btn-outline-primary" onclick={goBack}>
+            Indietro
+        </button>
+        <button class="btn btn-outline-primary" onclick={goAhead}>
+            Avanti
+        </button>
+    </div>
+    
+</div>
+
+<style>
+    .today {
+        background-color: #e0f7fa; /* Un colore celeste per evidenziare oggi */
+    }
+    .task-late {
+        background-color: #ffebee; /* Un colore rosato per le attività in ritardo nella vista giornaliera */
+        color: #c62828;
+        border-color: #c62828 !important;
+    }
+    .badge {
+        white-space: normal;
+        text-align: left;
+    }
+</style>

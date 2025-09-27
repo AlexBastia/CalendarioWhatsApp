@@ -5,20 +5,18 @@ import { verifyPasswordHash } from "$lib/server/password";
 import { createSession, generateSessionToken, setSessionTokenCookie } from "$lib/server/session";
 
 export function load(event) {
-  console.log("login page.server.js");
-  console.log(event.locals);
-  
   return {};
 }
 
 export const actions = {
-  default: action
+  default: login
 };
 
-async function action(event) {
+async function login(event) {
   const formData = await event.request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
+
   if (typeof email !== "string" || typeof password !== "string") {
     return fail(400, {
       message: "Invalid or missing fields",
