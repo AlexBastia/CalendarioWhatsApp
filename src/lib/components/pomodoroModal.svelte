@@ -73,7 +73,7 @@
 					{#if suggerimenti.length > 0}
 						<div class="list-group">
 							{#each suggerimenti.slice(0, 3) as proposta}
-								<div
+								<button
 									class="list-group-item list-group-item-action"
 									onclick={() => applicaSuggerimento(proposta)}
 									style="cursor: pointer;"
@@ -86,7 +86,7 @@
 										Studio: <strong>{proposta.studio} min</strong> / Pausa:
 										<strong>{proposta.pausa} min</strong>
 									</p>
-								</div>
+								</button>
 							{/each}
 						</div>
 					{/if}
@@ -167,4 +167,3 @@
 		</div>
 	{/snippet}
 </Modal>
-
