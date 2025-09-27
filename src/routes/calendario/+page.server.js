@@ -14,7 +14,7 @@ async function updateTask(userId, today) {
   });
 
   for (const task of tasksToUpdate) {
-    await Tasks.findByIdAndUpdate(task._id, {
+    await Task.findByIdAndUpdate(task._id, {
       $set: { status: 'late' } // Aggiorna lo stato a 'in ritardo'
     });
   }
@@ -77,7 +77,7 @@ export async function load({ locals }) {
   // CORREZIONE 2: Carica anche le 'Tasks'
   const [eventiUtente, attivitaUtente, pomodoriUtente] = await Promise.all([
     Evento.find({ userID: locals.user.id }).lean(),
-    Tasks.find({ userId: locals.user.id }).lean(), 
+    Task.find({ userId: locals.user.id }).lean(), 
     Pomodoro.find({ userID: locals.user.id }).lean()
   ]);
 
