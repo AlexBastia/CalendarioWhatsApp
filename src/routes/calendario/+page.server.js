@@ -2,7 +2,7 @@ import { Evento } from '$lib/models/Event.js';
 import { Pomodoro } from '$lib/models/Pomodoro.js'; // Aggiunto per caricarlo nel form
 import { redirect, fail } from '@sveltejs/kit';
 import { startOfDay, set, differenceInMilliseconds, add } from 'date-fns';
-import { Tasks } from '$lib/models/Task.js';
+import { Task } from '$lib/models/Task.js';
 
 /*
 import { Schema, Types, model } from 'mongoose';
@@ -61,7 +61,7 @@ Per poter implementare questa logica, il primo passo è assicurarsi che il tuo s
 async function updateTask(userId, today) {
   const startOfToday = startOfDay(today);
   // Trova tutte le attività con stato 'todo' e deadline precedente a oggi
-  const tasksToUpdate = await Tasks.find({
+  const tasksToUpdate = await Task.find({
     userId: userId,
     status: 'todo',
     deadline: { $lt: startOfToday }
@@ -223,10 +223,10 @@ export const actions = {
 
     if (taskId) {
       // Se c'è un ID, aggiorna l'attività esistente
-      await Tasks.findOneAndUpdate({ _id: taskId, userId: locals.user.id }, taskData);
+      await Task.findOneAndUpdate({ _id: taskId, userId: locals.user.id }, taskData);
     } else {
       // Altrimenti, crea una nuova attività
-      await Tasks.create(taskData);
+      await Task.create(taskData);
     }
 
     // Reindirizza l'utente al calendario dopo l'operazione

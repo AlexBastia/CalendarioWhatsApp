@@ -1,32 +1,25 @@
 <script>
-  import { enhance } from "$app/forms";
+	import { enhance } from '$app/forms';
+	import Modal from './Modal.svelte';
 </script>
 
-<div
-	class="modal fade"
-	id="listItemModal"
-	tabindex="-1"
-	aria-labelledby="listItemModalLabel"
-	aria-hidden="true"
-	data-bs-backdrop="static"
-	data-bs-keyboard="false"
->
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h1 class="modal-title fs-5" id="listItemModalLabel">Elemento lista</h1>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<Modal title={'Elemento lista'} id="listItemModal">
+	{#snippet body()}
+		<form id="listItemForm" method="POST" action="?/addItem">
+			<div class="mb-3">
+				<label for="descr" class="form-label">Descrizione</label>
+				<input id="descr" name="descr" class="form-control" required />
 			</div>
-			<div class="modal-body">
-				<form action="?/addItem" method="POST" id="listItemForm" use:enhance>
-					<input type="text" placeholder="Descrizione" name="descr" />
-				</form>
+
+			<div class="mb-3">
+				<label for="deadline" class="form-label">Data (opzionale)</label>
+				<input id="deadline" name="deadline" type="date" class="form-control" />
 			</div>
-			<div class="modal-footer">
-				<button form="listItemForm" type="submit" class="btn btn-primary" data-bs-dismiss="modal"
-					>Add</button
-				>
-			</div>
-		</div>
-	</div>
-</div>
+		</form>
+	{/snippet}
+	{#snippet footer()}
+		<button form="listItemForm" type="submit" class="btn btn-primary" data-bs-dismiss="modal"
+			>Add</button
+		>
+	{/snippet}
+</Modal>
