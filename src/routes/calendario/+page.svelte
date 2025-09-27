@@ -69,18 +69,21 @@
     <div class="list-group list-group-flush">
         {#each data.events as event}
             {#if isSameDay(event.start, currentDate)}
-                <div classa="list-group-item">📅 {event.title}</div>
+                <!-- MODIFICA: Utilizzo di onclick -->
+                <div onclick={() => goto(`/calendario/${event._id}`)} class="list-group-item list-group-item-action event-link">
+                    📅 {event.title}
+                </div>
             {/if}
         {/each}
         {#each data.tasks as task}
             {#if isSameDay(task.deadline, currentDate) && task.status !== 'late'}
-                <div classa="list-group-item {task.status === 'late' ? 'task-late' : ''}">📝 {task.title}</div>
+                <div class="list-group-item {task.status === 'late' ? 'task-late' : ''}">📝 {task.title}</div>
             {/if}
         {/each}
         {#if isToday(currentDate)}
             {#each data.tasks as task}
                 {#if task.status === 'late'}
-                    <div classa="list-group-item task-late">🚨 {task.title} (Scaduta)</div>
+                    <div class="list-group-item task-late">🚨 {task.title} (Scaduta)</div>
                 {/if}
             {/each}
         {/if}
@@ -100,7 +103,10 @@
           <p class="text-center">{format(day, 'd')}</p>
           {#each data.events as event}
             {#if isSameDay(event.start, day)}
-              <div class="badge bg-primary w-100 mb-1">📅 {event.title}</div>
+              <!-- MODIFICA: Utilizzo di onclick -->
+              <div onclick={() => goto(`/calendario/${event._id}`)} class="badge bg-primary w-100 mb-1 event-link">
+                📅 {event.title}
+              </div>
             {/if}
           {/each}
           {#each data.tasks as task}
@@ -128,7 +134,10 @@
             {#if isSameMonth(day, currentDate)}
               {#each data.events as event}
                 {#if isSameDay(event.start, day)}
-                  <div class="badge bg-primary w-100 mb-1">📅 {event.title}</div>
+                  <!-- MODIFICA: Utilizzo di onclick -->
+                  <div onclick={() => goto(`/calendario/${event._id}`)} class="badge bg-primary w-100 mb-1 event-link">
+                    📅 {event.title}
+                  </div>
                 {/if}
               {/each}
               {#each data.tasks as task}
@@ -160,20 +169,13 @@
         type="button"
         class="btn btn-success"
         data-bs-dismiss="modal"
-        onclick={
-          
-          () => {
-            console.log('siva')  
-            goto('/calendario/addTask')
-          }
-        }
+        onclick={() => goto('/calendario/addTask')}
     >
         <i class="bi bi-list-task"></i> Attività
     </button>
 </SelectionModal>
-<Btn modalTarget="#eventTypeModal" ariaLabel="Aggiungi evento o attività" >
-</Btn>
 
+<Btn modalTarget="#eventTypeModal" ariaLabel="Aggiungi evento o attività" />
 
 <div class="mt-4 d-flex justify-content-between">
     <div>
@@ -184,15 +186,23 @@
             Avanti
         </button>
     </div>
-    
 </div>
 
 <style>
+    .event-link {
+        cursor: pointer;
+        transition: filter 0.2s ease-in-out;
+    }
+
+    .event-link:hover {
+        filter: brightness(90%); 
+    }
+
     .today {
-        background-color: #e0f7fa; /* Un colore celeste per evidenziare oggi */
+        background-color: #e0f7fa;
     }
     .task-late {
-        background-color: #ffebee; /* Un colore rosato per le attività in ritardo nella vista giornaliera */
+        background-color: #ffebee;
         color: #c62828;
         border-color: #c62828 !important;
     }
@@ -201,3 +211,4 @@
         text-align: left;
     }
 </style>
+

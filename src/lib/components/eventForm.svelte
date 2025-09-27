@@ -14,7 +14,10 @@
         dateStart: $timingStore? $timingStore: new Date().toISOString().slice(0, 10), // Default a oggi
         timeStart: '09:00',
         timeEnd: '10:00'
-    }, formAction, pomodoroPresets = []} = $props();
+    }, formAction, pomodoroPresets = [], deleteAction} = $props();
+
+    console.log('EventForm props:', {event, formAction, pomodoroPresets, deleteAction});
+    console.log('del action:', `${deleteAction}?id=${event._id}`);
 
     // Funzione per gestire l'annullamento, torna alla pagina precedente o a una home
     function handleCancel() {
@@ -114,11 +117,22 @@
                         <i class="bi bi-play-circle-fill me-2"></i>Avvia Sessione
                     </button>
                 {/if}
-
-                <button class="btn btn-primary" type="submit">
+                <button class="bt   n btn-primary" type="submit">
                     <i class="bi bi-check-lg me-2"></i>Salva Evento
                 </button>
             </div>
         </form>
+            {#if event._id}
+            <div class="mt-3 d-flex justify-content-end">
+                <form method="DELETE" action="{deleteAction}?id={event._id}">
+                <input type="hidden" name="id" value={event._id} />
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i>Elimina
+                </button>
+                </form>
+            </div>
+            {/if}
+
     </div>
+    
 </div>

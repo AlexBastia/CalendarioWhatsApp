@@ -107,8 +107,8 @@ export async function load({ locals }) {
 export const actions = {
   saveEvent: async ({ locals, request }) => {
     if (!locals.user) {
-    redirect(301, '/login');
-  }
+      redirect(301, '/login');
+    }
     const formData = await request.formData();
     const data = Object.fromEntries(formData);
 
@@ -184,9 +184,10 @@ export const actions = {
     throw redirect(303, '/calendario');
   },
   deleteEvent: async ({ locals, request }) => {
+    console.log("deleteEvent action called");
     if (!locals.user) {
-    redirect(301, '/login');
-  }
+      redirect(301, '/login');
+    }
     const formData = await request.formData();
     const eventId = formData.get('id');
 

@@ -21,10 +21,7 @@
     event={eventoPerForm}
     pomodoroPresets={data.pomodori}
     formAction="/calendario?/saveEvent"
-
+    deleteAction="/calendario?/deleteEvent"
 />
-<input name="id" type="hidden" value={data.evento._id} />
-<form method="POST" action="/calendario?/deleteEvent" class="mt-4">
-    <button class="btn btn-danger" type="submit">Elimina Evento</button>
-</form>
+
 
