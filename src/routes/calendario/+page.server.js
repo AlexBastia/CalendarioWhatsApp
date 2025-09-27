@@ -3,6 +3,7 @@ import { Pomodoro } from '$lib/models/Pomodoro.js'; // Aggiunto per caricarlo ne
 import { redirect, fail } from '@sveltejs/kit';
 import { startOfDay, set, differenceInMilliseconds, add } from 'date-fns';
 import { Task } from '$lib/models/Task.js';
+import { mkLastDate } from '$lib/utils/eventRecursion.js'; 
 
 async function updateTask(userId, today) {
   const startOfToday = startOfDay(today);
@@ -108,7 +109,7 @@ export const actions = {
   saveEvent: async ({ locals, request }) => {
     if (!locals.user) {
     redirect(301, '/login');
-  }
+    }
     const formData = await request.formData();
     const data = Object.fromEntries(formData);
 
@@ -122,7 +123,33 @@ export const actions = {
       start = new Date(`${data.dateStart}T${data.timeStart}`);
       end = new Date(`${data.dateStart}T${data.timeEnd}`);
     }
+    //popola substruct ripetizione con i dati del form
+    let ripetizione = {
+      isRepeatable: data.isRepeatable === 'on',
+      frequenza: data.frequenza || null,
+      giorniSettimana: data.giorniSettimana
+        ? Array.isArray(data.giorniSettimana)
+          ? data.giorniSettimana.map(Number)
+          : [Number(data.giorniSettimana)]
+        : [],
+      dayOfMonth: data.dayOfMonth ? Number(data.dayOfMonth) : null,
+      nthWeekday: data.week && data.weekday
+        ? {
+            week: Number(data.week),
+            weekday: Number(data.weekday)
+          }
+        : null,
+      endCondition: {
+        type: data.endType || 'MAI',
+        lastDate: data.endDate ? new Date(data.endDate) : null,
+        nVolte: data.endCount ? Number(data.endCount) : null
+      }
+    };
 
+    // Calcola lastInstance solo se ripetizione attiva
+    if (ripetizione.isRepeatable) {
+      ripetizione.lastInstance = mkLastDate({ start, ripetizione });
+    }
     // Prepara il pacchetto di dati da salvare, includendo i campi pomodoro
     const eventData = {
       title: data.title,

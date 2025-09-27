@@ -9,12 +9,49 @@
     eachDayOfInterval, endOfWeek, isSameMonth, isSameDay, 
     isToday } from 'date-fns';
   import "bootstrap/dist/css/bootstrap.min.css";
+  import { onMount } from 'svelte';
+  import { expandEvent } from '$lib/utils/eventRecursion.js';
 
   let week = ['dom','lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
   let {data} = $props();
   
   let currentDate = $derived($timingStore);
-  let viewMode = $state('monthly'); 
+  //modalita` di visualizzazione, il default e` settimanale
+  let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
+  
+  let rangeStart;
+  let rangeEnd;
+  let expandedEvents = [];
+
+  // effetto per aggiornare rangeStart / rangeEnd
+  $effect(() => {
+    if (viewMode === 'daily') {
+      rangeStart = currentDate;
+      rangeEnd = currentDate;
+    } else if (viewMode === 'weekly') {
+      rangeStart = startOfWeek(currentDate);
+      rangeEnd = endOfWeek(currentDate);
+    } else {
+      rangeStart = startOfMonth(currentDate);
+      rangeEnd = endOfMonth(currentDate);
+    }
+  });
+
+  // effetto per aggiornare eventi espansi
+  $effect(() => {
+    if (!data || !data.events) {
+      expandedEvents = [];
+      return;
+    }
+    expandedEvents = data.events.flatMap(ev => {
+      const e = { ...ev, start: new Date(ev.start), end: new Date(ev.end) };
+      return expandEvent(e, rangeStart, rangeEnd);
+    });
+  });
+
+  function goToForm(){
+    goto('/calendario/addEvent');
+  }
 
   function toggleView() {
     viewMode = viewMode === 'daily' ? 'weekly' 
@@ -67,7 +104,7 @@
         {format(currentDate, 'dd MMMM yyyy, EEEE')}
     </div>
     <div class="list-group list-group-flush">
-        {#each data.events as event}
+        {#each expandedEvents as event}
             {#if isSameDay(event.start, currentDate)}
                 <div classa="list-group-item">📅 {event.title}</div>
             {/if}
@@ -98,7 +135,7 @@
       {#each weekDays as day}
         <div class="col border p-2 {isToday(day) ? 'today' : ''}" style="min-height: 120px;">
           <p class="text-center">{format(day, 'd')}</p>
-          {#each data.events as event}
+          {#each expandedEvents as event}
             {#if isSameDay(event.start, day)}
               <div class="badge bg-primary w-100 mb-1">📅 {event.title}</div>
             {/if}
@@ -126,7 +163,7 @@
           <div class="col border p-2 {isToday(day) ? 'today' : ''} {!isSameMonth(day, currentDate) ? 'text-muted bg-light' : ''}" style="min-height: 120px;">
             <p>{format(day, 'd')}</p>
             {#if isSameMonth(day, currentDate)}
-              {#each data.events as event}
+              {#each expandedEvents as event}
                 {#if isSameDay(event.start, day)}
                   <div class="badge bg-primary w-100 mb-1">📅 {event.title}</div>
                 {/if}
