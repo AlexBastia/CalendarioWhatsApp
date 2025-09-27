@@ -1,4 +1,4 @@
-import { Tasks } from "$lib/models/Task";
+import { Task } from "$lib/models/Task";
 import { fail, error } from "@sveltejs/kit";
 
 // Definiamo un ordine di importanza per i livelli di notifica.
@@ -11,7 +11,7 @@ const urgencyOrder = {
 
 
 export async function computeLevel(userID, now) {
-  const tasks = await Tasks.find({
+  const tasks = await Task.find({
     userId: userID,
     status: 'todo'
   })

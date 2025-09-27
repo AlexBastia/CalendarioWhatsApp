@@ -2,19 +2,19 @@ import { Evento } from '$lib/models/Event.js';
 import { Pomodoro } from '$lib/models/Pomodoro.js'; // Aggiunto per caricarlo nel form
 import { redirect, fail } from '@sveltejs/kit';
 import { startOfDay, set, differenceInMilliseconds, add } from 'date-fns';
-import { Tasks } from '$lib/models/Task.js';
+import { Task } from '$lib/models/Task.js';
 
 async function updateTask(userId, today) {
   const startOfToday = startOfDay(today);
   // Trova tutte le attività con stato 'todo' e deadline precedente a oggi
-  const tasksToUpdate = await Tasks.find({
+  const tasksToUpdate = await Task.find({
     userId: userId,
     status: 'todo',
     deadline: { $lt: startOfToday }
   });
 
   for (const task of tasksToUpdate) {
-    await Tasks.findByIdAndUpdate(task._id, {
+    await Task.findByIdAndUpdate(task._id, {
       $set: { status: 'late' } // Aggiorna lo stato a 'in ritardo'
     });
   }
@@ -77,7 +77,7 @@ export async function load({ locals }) {
   // CORREZIONE 2: Carica anche le 'Tasks'
   const [eventiUtente, attivitaUtente, pomodoriUtente] = await Promise.all([
     Evento.find({ userID: locals.user.id }).lean(),
-    Tasks.find({ userId: locals.user.id }).lean(), 
+    Task.find({ userId: locals.user.id }).lean(), 
     Pomodoro.find({ userID: locals.user.id }).lean()
   ]);
 
@@ -174,10 +174,10 @@ export const actions = {
 
     if (taskId) {
       // Se c'è un ID, aggiorna l'attività esistente
-      await Tasks.findOneAndUpdate({ _id: taskId, userId: locals.user.id }, taskData);
+      await Task.findOneAndUpdate({ _id: taskId, userId: locals.user.id }, taskData);
     } else {
       // Altrimenti, crea una nuova attività
-      await Tasks.create(taskData);
+      await Task.create(taskData);
     }
 
     // Reindirizza l'utente al calendario dopo l'operazione

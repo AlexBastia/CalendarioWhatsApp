@@ -1,4 +1,5 @@
 import { List } from '$lib/models/List';
+import { Task } from '$lib/models/Task';
 import { error, redirect, fail } from '@sveltejs/kit';
 import { getCurrTime, withAuth } from '$lib/server/utilities';
 import { updateTagsForItem } from '$lib/server/utilities';
@@ -50,15 +51,29 @@ export const actions = {
 		const formData = await event.request.formData();
 		const descr = formData.get('descr');
 		const deadline = formData.get('deadline');
+		const itemId = new Types.ObjectId();
 
-		const newItem = { descr, deadline };
-		const res = await List.findOneAndUpdate(
+		const newItem = { _id: itemId, descr, deadline };
+		let res = await List.findOneAndUpdate(
 			{ _id: event.params.id, userID: event.locals.user._id },
 			{
 				$push: { items: newItem }
 			}
 		);
 		if (!res) return fail(500, { failed: true });
+
+		if (deadline) {
+			const newTask = new Task({
+				title: descr || 'Nuova attivita',
+				deadline: new Date(deadline),
+				description: '',
+				status: 'todo',
+				userId: event.locals.user._id,
+				listItemId: itemId
+			});
+			const saved = await newTask.save();
+			if (!saved) return fail(500, { failed: true });
+		}
 
 		return { success: true };
 	}),
@@ -72,10 +87,13 @@ export const actions = {
 		const formData = await event.request.formData();
 		const id = formData.get('id');
 
-		const res = await List.findOneAndUpdate(
+		let res = await List.findOneAndUpdate(
 			{ _id: event.params.id, userID: event.locals.user._id },
 			{ $pull: { items: { _id: id } } }
 		);
+		if (!res) return fail(500, { failed: true });
+
+		res = await Task.deleteMany({ userId: event.locals.user._id, listItemId: id });
 		if (!res) return fail(500, { failed: true });
 
 		return { success: true };
@@ -103,7 +121,6 @@ export const actions = {
 	updateTags: withAuth(async (event) => {
 		return await updateTagsForItem(event, event.params.id);
 	}),
-
 
 	// DELETE List
 	delete: withAuth(async (event) => {

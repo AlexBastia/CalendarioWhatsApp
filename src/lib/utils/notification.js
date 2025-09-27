@@ -1,6 +1,6 @@
 // src/lib/utils/notifications.js
 
-import {Tasks } from '$lib/models/Task'
+import {Task } from '$lib/models/Task'
 
 const defaultIcon = "🔥";
 
@@ -61,7 +61,7 @@ export const presetsPomodoro = {
 };
 
 export async function getNotificationForTsks(userID){
-    const tasks = await Tasks.find({ userId: userID, status: 'todo' }).lean();
+    const tasks = await Task.find({ userId: userID, status: 'todo' }).lean();
     const notifiche = [];
 
     tasks.forEach(task => {

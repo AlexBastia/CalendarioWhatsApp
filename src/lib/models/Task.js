@@ -27,7 +27,10 @@ const attivitaSchema = new mongoose.Schema({
         type: String,
         enum: ['Nessuna', 'Imminente', 'Oggi', 'Scaduta'],
         default: 'Nessuna'
+    },
+    listItemId: {
+        type: mongoose.Schema.Types.ObjectId
     }
 });
 
-export const Tasks =  mongoose.model('Tasks', attivitaSchema);
+export const Task =  mongoose.model('Tasks', attivitaSchema);
