@@ -14,7 +14,11 @@
   let {data} = $props();
   
   let currentDate = $derived($timingStore);
-  let viewMode = $state('monthly'); 
+  let viewMode = $state('monthly');
+
+  function goToEvent(id) {
+    goto(`/calendario/event/${id}`);
+  }
 
   function toggleView() {
     viewMode = viewMode === 'daily' ? 'weekly' 
@@ -70,7 +74,7 @@
         {#each data.events as event}
             {#if isSameDay(event.start, currentDate)}
                 <!-- MODIFICA: Utilizzo di onclick -->
-                <div onclick={() => goto(`/calendario/${event._id}`)} class="list-group-item list-group-item-action event-link">
+                <div onclick={()=>goToEvent(event._id)} class="list-group-item list-group-item-action event-link">
                     📅 {event.title}
                 </div>
             {/if}
@@ -104,7 +108,7 @@
           {#each data.events as event}
             {#if isSameDay(event.start, day)}
               <!-- MODIFICA: Utilizzo di onclick -->
-              <div onclick={() => goto(`/calendario/${event._id}`)} class="badge bg-primary w-100 mb-1 event-link">
+              <div onclick={()=>goToEvent(event._id)} class="badge bg-primary w-100 mb-1 event-link">
                 📅 {event.title}
               </div>
             {/if}
@@ -135,7 +139,7 @@
               {#each data.events as event}
                 {#if isSameDay(event.start, day)}
                   <!-- MODIFICA: Utilizzo di onclick -->
-                  <div onclick={() => goto(`/calendario/${event._id}`)} class="badge bg-primary w-100 mb-1 event-link">
+                  <div onclick={()=>goToEvent(event._id)} class="badge bg-primary w-100 mb-1 event-link">
                     📅 {event.title}
                   </div>
                 {/if}
@@ -161,7 +165,7 @@
         type="button"
         class="btn btn-primary me-2"
         data-bs-dismiss="modal"
-        onclick={() => goto('/calendario/addEvent')}
+        onclick={() => goto('/calendario/event/addEvent')}
     >
         <i class="bi bi-calendar-plus"></i> Evento
     </button>
@@ -169,7 +173,7 @@
         type="button"
         class="btn btn-success"
         data-bs-dismiss="modal"
-        onclick={() => goto('/calendario/addTask')}
+        onclick={() => goto('/calendario/task/addTask')}
     >
         <i class="bi bi-list-task"></i> Attività
     </button>

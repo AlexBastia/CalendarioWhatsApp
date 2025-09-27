@@ -19,7 +19,7 @@ const attivitaSchema = new mongoose.Schema({
         default: 'todo' 
     },
     userId: {
-        type: mongoose.Schema.Types.ObjectId, // Usa il percorso completo
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User'
     },

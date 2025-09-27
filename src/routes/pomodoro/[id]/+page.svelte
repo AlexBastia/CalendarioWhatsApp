@@ -139,7 +139,7 @@ async function updateStatus(status) {
   formData.append('eventId', eventId);
   formData.append('status', status);
 
-  await fetch('/calendario?/updateStatus', {
+  await fetch('/calendario/event?/updateStatus', {
     method: 'POST',
     body: formData
   });

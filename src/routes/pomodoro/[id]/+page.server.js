@@ -1,17 +1,19 @@
 // /pomodoro/[id]/+server.js
 import { Pomodoro } from '$lib/models/Pomodoro.js';
+import { Evento } from '$lib/models/Event.js'; // Potrebbe servire per validazioni
 import { Notifica } from '$lib/models/Notification.js';
 import { User } from '$lib/models/User';
 import { redirect, error, fail } from '@sveltejs/kit';
 import { previousMondayWithOptions } from 'date-fns/fp';
 
 export async function load(event) {
+  console.log(`zio pera2}`);
   if (!event.locals.user) {
     throw redirect(303, '/login');
   }
 
   const pomodoroId = event.params.id;
-  console.log(`Caricamento Pomodoro [${pomodoroId}] per utente ${event.locals.user.username}`);
+  console.log(`Caricamento Pomodoro [${pomodoroId}] per utente ${event.locals.user._id}`);
 
   try {
     console.log(`Eseguo findOne per Pomodoro [${pomodoroId}]`);
@@ -26,6 +28,19 @@ export async function load(event) {
     }
 
     console.log(`Eseguo LOAD per Pomodoro [${pomodoroId}] alle ${new Date().toLocaleTimeString()}`);
+    // controllo evento collegato con struttura:  pomodoro/68d02a7bb3edb49ab36718c9?eventId=68d86263ceef92a51ca3fea6
+    // if (event.url.searchParams.has('eventId')) {
+    //   const eventId = event.url.searchParams.get('eventId');
+    //   console.log(`Controllo evento collegato con ID ${eventId}`);
+    //   const linkedEvent = await Evento.findOne({ _id: eventId, pomodoroPreset: pomodoroId });
+    //   if (linkedEvent) {
+    //     console.log('Evento collegato trovato:', linkedEvent);
+    //     pomodoroDoc.linkedEvent = JSON.parse(JSON.stringify(linkedEvent));
+    //   } else {
+    //     console.log('Nessun evento collegato trovato o non corrispondente');
+    //   }
+    // }
+
 
     return {
       pomodoro: JSON.parse(JSON.stringify(pomodoroDoc))

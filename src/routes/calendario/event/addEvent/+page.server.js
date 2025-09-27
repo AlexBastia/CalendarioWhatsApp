@@ -9,9 +9,11 @@ export async function load({ locals }) {
 
     // Carica tutti i preset pomodoro dell'utente
     const pomodori = await Pomodoro.find({ userID: locals.user.id });
+    console.log("Pomodori caricati:", pomodori);
 
     // Restituisci i dati al componente frontend
     return {
         pomodori: JSON.parse(JSON.stringify(pomodori))
     };
 }
+

@@ -7,6 +7,6 @@
 
 <EventForm 
     pomodoroPresets={data.pomodori}
-    formAction="/calendario?/saveEvent"
+    formAction="/calendario/event?/saveEvent"
     deleteAction=""
 />
