@@ -109,15 +109,6 @@
                     </li>
                 {/each}
             {/if}
-            
-            <!-- Sezione per future notifiche tasks (al momento commentata) -->
-            <!-- 
-            {#if data.notificationTasks && typeof data.notificationTasks === 'object' && !data.notificationTasks.then}
-                <li class="dropdown-divider"></li>
-                <li class="dropdown-header">📋 Notifiche Attività</li>
-                Qui andrebbero le notifiche tasks quando saranno disponibili 
-            {/if}
-            -->
         </ul>
     </div>
 </div>

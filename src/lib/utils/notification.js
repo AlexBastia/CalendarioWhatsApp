@@ -62,6 +62,7 @@ export const presetsPomodoro = {
 
 export async function getNotificationForTsks(userID){
     const tasks = await Task.find({ userId: userID, status: 'todo' }).lean();
+    console.log(`Trovate ${tasks.length} attività per l'utente ${userID}`);
     const notifiche = [];
 
     tasks.forEach(task => {

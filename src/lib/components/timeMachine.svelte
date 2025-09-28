@@ -50,50 +50,128 @@
     }
 </script>
 
-<div class="p-3 shadow rounded position-fixed z-3 bg-black dimension-time-machine text-light">
-    <h6 class="text-center mb-3">
-        <i class="bi bi-clock-history"></i> Time Machine
-    </h6>
-    
-    <div class="current-time-display text-center mb-3">
-        <span class="badge bg-secondary fs-6">
-            {format(currentTime, 'dd/MM/yyyy HH:mm')}
-        </span>
+<!-- Mobile First: Layout verticale su mobile -->
+<div class="time-machine-container position-fixed bottom-0 start-0 end-0 bg-dark text-light border-top border-secondary p-2 d-block d-lg-none">
+    <div class="container-fluid">
+        <!-- Riga 1: Titolo e orario corrente -->
+        <div class="row g-1 mb-2">
+            <div class="col-6">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-clock-history me-2"></i>
+                    <small class="fw-bold">Time Machine</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="badge bg-secondary w-100 text-center small">
+                    {format(currentTime, 'dd/MM HH:mm')}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Riga 2: Controlli -->
+        <div class="row g-1">
+            <div class="col-4">
+                <input 
+                    type="date" 
+                    class="form-control form-control-sm" 
+                    bind:value={dateInput} 
+                />
+            </div>
+            <div class="col-3">
+                <input 
+                    type="time" 
+                    class="form-control form-control-sm" 
+                    bind:value={timeInput} 
+                />
+            </div>
+            <div class="col-3">
+                <button 
+                    class="btn btn-primary btn-sm w-100" 
+                    onclick={applyChanges}
+                >
+                    Applica
+                </button>
+            </div>
+            <div class="col-2">
+                <button 
+                    class="btn btn-outline-secondary btn-sm w-100 p-1" 
+                    onclick={handleReset}
+                    title="Reset"
+                >
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div class="controls d-flex gap-2 mb-2">
-        <input 
-            type="date" 
-            class="form-control" 
-            bind:value={dateInput} 
-        />
-        <input 
-            type="time" 
-            class="form-control" 
-            bind:value={timeInput} 
-        />
-    </div>
-    
-    <div class="d-grid gap-2">
-        <button 
-            class="btn btn-primary" 
-            onclick={applyChanges}
-        >
-            Applica
-        </button>
-        <button 
-            class="btn btn-outline-secondary" 
-            onclick={handleReset}
-        >
-            Reset all'ora reale
-        </button>
+<!-- Desktop: Layout orizzontale più ampio -->
+<div class="time-machine-container position-fixed bottom-0 start-50 translate-middle-x bg-dark text-light rounded-top border border-secondary p-3 d-none d-lg-block">
+    <div class="d-flex align-items-center gap-3">
+        <!-- Titolo -->
+        <div class="d-flex align-items-center">
+            <i class="bi bi-clock-history me-2"></i>
+            <span class="fw-bold">Time Machine</span>
+        </div>
+        
+        <!-- Orario corrente -->
+        <div class="badge bg-secondary fs-6">
+            {format(currentTime, 'dd/MM/yyyy HH:mm')}
+        </div>
+        
+        <!-- Controlli -->
+        <div class="d-flex gap-2">
+            <input 
+                type="date" 
+                class="form-control form-control-sm" 
+                bind:value={dateInput} 
+                style="width: 150px;"
+            />
+            <input 
+                type="time" 
+                class="form-control form-control-sm" 
+                bind:value={timeInput} 
+                style="width: 120px;"
+            />
+        </div>
+        
+        <!-- Pulsanti -->
+        <div class="d-flex gap-2">
+            <button 
+                class="btn btn-primary btn-sm" 
+                onclick={applyChanges}
+            >
+                Applica
+            </button>
+            <button 
+                class="btn btn-outline-secondary btn-sm" 
+                onclick={handleReset}
+                title="Reset all'ora reale"
+            >
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+        </div>
     </div>
 </div>
 
 <style>
-    .dimension-time-machine {
-        bottom: 1rem;
-        left: 1rem;
-        width: 300px; /* Larghezza fissa per leggibilità */
+    .time-machine-container {
+        z-index: 1050; /* Sopra la maggior parte degli elementi Bootstrap */
+    }
+    
+    /* Assicura che il contenitore non interferisca con il contenuto */
+    body {
+        padding-bottom: 80px; /* Spazio per la time machine su mobile */
+    }
+    
+    @media (min-width: 992px) {
+        body {
+            padding-bottom: 0; /* Reset padding su desktop */
+        }
+        
+        .time-machine-container.d-none.d-lg-block {
+            width: auto;
+            max-width: 90%;
+        }
     }
 </style>

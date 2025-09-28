@@ -23,7 +23,7 @@ export async function load(event) {
   else{
     await computeLevel(event.locals.user._id, new Date());
   }
-  const notificationsForTasks = getNotificationForTsks(event.locals.user._id);
+  const notificationsForTasks = await getNotificationForTsks(event.locals.user._id);
 
   console.log('notification2:', notificationForPom);
 

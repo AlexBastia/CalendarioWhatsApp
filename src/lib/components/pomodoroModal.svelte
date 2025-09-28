@@ -26,7 +26,7 @@
 	function applicaSuggerimento(proposta) {
 		timeStudy = proposta.studio;
 		timeBreak = proposta.pausa;
-		cicli = proposta.cicli;
+		cicli = proposta.numCicli;
 	}
 	export function show() {
 		modal.show();
@@ -79,7 +79,7 @@
 									style="cursor: pointer;"
 								>
 									<div class="d-flex w-100 justify-content-between">
-										<h6 class="mb-1">{proposta.cicli} cicli</h6>
+										<h6 class="mb-1">{proposta.numCicli} cicli</h6>
 										<small>Utilizzo: {proposta.tempoUtilizzato} min</small>
 									</div>
 									<p class="mb-1 small">
