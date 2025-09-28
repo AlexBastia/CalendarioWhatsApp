@@ -7,7 +7,7 @@
 	style="max-width: 400px; min-width: 100px;"
 >
 	<a class="card-link" {href} aria-label={`Dettagli per ${title}`} tabindex="0"></a>
-	<div class="card-body d-flex flex-column">
+	<div class="card-body p-3 d-flex flex-column">
 		{@render children()}
 	</div>
 </div>

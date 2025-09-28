@@ -26,7 +26,7 @@ export async function load(event) {
 		error(500);
 	}
 
-	const userIsAuthor = list.userID.equals(event.locals.user._id);
+	const userIsAuthor = list?.userID.equals(event.locals.user._id);
 	if (!userIsAuthor) error(500, { message: 'Appunto non trovato' });
 
 	const userTags = userData.tags;
