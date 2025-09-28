@@ -41,13 +41,11 @@
 		return async ({ result, update }) => {
 			console.log('removeUser result', result);
 			if (result.type === 'success') {
-				const data = result.data ?? {};
-				// server ritorna { notificaId, success, message }
-				if (data.notificaId) {
-					// rimuovi eventuale email corrispondente in notificheInviate
-					// (se vuoi correlare email↔notifica, server dovrebbe restituire email)
-					// qui rimuoviamo usando notificaId solo nella lista di debug messages
-					messages = [...messages, data.message ?? 'Notifica rimossa'];
+				
+				// rimuovi l'utente dalle notifiche inviate (se presente)
+				
+				if (result.data.email) {
+					notificheInviate = notificheInviate.filter(email => email !== result.data.email);
 				}
 				update();
 			} else if (result.type === 'failure') {

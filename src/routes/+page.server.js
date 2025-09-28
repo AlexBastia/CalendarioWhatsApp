@@ -10,13 +10,12 @@ export async function load(event) {
     redirect(302, "/login")
   }
 
-  console.log
 
   console.log("Loading notifications for user:", event.locals.user._id);
 
-  const unreadNotifications = await Notifica.find({ destinatario: event.locals.user._id});
+  const notificationForPom = await Notifica.find({ destinatario: event.locals.user._id});
 
-  console.log("Found notifications:", unreadNotifications);
+  console.log("Found notifications:", notificationForPom);
   console.log(event.locals.user._id)
   if (event.locals.user.virtualTime){
     await computeLevel(event.locals.user._id, event.locals.user.virtualTime);
@@ -26,7 +25,9 @@ export async function load(event) {
   }
   const notificationsForTasks = getNotificationForTsks(event.locals.user._id);
 
-  return { unreadNotifications: JSON.parse(JSON.stringify(unreadNotifications)), notificationTasks: notificationsForTasks };
+  console.log('notification2:', notificationForPom);
+
+  return { notificationForPom: JSON.parse(JSON.stringify(notificationForPom)), notificationTasks: notificationsForTasks };
 }
 
 export const actions = {

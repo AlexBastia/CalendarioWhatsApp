@@ -65,16 +65,12 @@ export const actions = {
 
       const notifica = await Notifica.deleteOne({ destinatario: idDest, tipo: 'CONDIVISIONE_POMODORO', riferimento: params.id, mittente: locals.user._id });
 
-      if (!notificaId) {
-        return fail(400, { message: 'ID notifica mancante', error: true });
+      if (!notifica) {
+        return fail(400, { message: 'no notifica id', error: true });
       }
-
-
-
-      if (!deleted || deleted.deletedCount === 0) {
-        return fail(404, { message: 'Notifica non trovata', error: true });
-      }
-      return { success: true, message: 'Notifica eliminata', notificaId };
+      console.log('Notifica cancellata:', notifica);
+      // ritorniamo dati serializzabili utili al client (email e id)
+      return { success: true, message: 'Notifica eliminata', notifica: JSON.parse(JSON.stringify(notifica)), email: emailDest };
     } catch (err) {
       console.error('Errore cancellazione notifica:', err);
       return fail(500, { message: 'Errore durante la cancellazione', error: true });
@@ -105,25 +101,12 @@ export const actions = {
       if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
       if (pomodoro.sharedUsers.some(id => id.equals(user._id))) return fail(403, { message: 'Già conviso', error: true });
 
-      // const notificationSchema = new Schema({
-      //   destinatario: { type: Types.ObjectId, ref: 'User', required: true },
-      //   mittente: { type: Types.ObjectId, ref: 'User' },
-      //   letta: { type: Boolean, default: false, required: true },
-      //   tipo: {
-      //     type: String,
-      //     enum: ['CONDIVISIONE_POMODORO', 'INVITO_EVENTO', 'NUOVA_ATTIVITA'],
-      //     required: true
-      //   },
-      //   riferimento: { type: Types.ObjectId, required: true }
-      // },
-      // {
-      //   timestamps: true 
-      // });
-
+     
+      const existingNotification = await Notifica.findOne({ destinatario: user._id, tipo: 'CONDIVISIONE_POMODORO', riferimento: pomodoro._id, mittente: locals.user._id });
       // devo controllare se è già stata inviata una notifica con la stessa conf
-      if(Notifica.find({mittente: locals.user._id,destinatario: user._id,tipo: "CONDIVISIONE_POMODORO",riferimento: pomodoro._id})){
-        console.log('f');
-        return fail(403, {message: 'notifica già inviata', error: true});
+      console.log('Controllo notifica esistente:', existingNotification);
+      if (existingNotification) {
+        return fail(409, { message: 'Notifica già inviata', error: true });
       }
 
       // crea la notifica (non aggiungiamo sharedUsers qui)

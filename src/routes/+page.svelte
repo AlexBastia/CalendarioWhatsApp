@@ -1,13 +1,10 @@
 <script>
 	import NotificationBell from "$lib/components/NotificationBell.svelte";
 
-	let {unreadNotifications, notificationTasks} = $props();
-	console.log("notifiche non lette:", unreadNotifications);
+	let {data } = $props();
+	console.log("notifiche non lette:", data);
 
-	// Dice che non e' iterabile
-	// for (const notification of notificationTasks){
-		
-	// }
+	
 </script>
 
 <main>
@@ -21,6 +18,11 @@
 		<li><a href="/logout">Logout</a></li>
 	</ul>
 
-	<NotificationBell {unreadNotifications}></NotificationBell>
+	{#if !data.notificationForPom}
+		<p>Non ci sono notifiche non lette.</p>
+	{:else}
+	<NotificationBell data={data}  />
+		
+	{/if}
 </main>
 
