@@ -1,11 +1,21 @@
 <script>
     import {timingStore} from '$lib/stores/timing';
-    let { task = {
-        title: '',
-        description: '',
-        deadline: $timingStore ? $timingStore.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10) // Default a oggi
-    }, formAction} = $props();
+    import { format } from 'date-fns';
     
+    // Ricevi i dati come prima
+    let { task = { title: '', description: '' }, formAction, deleteAction } = $props();
+
+    // 2. Quando crei lo stato 'e', formatta la 'deadline'
+    let e = $state({
+        ...task,
+        deadline: task.deadline 
+            // Se la task ha una deadline, formattala
+            ? format(new Date(task.deadline), 'yyyy-MM-dd') 
+            // Altrimenti, usa la data di oggi (per una nuova task)
+            : format($timingStore, 'yyyy-MM-dd')
+    });
+    
+    console.log("task in form:", e);
 
     // Funzione per tornare indietro
     function handleCancel() {
@@ -32,7 +42,7 @@
                             id="title" 
                             name="title" 
                             placeholder="Titolo dell'attività" 
-                            bind:value={task.title} 
+                            bind:value={e.title} 
                             required 
                         />
                         <label for="title">Titolo</label>
@@ -46,7 +56,7 @@
                             id="description" 
                             name="description" 
                             placeholder="Aggiungi dettagli..." 
-                            bind:value={task.description}
+                            bind:value={e.description}
                             style="height: 100px"
                         ></textarea>
                         <label for="description">Descrizione (opzionale)</label>
@@ -62,7 +72,7 @@
                         id="deadline" 
                         name="deadline" 
                         class="form-control form-control-lg" 
-                        bind:value={task.deadline} 
+                        bind:value={e.deadline} 
                         required 
                     />
                 </div>
@@ -78,5 +88,17 @@
                 </button>
             </div>
         </form>
+        <!-- delete form -->
+         {#if e._id && deleteAction}
+        <form method="POST" action={deleteAction} class="mt-3">
+            <input name="id" type="hidden" value={task._id} />
+            <div class="d-flex justify-content-start">
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="bi bi-trash me-2"></i>Elimina Attività
+                </button>
+            </div>
+
+        </form>
+        {/if}
     </div>
 </div>

@@ -153,21 +153,11 @@
 		});
 	}
 
-<<<<<<< HEAD
-  await fetch('/calendario/event?/updateStatus', {
-    method: 'POST',
-    body: formData
-  });
-}
+
 
 onMount(async () => {
   initNotifiche();
 });
-=======
-	onMount(async () => {
-		initNotifiche();
-	});
->>>>>>> 7b57e11761663d9be02e694b73c867e1383db5c9
 </script>
 
 {#if !pomData}

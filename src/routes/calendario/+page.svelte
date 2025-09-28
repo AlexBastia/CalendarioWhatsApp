@@ -53,6 +53,11 @@
     goto(`/calendario/event/${id}`);
   }
 
+  // NUOVA FUNZIONE PER ANDARE ALLA PAGINA DEL TASK
+  function goToTask(id){
+    goto(`/calendario/task/${id}`);
+  }
+
   function toggleView() {
     viewMode = viewMode === 'daily' ? 'weekly' 
         : viewMode === 'weekly' ? 'monthly' 
@@ -106,7 +111,6 @@
     <div class="list-group list-group-flush">
         {#each expandedEvents as event}
             {#if isSameDay(event.start, currentDate)}
-                <!-- MODIFICA: Utilizzo di onclick -->
                 <div onclick={()=>goToEvent(event._id)} class="list-group-item list-group-item-action event-link">
                     📅 {event.title}
                 </div>
@@ -114,13 +118,13 @@
         {/each}
         {#each data.tasks as task}
             {#if isSameDay(task.deadline, currentDate) && task.status !== 'late'}
-                <div class="list-group-item {task.status === 'late' ? 'task-late' : ''}">📝 {task.title}</div>
+                <div onclick={()=>goToTask(task._id)} class="list-group-item list-group-item-action event-link {task.status === 'late' ? 'task-late' : ''}">📝 {task.title}</div>
             {/if}
         {/each}
         {#if isToday(currentDate)}
             {#each data.tasks as task}
                 {#if task.status === 'late'}
-                    <div class="list-group-item task-late">🚨 {task.title} (Scaduta)</div>
+                    <div onclick={()=>goToTask(task._id)} class="list-group-item list-group-item-action event-link task-late">🚨 {task.title} (Scaduta)</div>
                 {/if}
             {/each}
         {/if}
@@ -140,7 +144,6 @@
           <p class="text-center">{format(day, 'd')}</p>
           {#each expandedEvents as event}
             {#if isSameDay(event.start, day)}
-              <!-- MODIFICA: Utilizzo di onclick -->
               <div onclick={()=>goToEvent(event._id)} class="badge bg-primary w-100 mb-1 event-link">
                 📅 {event.title}
               </div>
@@ -148,7 +151,7 @@
           {/each}
           {#each data.tasks as task}
             {#if isSameDay(task.deadline, day)}
-              <div class="badge w-100 mb-1 {task.status === 'late' ? 'bg-danger' : 'bg-success'}">📝 {task.title}</div>
+              <div onclick={()=>goToTask(task._id)} class="badge w-100 mb-1 event-link {task.status === 'late' ? 'bg-danger' : 'bg-success'}">📝 {task.title}</div>
             {/if}
           {/each}
         </div>
@@ -171,7 +174,6 @@
             {#if isSameMonth(day, currentDate)}
               {#each expandedEvents as event}
                 {#if isSameDay(event.start, day)}
-                  <!-- MODIFICA: Utilizzo di onclick -->
                   <div onclick={()=>goToEvent(event._id)} class="badge bg-primary w-100 mb-1 event-link">
                     📅 {event.title}
                   </div>
@@ -179,7 +181,7 @@
               {/each}
               {#each data.tasks as task}
                 {#if isSameDay(task.deadline, day)}
-                  <div class="badge w-100 mb-1 {task.status === 'late' ? 'bg-danger' : 'bg-success'}">📝 {task.title}</div>
+                  <div onclick={()=>goToTask(task._id)} class="badge w-100 mb-1 event-link {task.status === 'late' ? 'bg-danger' : 'bg-success'}">📝 {task.title}</div>
                 {/if}
               {/each}
             {/if}
@@ -248,4 +250,3 @@
         text-align: left;
     }
 </style>
-

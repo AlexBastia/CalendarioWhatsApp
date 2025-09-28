@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 
 export async function load({ locals }) {
-    console.log('ds')
+    console.log('ds2')
     if (!locals.user) {
         redirect(303, '/login');
     }
