@@ -2,6 +2,8 @@ import { redirect } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
 import { Task } from '$lib/models/Task.js';
 
+// protecting the route
+
 export async function load(event) {
   if (!event.locals.user) {
     console.log('zio pera1');
