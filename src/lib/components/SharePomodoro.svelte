@@ -84,7 +84,18 @@
 			{#each notificheInviate as email (email)}
 				<div class="list-group-item d-flex justify-content-between align-items-center p-1">
 					<span>{email}</span>
-					<!-- se vuoi rimuovere la notifica subito (se hai id, server deve restituire it) -->
+					<!-- mettiamo una "x" per rimuovere subito la notifica con delete user-->
+					<form
+						method="POST"
+						action="?/removeUser"
+						use:enhance={onEnhanceRemove}
+						class="m-0 p-0 d-flex align-items-center"
+					>
+						<input type="hidden" name="email" value={email} />
+						<button type="submit" class="btn text-danger btn-sm" aria-label="remove notification">
+							<i class="bi bi-x-circle-fill"></i>
+						</button>
+					</form>
 				</div>
 			{/each}
 		</div>
@@ -101,7 +112,7 @@
 			{#each pomodoro.sharedUsers ?? [] as user (user._id)}
 				<form
 					method="POST"
-					action="?/removeUser"
+					action="?/removeUserFromShared"
 					use:enhance={onEnhanceRemove}
 					class="list-group-item d-flex justify-content-between align-items-center p-1"
 				>

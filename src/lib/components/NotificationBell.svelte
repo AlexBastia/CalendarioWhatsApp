@@ -3,7 +3,7 @@
     import { enhance } from '$app/forms';
 
     // I dati (incluse le notifiche) arrivano dal +layout.server.js
-    let notifications = $derived($page.data.unreadNotifications || []);
+    let {notifications} = $props();
 </script>
 
 <div>
@@ -25,7 +25,7 @@
                                         ()=>{return async ({ result, update }) => {
                                         if (result.type === 'success') {
                                             // Rimuovi la notifica accettata dalla lista
-                                            notifications = notifications.filter(n => n.id !== notification._id);
+                                            notifications = notifications.filter(n => n._id !== notification._id);
                                             // Eventualmente aggiorna altre parti dell'interfaccia
                                             await update();
                                         }}
@@ -38,7 +38,7 @@
                                         ()=>{return async ({ result, update }) => {
                                         if (result.type === 'success') {
                                             // Rimuovi la notifica accettata dalla lista
-                                            notifications = notifications.filter(n => n.id !== notification._id);
+                                            notifications = notifications.filter(n => n._id !== notification._id);
                                             // Eventualmente aggiorna altre parti dell'interfaccia
                                             await update();
                                         }}

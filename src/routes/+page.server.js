@@ -1,9 +1,8 @@
-import { redirect } from "@sveltejs/kit"
+import { redirect, fail } from "@sveltejs/kit"
 import { Notifica } from "$lib/models/Notification";
 import { Pomodoro } from "$lib/models/Pomodoro.js";
 import {computeLevel} from '$lib/utils/UpdateTasks.js';
 import { getNotificationForTsks } from "$lib/utils/notification.js";
-import { fail } from "assert";
 import { timingStore } from '$lib/stores/timing.js'
 
 export async function load(event) {

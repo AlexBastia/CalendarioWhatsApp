@@ -5,6 +5,7 @@ import { Notifica } from '$lib/models/Notification.js';
 import { User } from '$lib/models/User';
 import { redirect, error, fail } from '@sveltejs/kit';
 import { previousMondayWithOptions } from 'date-fns/fp';
+import { mergeAlias } from 'vite';
 
 export async function load(event) {
   console.log(`zio pera2}`);
@@ -57,15 +58,19 @@ export const actions = {
     if (!locals.user) return fail(401, { message: 'Non autorizzato', error: true });
 
     const formData = await request.formData();
-    const notificaId = formData.get('notificaId');
-
-    if (!notificaId) {
-      return fail(400, { message: 'ID notifica mancante', error: true });
-    }
+    const emailDest = formData.get('email');
+    const idDest = await User.findOne({ email: emailDest }).select('_id');
 
     try {
-      const deleted = await Notifica.deleteOne({ _id: notificaId });
-      // deleted.deletedCount può essere 0/1
+
+      const notifica = await Notifica.deleteOne({ destinatario: idDest, tipo: 'CONDIVISIONE_POMODORO', riferimento: params.id, mittente: locals.user._id });
+
+      if (!notificaId) {
+        return fail(400, { message: 'ID notifica mancante', error: true });
+      }
+
+
+
       if (!deleted || deleted.deletedCount === 0) {
         return fail(404, { message: 'Notifica non trovata', error: true });
       }
@@ -150,7 +155,6 @@ export const actions = {
     }
   },
 
-  // Aggiornamento del pomodoro (stessa logica tua, ma assicurati validazioni)
   updatePomodoro: async ({ request, params, locals }) => {
     if (!locals.user) return fail(401, { message: 'Non autorizzato', error: true });
     const data = await request.formData();

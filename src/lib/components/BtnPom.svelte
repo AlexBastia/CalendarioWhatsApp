@@ -1,17 +1,17 @@
 <script>
-  let {iconSrc, ariaLabel, extraClasses} = $props();
+  let {iconSrc, ariaLabel, extraClasses = '', onclick} = $props();
 </script>
 
 <button
   type="button"
   class="btn rounded-circle {extraClasses}"
   aria-label={ariaLabel}
+  {onclick}
 >
   <img src={iconSrc} alt={ariaLabel} />
 </button>
 
 <style>
-  
   .btn {
     transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
   }

@@ -97,7 +97,9 @@
 	}
 
 	async function runCycles(startCycle = 1) {
+    console.log('runCycles called with startCycle:', startCycle);
 		running = true;
+    paused = false;
 
 		for (let i = startCycle; i <= cicli; i++) {
 			if (!running) break;
@@ -124,6 +126,7 @@
 
 		if (running) {
 			mostraNotifica(presetsPomodoro.sessionEnd.title, presetsPomodoro.sessionEnd.options);
+      console.log('aa')
 			await updateStatus('COMPLETATO');
 		}
 
@@ -137,19 +140,18 @@
 		running = false;
 		paused = false;
 		clearInterval(timerId);
-		updateStatus('INCOMPLETO');
+    console.log('bb')
 	}
 
 	async function updateStatus(status) {
 		if (!eventId) return;
 
-		const formData = new FormData();
-		formData.append('eventId', eventId);
-		formData.append('status', status);
-
-		await fetch('/calendario?/updateStatus', {
-			method: 'POST',
-			body: formData
+		await fetch(`/api/event/${eventId}`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ stat: status })
 		});
 	}
 
@@ -178,7 +180,7 @@ onMount(async () => {
 					ariaLabel="Condividi Pomodoro"
 					iconSrc={WhatsappIcon}
 					extraClasses="p-5"
-					on:click={() => {
+					onclick={() => {
 						shareModal.show();
 					}}
 				></BtnPom>
@@ -259,7 +261,8 @@ onMount(async () => {
 						ariaLabel="Avvia Pomodoro"
 						extraClasses="p-5"
 						iconSrc={PlayIcon}
-						on:click={() => {
+						onclick={() => {
+              console.log('Starting runCycles from button click');
 							runCycles();
 						}}
 					/>
@@ -270,19 +273,22 @@ onMount(async () => {
 						ariaLabel="Pausa/Riprendi"
 						extraClasses="p-5"
 						iconSrc={paused ? PlayIcon : PauseIcon}
-						on:click={() => (paused = !paused)}
+						onclick={() => (paused = !paused)}
 					/>
 					<BtnPom
 						ariaLabel="Ferma Pomodoro"
 						extraClasses="p-5"
 						iconSrc={WhatsappIcon}
-						on:click={stopTimer}
+						onclick={()=>{
+              stopTimer();
+              updateStatus('INCOMPLETO');
+            }}
 					/>
 					<BtnPom
 						ariaLabel="Ricomincia Ciclo"
 						class="p-5"
 						iconSrc={WhatsappIcon}
-						on:click={() => {
+						onclick={() => {
 							clearInterval(timerId);
 							runCycles(curCycle);
 						}}
