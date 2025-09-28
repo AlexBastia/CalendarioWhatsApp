@@ -178,38 +178,6 @@ export const actions = {
     throw redirect(303, '/calendario');
   },
 
-  saveTask: async ({ locals, request }) => {
-    if (!locals.user) {
-      redirect(301, '/login');
-    }
-    const formData = await request.formData();
-    const data = Object.fromEntries(formData);
-
-    if (!data.title || !data.deadline) {
-        return fail(400, { message: 'Titolo e scadenza sono obbligatori.' });
-    }
-
-    const taskData = {
-      title: data.title,
-      description: data.description,
-      deadline: new Date(data.deadline + 'T23:59:59'), // Imposta la scadenza alla fine del giorno
-      status: 'todo', // Nuove attività sono sempre 'todo'
-      userId: locals.user.id 
-    };
-
-    const taskId = data.id || null;
-
-    if (taskId) {
-      // Se c'è un ID, aggiorna l'attività esistente
-      await Task.findOneAndUpdate({ _id: taskId, userId: locals.user.id }, taskData);
-    } else {
-      // Altrimenti, crea una nuova attività
-      await Task.create(taskData);
-    }
-
-    // Reindirizza l'utente al calendario dopo l'operazione
-    throw redirect(303, '/calendario');
-  },
 
   deleteEvent: async ({ locals, request }) => {
     if (!locals.user) {
