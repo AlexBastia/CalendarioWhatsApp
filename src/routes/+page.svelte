@@ -1,5 +1,6 @@
 <script>
 	import NotificationBell from "$lib/components/NotificationBell.svelte";
+	import NotificationApiManager from "$lib/components/NotificationApiManager.svelte";
 
 	let {data } = $props();
 	console.log("notifiche non lette:", data);
@@ -21,7 +22,10 @@
 	{#if !data.notificationForPom}
 		<p>Non ci sono notifiche non lette.</p>
 	{:else}
-	<NotificationBell data={data}  />
+		<NotificationBell data={data}  />
+	{/if}
+	{#if data.notificationTasks && data.notificationTasks.length > 0}
+		<NotificationApiManager data={data.notificationTasks} />
 		
 	{/if}
 </main>

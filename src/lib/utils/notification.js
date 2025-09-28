@@ -1,37 +1,36 @@
 // src/lib/utils/notifications.js
 
-import {Task } from '$lib/models/Task'
+import { Task } from '$lib/models/Task'
 
 const defaultIcon = "🔥";
 
 const presetUrgenza = {
+    attivitaImminente: {
+        title: '⏰ Scadenza in avvicinamento',
+        options: {
+            body: 'Un\'attività sta per scadere. Non dimenticartene!',
+            icon: defaultIcon,
+            vibrate: [100, 50, 100]
+        }
+    },
 
-	attivitaImminente: {
-		title: '⏰ Scadenza in avvicinamento',
-		options: {
-			body: 'Un\'attività sta per scadere. Non dimenticartene!',
-			icon: defaultIcon,
-			vibrate: [100, 50, 100] // Vibrazione leggera
-		}
-	},
+    attivitaOggi: {
+        title: '🔥 Scadenza Oggi!',
+        options: {
+            body: 'Hai un\'attività che scade oggi. È ora di completarla!',
+            icon: defaultIcon,
+            vibrate: [200, 100, 200]
+        }
+    },
 
-	attivitaOggi: {
-		title: '🔥 Scadenza Oggi!',
-		options: {
-			body: 'Hai un\'attività che scade oggi. È ora di completarla!',
-			icon: defaultIcon,
-			vibrate: [200, 100, 200] // Vibrazione più decisa
-		}
-	},
-
-	attivitaScaduta: {
-		title: '🚨 ATTIVITÀ SCADUTA 🚨',
-		options: {
-			body: 'Questa attività è in ritardo! Completala il prima possibile.',
-			icon: defaultIcon,
-			vibrate: [500, 100, 500] // Vibrazione lunga e insistente
-		}
-	}
+    attivitaScaduta: {
+        title: '🚨 ATTIVITÀ SCADUTA 🚨',
+        options: {
+            body: 'Questa attività è in ritardo! Completala il prima possibile.',
+            icon: defaultIcon,
+            vibrate: [500, 100, 500]
+        }
+    }
 }
 
 export const presetsPomodoro = {
@@ -60,40 +59,48 @@ export const presetsPomodoro = {
     }
 };
 
-export async function getNotificationForTsks(userID){
+export async function getNotificationDataForTasks(userID) {
     const tasks = await Task.find({ userId: userID, status: 'todo' }).lean();
-    console.log(`Trovate ${tasks.length} attività per l'utente ${userID}`);
-    const notifiche = [];
+    console.log(`Found ${tasks.length} tasks for user ${userID}`);
+    
+    const notificationData = [];
 
     tasks.forEach(task => {
+        let notificationConfig = null;
+        
         switch (task.lastNotificationLevel) {
             case 'Imminente':
-                notifiche.push(mostraNotifica(
-                    attivitaImminente.title,
-                    attivitaImminente.options
-                ));
+                notificationConfig = presetUrgenza.attivitaImminente;
                 break;
-
             case 'Oggi':
-                notifiche.push(mostraNotifica(
-                    attivitaOggi.title,
-                    attivitaOggi.options
-                ));
+                notificationConfig = presetUrgenza.attivitaOggi;
                 break;
-
             case 'Scaduta':
-                notifiche.push(mostraNotifica(
-                    attivitaScaduta.title,
-                    attivitaScaduta.options
-                ));
+                notificationConfig = presetUrgenza.attivitaScaduta;
                 break;
+        }
+
+        if (notificationConfig) {
+            notificationData.push({
+                taskId: task._id.toString(),
+                title: notificationConfig.title,
+                options: notificationConfig.options,
+                level: task.lastNotificationLevel
+            });
         }
     });
 
-    return notifiche; // array di Notification (o undefined se permesso negato)
+    console.log(`Prepared ${notificationData.length} notifications for user ${userID}`);
+    return notificationData;
 }
 
 export async function initNotifiche() {
+    // Check if we're in browser environment
+    if (typeof window === 'undefined') {
+        console.log('Not in browser environment, skipping notification init');
+        return false;
+    }
+
     if (Notification.permission === "granted") {
         return true; 
     }
@@ -110,11 +117,16 @@ export async function initNotifiche() {
     return false;
 }
 
-// Invariata: questa funzione era già corretta
 export function mostraNotifica(title, options = {}) {
+    // Check if we're in browser environment
+    if (typeof window === 'undefined') {
+        console.log('Cannot show notification: not in browser environment');
+        return null;
+    }
+
     if (Notification.permission !== 'granted') {
         console.log('Impossibile mostrare la notifica: permesso non concesso.');
-        return;
+        return null;
     }
 
     const defaultOption = {
@@ -128,4 +140,21 @@ export function mostraNotifica(title, options = {}) {
     const notifica = new Notification(title, finalOption);
 
     return notifica;
+}
+
+export function showNotificationsFromData(notificationData) {
+    if (typeof window === 'undefined') {
+        console.log('Cannot show notifications: not in browser environment');
+        return [];
+    }
+
+    const notifications = [];
+    notificationData.forEach(data => {
+        const notification = mostraNotifica(data.title, data.options);
+        if (notification) {
+            notifications.push(notification);
+        }
+    });
+    
+    return notifications;
 }

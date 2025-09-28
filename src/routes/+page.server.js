@@ -2,18 +2,21 @@ import { redirect, fail } from "@sveltejs/kit"
 import { Notifica } from "$lib/models/Notification";
 import { Pomodoro } from "$lib/models/Pomodoro.js";
 import {computeLevel} from '$lib/utils/UpdateTasks.js';
-import { getNotificationForTsks } from "$lib/utils/notification.js";
+import { getNotificationDataForTasks } from "$lib/utils/notification.js";
 import { timingStore } from '$lib/stores/timing.js'
 
 export async function load(event) {
-  if (!event.locals.user === null) {
+  console.log("zio pera1");
+  if (event.locals.user === null) {
     redirect(302, "/login")
   }
 
+  console.log(event.locals.user)
 
-  console.log("Loading notifications for user:", event.locals.user._id);
 
-  const notificationForPom = await Notifica.find({ destinatario: event.locals.user._id});
+  console.log("Loading notifications for user:", event.locals.user.id);
+
+  const notificationForPom = await Notifica.find({ destinatario: event.locals.user.id});
 
   console.log("Found notifications:", notificationForPom);
   console.log(event.locals.user._id)
@@ -23,7 +26,7 @@ export async function load(event) {
   else{
     await computeLevel(event.locals.user._id, new Date());
   }
-  const notificationsForTasks = await getNotificationForTsks(event.locals.user._id);
+  const notificationsForTasks = await getNotificationDataForTasks(event.locals.user._id);
 
   console.log('notification2:', notificationForPom);
 
