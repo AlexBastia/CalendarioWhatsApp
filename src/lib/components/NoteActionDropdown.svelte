@@ -1,6 +1,7 @@
 <script>
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import DeleteConfirmationModal from './DeleteConfirmationModal.svelte';
 
 	let { isShared, sharingId, copyText } = $props();
 </script>
@@ -53,6 +54,7 @@
 		<li>
 			{#if !isShared}
 				<form
+					id="deleteNoteForm"
 					method="POST"
 					action="?/delete"
 					use:enhance={() => {
@@ -61,8 +63,12 @@
 						};
 					}}
 				>
-					<button class="dropdown-item text-danger" type="submit" aria-label="delete note"
-						><i class="bi bi-trash me-2"></i> Elimina</button
+					<button
+						class="dropdown-item text-danger"
+						type="button"
+						data-bs-toggle="modal"
+						data-bs-target="#deleteConfirmationModal"
+						aria-label="delete note"><i class="bi bi-trash me-2"></i> Elimina</button
 					>
 				</form>
 			{:else}
@@ -75,7 +81,7 @@
 						};
 					}}
 				>
-          <input type="hidden" name="id" value={sharingId}>
+					<input type="hidden" name="id" value={sharingId} />
 					<button class="dropdown-item text-danger" type="submit" aria-label="delete note"
 						><i class="bi bi-trash me-2"></i> Rimuovi</button
 					>

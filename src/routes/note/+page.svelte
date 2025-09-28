@@ -77,14 +77,19 @@
 <div class="position-relative vh-100">
 	<header class="container d-flex justify-content-between align-items-center">
 		<h1 class="display-2">Note</h1>
-		<button
-			type="button"
-			class="btn btn-outline-primary"
-			data-bs-toggle="modal"
-			data-bs-target="#noteModalCategorie"
-		>
-			Gestisci categorie
-		</button>
+		<div class="hstack">
+			<a href="/" aria-label="Go back to home" class="fs-2 me-5">
+				<i class="bi bi-box-arrow-left"></i>
+			</a>
+			<button
+				type="button"
+				class="btn btn-outline-primary"
+				data-bs-toggle="modal"
+				data-bs-target="#noteModalCategorie"
+			>
+				Gestisci categorie
+			</button>
+		</div>
 	</header>
 
 	<main>
