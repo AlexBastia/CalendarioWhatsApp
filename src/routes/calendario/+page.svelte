@@ -11,11 +11,12 @@
   import "bootstrap/dist/css/bootstrap.min.css";
   import { onMount } from 'svelte';
   import { expandEvent } from '$lib/utils/eventRecursion.js';
+	import Title from '$lib/components/Title.svelte';
 
   let week = ['dom','lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
   let {data} = $props();
   
-  let currentDate = $derived($timingStore);
+  let currentDate = $derived($timingStore ? $timingStore : new Date());
   //modalita` di visualizzazione, il default e` settimanale
   let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
   
@@ -93,6 +94,10 @@
   let weekDays = $derived(getWeekDays(currentDate));
   let monthCalendarDays = $derived(getMonthCalendarDays(currentDate));
 </script>
+
+<Title title={format(currentDate, "dd/mm/yyyy")}>
+
+</Title>
 
 <div class="d-flex align-items-center gap-2 mb-4">
   <label for="view-mode" class="form-label">Vista:</label>

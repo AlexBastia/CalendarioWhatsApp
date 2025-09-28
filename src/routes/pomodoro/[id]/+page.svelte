@@ -10,6 +10,7 @@
 	import PomodoroModal from '$lib/components/pomodoroModal.svelte';
 	import { initNotifiche, mostraNotifica, presetsPomodoro } from '$lib/utils/notification.js';
 	import { Task } from '$lib/models/Task';
+	import Title from '$lib/components/Title.svelte';
 
 	let { data } = $props();
 
@@ -174,55 +175,55 @@
 {:else}
 	<!-- Layout principale: container Bootstrap con struttura mobile-first -->
 	<div class="container-fluid min-vh-100 py-3">
-		<!-- Header Section: Titolo + Azioni -->
-		<header class="row mb-4">
-			<div class="col-12">
-				<!-- Card per un aspetto più pulito -->
-				<div class="card border-0 bg-light">
-					<div class="card-body py-3">
-						<!-- Flex layout per distribuire gli elementi -->
-						<div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-							<!-- Titolo Pomodoro -->
-							<div class="d-flex align-items-center">
-								<h1 class="h4 mb-0 me-3">{title}</h1>
-								{#if running}
-									<span class="badge bg-success">In corso - Ciclo {curCycle}/{cicli}</span>
-								{:else}
-									<span class="badge bg-secondary">Fermo</span>
-								{/if}
-							</div>
+		<!-- Header Section: Solo Titolo e Status -->
+		<Title title={pomData.title}></Title>
+
+		<!-- Settings & Share Section: Nuova sezione per modifica e condivisione -->
+		<section class="row justify-content-center mb-4">
+			<div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-center gap-3 flex-wrap">
+							<!-- Pulsante Condividi -->
+							<BtnPom
+								ariaLabel="Condividi Pomodoro"
+								iconSrc={WhatsappIcon}
+								extraClasses="btn-outline-success p-4"
+								onclick={() => {
+									shareModal.show();
+								}}
+							/>
 							
-							<!-- Azioni: Condividi + Impostazioni -->
-							<div class="d-flex gap-2">
-								<!-- Pulsante Condividi usando BtnPom -->
-								<BtnPom
-									ariaLabel="Condividi Pomodoro"
-									iconSrc={WhatsappIcon}
-									extraClasses="btn-outline-success p-3"
-									onclick={() => {
-										shareModal.show();
-									}}
-								/>
-								
-								<!-- Pulsante Impostazioni usando BtnPom -->
-								<BtnPom
-									ariaLabel="Impostazioni Timer"
-									iconSrc={SettingsIcon}
-									extraClasses="btn-outline-primary p-3"
-									onclick={() => {
-										// Bootstrap modal trigger via JavaScript
-										const modalElement = document.getElementById('settingsModal');
-										const modal = new bootstrap.Modal(modalElement);
-										modal.show();
-									}}
-								/>
+							<!-- Pulsante Impostazioni -->
+							<BtnPom
+								ariaLabel="Impostazioni Timer"
+								iconSrc={SettingsIcon}
+								extraClasses="btn-outline-primary p-4"
+								onclick={() => {
+									// Bootstrap modal trigger via JavaScript
+									const modalElement = document.getElementById('settingsModal');
+									const modal = new bootstrap.Modal(modalElement);
+									modal.show();
+								}}
+							/>
+						</div>
+						
+						<!-- Legenda controlli per mobile -->
+						<div class="d-block d-sm-none mt-3">
+							<div class="row text-center small text-muted g-2">
+								<div class="col-6">
+									<div class="text-success">Condividi</div>
+								</div>
+								<div class="col-6">
+									<div class="text-primary">Modifica</div>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</header>
-
+		</section>
+		
 		<!-- Timer Section: SVG Circolare -->
 		<section class="row justify-content-center mb-4">
 			<div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
@@ -306,7 +307,9 @@
 			</div>
 		</section>
 
-		<!-- Controls Section: Pulsanti di Controllo -->
+		
+
+		<!-- Controls Section: Pulsanti di Controllo Timer -->
 		<section class="row justify-content-center">
 			<div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
 				<div class="card">
