@@ -62,11 +62,13 @@ async function updatePom(userId, today) {
 }
 
 export async function load({ locals }) {
+  console.log(`Caricamento +page.server.js per /calendario`);
   // CORREZIONE 1: Usa 'throw redirect'
   if (!locals.user) {
     throw redirect(303, '/login');
   }
   
+  console.log(`Caricamento calendario per utente ${locals.user.id}`);
   const today = locals.user.virtualTime ? new Date(locals.user.virtualTime) : new Date();
 
   // Esegue gli aggiornamenti in parallelo per efficienza
@@ -74,6 +76,7 @@ export async function load({ locals }) {
       updatePom(locals.user.id, today),
       updateTask(locals.user.id, today)
   ]);
+  console.log(`Aggiornamenti completati per utente ${locals.user.id} alla data ${today}`);
 
   // CORREZIONE 2: Carica anche le 'Task'
   const [eventiUtente, attivitaUtente, pomodoriUtente] = await Promise.all([
@@ -81,6 +84,7 @@ export async function load({ locals }) {
     Task.find({ userId: locals.user.id }).lean(), 
     Pomodoro.find({ userID: locals.user.id }).lean()
   ]);
+  console.log(`Eventi trovati: ${eventiUtente.length}, Attività trovate: ${attivitaUtente.length}, Pomodori trovati: ${pomodoriUtente.length}`);
 
   return {
     events: eventiUtente.map((evento) => ({
