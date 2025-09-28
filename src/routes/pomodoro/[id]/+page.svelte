@@ -4,6 +4,7 @@
 	import WhatsappIcon from '$lib/assets/svgs/whatsapp.svg';
 	import PlayIcon from '$lib/assets/svgs/playfill.svg';
 	import PauseIcon from '$lib/assets/svgs/pause.svg';
+	import SettingsIcon from '$lib/assets/svgs/settings.svg'; // Aggiungi questa icona per le impostazioni
 	import { page } from '$app/stores';
 	import SharePomodoro from '$lib/components/SharePomodoro.svelte';
 	import PomodoroModal from '$lib/components/pomodoroModal.svelte';
@@ -97,9 +98,9 @@
 	}
 
 	async function runCycles(startCycle = 1) {
-    console.log('runCycles called with startCycle:', startCycle);
+		console.log('runCycles called with startCycle:', startCycle);
 		running = true;
-    paused = false;
+		paused = false;
 
 		for (let i = startCycle; i <= cicli; i++) {
 			if (!running) break;
@@ -126,7 +127,7 @@
 
 		if (running) {
 			mostraNotifica(presetsPomodoro.sessionEnd.title, presetsPomodoro.sessionEnd.options);
-      console.log('aa')
+			console.log('aa');
 			await updateStatus('COMPLETATO');
 		}
 
@@ -140,7 +141,7 @@
 		running = false;
 		paused = false;
 		clearInterval(timerId);
-    console.log('bb')
+		console.log('bb');
 	}
 
 	async function updateStatus(status) {
@@ -155,160 +156,296 @@
 		});
 	}
 
-
-
-onMount(async () => {
-  initNotifiche();
-});
+	onMount(async () => {
+		initNotifiche();
+	});
 </script>
 
 {#if !pomData}
-	<p>Caricamento dati Pomodoro...</p>
-	<div class="spinner-border" role="status">
-		<span class="visually-hidden">Loading...</span>
+	<!-- Loading State: utilizza Bootstrap per centrare il contenuto -->
+	<div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
+		<div class="text-center">
+			<div class="spinner-border text-primary mb-3" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+			<p class="text-muted">Caricamento dati Pomodoro...</p>
+		</div>
 	</div>
 {:else}
-	<!-- Centro verticale e orizzontale con bootstrap utilities -->
-	<div class="container min-vh-100 d-flex flex-column justify-content-center align-items-center">
-		<!-- Barra superiore di azioni: condividi + impostazioni -->
-		<div
-			class="w-100 d-flex justify-content-center align-items-center mb-3 px-3"
-			style="max-width: 900px;"
-		>
-			<div class="d-flex align-items-center">
-				<BtnPom
-					ariaLabel="Condividi Pomodoro"
-					iconSrc={WhatsappIcon}
-					extraClasses="p-5"
-					onclick={() => {
-						shareModal.show();
-					}}
-				></BtnPom>
+	<!-- Layout principale: container Bootstrap con struttura mobile-first -->
+	<div class="container-fluid min-vh-100 py-3">
+		<!-- Header Section: Titolo + Azioni -->
+		<header class="row mb-4">
+			<div class="col-12">
+				<!-- Card per un aspetto più pulito -->
+				<div class="card border-0 bg-light">
+					<div class="card-body py-3">
+						<!-- Flex layout per distribuire gli elementi -->
+						<div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+							<!-- Titolo Pomodoro -->
+							<div class="d-flex align-items-center">
+								<h1 class="h4 mb-0 me-3">{title}</h1>
+								{#if running}
+									<span class="badge bg-success">In corso - Ciclo {curCycle}/{cicli}</span>
+								{:else}
+									<span class="badge bg-secondary">Fermo</span>
+								{/if}
+							</div>
+							
+							<!-- Azioni: Condividi + Impostazioni -->
+							<div class="d-flex gap-2">
+								<!-- Pulsante Condividi usando BtnPom -->
+								<BtnPom
+									ariaLabel="Condividi Pomodoro"
+									iconSrc={WhatsappIcon}
+									extraClasses="btn-outline-success p-3"
+									onclick={() => {
+										shareModal.show();
+									}}
+								/>
+								
+								<!-- Pulsante Impostazioni usando BtnPom -->
+								<BtnPom
+									ariaLabel="Impostazioni Timer"
+									iconSrc={SettingsIcon}
+									extraClasses="btn-outline-primary p-3"
+									onclick={() => {
+										// Bootstrap modal trigger via JavaScript
+										const modalElement = document.getElementById('settingsModal');
+										const modal = new bootstrap.Modal(modalElement);
+										modal.show();
+									}}
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
+		</header>
 
-			<div class="d-flex">
-				<button
-					type="button"
-					class="btn btn-primary"
-					data-bs-toggle="modal"
-					data-bs-target="#settingsModal"
-				>
-					Impostazioni Timer
-				</button>
+		<!-- Timer Section: SVG Circolare -->
+		<section class="row justify-content-center mb-4">
+			<div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+				<!-- Card contenitore per il timer -->
+				<div class="card shadow-sm">
+					<div class="card-body text-center p-4">
+						<!-- SVG Timer: dimensioni responsive -->
+						<div class="timer-container mb-3">
+							<svg
+								class="w-100"
+								viewBox="0 0 100 100"
+								preserveAspectRatio="xMidYMid meet"
+								xmlns="http://www.w3.org/2000/svg"
+								style="max-height: 300px;"
+							>
+								<!-- Cerchio di sfondo -->
+								<circle cx="50" cy="50" {r} fill="white" />
+								<circle cx="50" cy="50" {r} fill="none" stroke="#e9ecef" stroke-width="3" />
+								
+								<!-- Cerchio di progresso -->
+								<circle
+									class="progress-ring"
+									cx="50"
+									cy="50"
+									{r}
+									fill="none"
+									stroke={running ? (paused ? '#ffc107' : '#198754') : '#6c757d'}
+									stroke-width="3"
+									stroke-linecap="round"
+									stroke-dasharray={c}
+									stroke-dashoffset={offset}
+									transform="rotate(-90 50 50)"
+								/>
+								
+								<!-- Tempo rimanente -->
+								<text 
+									x="50%" 
+									y="45%" 
+									text-anchor="middle" 
+									dy=".3em" 
+									font-size="16" 
+									font-weight="bold"
+									fill="#212529"
+								>
+									{timeStr}
+								</text>
+								
+								<!-- Informazioni ciclo -->
+								{#if running}
+									<text 
+										x="50%" 
+										y="65%" 
+										text-anchor="middle" 
+										dy=".3em" 
+										font-size="8" 
+										fill="#6c757d"
+									>
+										Ciclo {curCycle} di {cicli}
+									</text>
+								{/if}
+							</svg>
+						</div>
+
+						<!-- Informazioni aggiuntive -->
+						<div class="row text-center g-3">
+							<div class="col-4">
+								<div class="small text-muted">Studio</div>
+								<div class="fw-bold">{Math.floor(studioSec / 60)}m</div>
+							</div>
+							<div class="col-4">
+								<div class="small text-muted">Pausa</div>
+								<div class="fw-bold">{Math.floor(pausaSec / 60)}m</div>
+							</div>
+							<div class="col-4">
+								<div class="small text-muted">Cicli</div>
+								<div class="fw-bold">{cicli}</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-		</div>
+		</section>
 
-		<SharePomodoro
-			bind:this={shareModal}
-			pomodoro={pomData}
-			formAction={`?/sharePomodoro`}
-			form={$page.form}
-		/>
-
-		<PomodoroModal
-			id="settingsModal"
-			titleModal="Modifica Impostazioni"
-			formMethod="POST"
-			formAction={`?/updatePomodoro`}
-			title={pomData.title}
-			cicli={pomData.cycles}
-			timeStudy={new Date(pomData.timeStudy).getMinutes()}
-			timeBreak={new Date(pomData.timeBreak).getMinutes()}
-		/>
-
-		<!-- Row centrata per l'SVG (responsive width tramite colonne Bootstrap) -->
-		<div class="row w-100 justify-content-center mb-3">
-			<div class="col-10 col-sm-8 col-md-6 col-lg-6 d-flex justify-content-center">
-				<!-- SVG responsive: width 100% mantiene aspect-ratio grazie a viewBox -->
-				<svg
-					class="w-100"
-					viewBox="0 0 100 100"
-					preserveAspectRatio="xMidYMid meet"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<circle cx="50" cy="50" {r} fill="white" />
-					<circle cx="50" cy="50" {r} fill="none" stroke="gray" stroke-width="2" />
-					<circle
-						class="progress-ring"
-						cx="50"
-						cy="50"
-						{r}
-						fill="none"
-						stroke="black"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-dasharray={c}
-						stroke-dashoffset={offset}
-						transform="rotate(-90 50 50)"
-					/>
-					<text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="20" fill="black"
-						>{timeStr}</text
-					>
-					{#if running}
-						<text x="50%" y="70%" text-anchor="middle" dy=".3em" font-size="10" fill="black">
-							Ciclo: {curCycle} / {cicli}
-						</text>
-					{/if}
-				</svg>
+		<!-- Controls Section: Pulsanti di Controllo -->
+		<section class="row justify-content-center">
+			<div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-center gap-3 flex-wrap">
+							{#if !running}
+								<!-- Pulsante Start -->
+								<BtnPom
+									ariaLabel="Avvia Pomodoro"
+									extraClasses="btn-success p-4"
+									iconSrc={PlayIcon}
+									onclick={() => {
+										console.log('Starting runCycles from button click');
+										runCycles();
+									}}
+								/>
+							{:else}
+								<!-- Controlli durante l'esecuzione -->
+								<!-- Pausa/Riprendi -->
+								<BtnPom
+									ariaLabel={paused ? "Riprendi" : "Pausa"}
+									extraClasses={paused ? "btn-success p-4" : "btn-warning p-4"}
+									iconSrc={paused ? PlayIcon : PauseIcon}
+									onclick={() => (paused = !paused)}
+								/>
+								
+								<!-- Stop -->
+								<BtnPom
+									ariaLabel="Ferma Pomodoro"
+									extraClasses="btn-danger p-4"
+									iconSrc={WhatsappIcon}
+									onclick={() => {
+										stopTimer();
+										updateStatus('INCOMPLETO');
+									}}
+								/>
+								
+								<!-- Ricomincia Ciclo -->
+								<BtnPom
+									ariaLabel="Ricomincia Ciclo Corrente"
+									extraClasses="btn-info p-4"
+									iconSrc={WhatsappIcon}
+									onclick={() => {
+										clearInterval(timerId);
+										runCycles(curCycle);
+									}}
+								/>
+							{/if}
+						</div>
+						
+						<!-- Legenda controlli per mobile -->
+						<div class="d-block d-sm-none mt-3">
+							<div class="row text-center small text-muted g-2">
+								{#if !running}
+									<div class="col-12">Tocca il pulsante verde per iniziare</div>
+								{:else}
+									<div class="col-4">
+										<div class="text-{paused ? 'success' : 'warning'}">{paused ? 'Riprendi' : 'Pausa'}</div>
+									</div>
+									<div class="col-4">
+										<div class="text-danger">Stop</div>
+									</div>
+									<div class="col-4">
+										<div class="text-info">Ricomincia</div>
+									</div>
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-		</div>
-
-		<!-- Controlli: responsive stack su mobile, inline su sm+ -->
-		<div class="w-100 d-flex justify-content-center mb-3">
-			<div class="d-flex gap-2 align-items-center justify-content-center">
-				{#if !running}
-					<BtnPom
-						ariaLabel="Avvia Pomodoro"
-						extraClasses="p-5"
-						iconSrc={PlayIcon}
-						onclick={() => {
-              console.log('Starting runCycles from button click');
-							runCycles();
-						}}
-					/>
-				{/if}
-
-				{#if running}
-					<BtnPom
-						ariaLabel="Pausa/Riprendi"
-						extraClasses="p-5"
-						iconSrc={paused ? PlayIcon : PauseIcon}
-						onclick={() => (paused = !paused)}
-					/>
-					<BtnPom
-						ariaLabel="Ferma Pomodoro"
-						extraClasses="p-5"
-						iconSrc={WhatsappIcon}
-						onclick={()=>{
-              stopTimer();
-              updateStatus('INCOMPLETO');
-            }}
-					/>
-					<BtnPom
-						ariaLabel="Ricomincia Ciclo"
-						class="p-5"
-						iconSrc={WhatsappIcon}
-						onclick={() => {
-							clearInterval(timerId);
-							runCycles(curCycle);
-						}}
-					/>
-				{/if}
-			</div>
-		</div>
+		</section>
 	</div>
+
+	<!-- Modals: manteniamo i modali esistenti -->
+	<SharePomodoro
+		bind:this={shareModal}
+		pomodoro={pomData}
+		formAction={`?/sharePomodoro`}
+		form={$page.form}
+	/>
+
+	<PomodoroModal
+		id="settingsModal"
+		titleModal="Modifica Impostazioni"
+		formMethod="POST"
+		formAction={`?/updatePomodoro`}
+		title={pomData.title}
+		cicli={pomData.cycles}
+		timeStudy={new Date(pomData.timeStudy).getMinutes()}
+		timeBreak={new Date(pomData.timeBreak).getMinutes()}
+	/>
 {/if}
 
 <style>
-	/* solo la transizione del dash - rimane necessario per l'animazione */
+	/* Animazione per il progresso del timer */
 	.progress-ring {
 		transition: stroke-dashoffset 1s linear;
 	}
 
-	/* piccola regola per evitare che text dentro svg risulti troppo grande su schermi piccoli */
-	@media (max-width: 420px) {
-		svg text[font-size='20'] {
+	/* Responsive del timer SVG */
+	.timer-container {
+		position: relative;
+		width: 100%;
+		max-width: 300px;
+		margin: 0 auto;
+	}
+
+	/* Miglioramenti tipografici per mobile */
+	@media (max-width: 576px) {
+		svg text[font-size='16'] {
 			font-size: 14px;
+		}
+		
+		svg text[font-size='8'] {
+			font-size: 7px;
+		}
+		
+		.h4 {
+			font-size: 1.1rem !important;
+		}
+	}
+
+	/* Hover effects per i pulsanti */
+	:global(.btn-outline-success:hover),
+	:global(.btn-outline-primary:hover) {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+	}
+
+	/* Animazioni per i badge */
+	.badge {
+		transition: all 0.3s ease;
+	}
+
+	/* Card shadows responsive */
+	@media (min-width: 768px) {
+		.card.shadow-sm {
+			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
 		}
 	}
 </style>
