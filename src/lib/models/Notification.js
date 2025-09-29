@@ -6,7 +6,7 @@ const notificationSchema = new Schema({
   letta: { type: Boolean, default: false, required: true },
   tipo: {
     type: String,
-    enum: ['CONDIVISIONE_POMODORO', 'EVENTO', 'NUOVA_ATTIVITA'],
+    enum: ['CONDIVISIONE_POMODORO', 'EVENTO', 'ATTIVITA'],
     required: true
   },
   riferimento: { type: Types.ObjectId, required: true }

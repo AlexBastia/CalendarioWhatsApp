@@ -29,18 +29,16 @@
 	let week = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
 	let { data } = $props();
 
-	let today = $derived($timingStore ? $timingStore : new Date());
-
-	let currentDate = $state($timingStore ? $timingStore : new Date());
-	$effect(() => {
-		console.log(currentDate);
-	});
-	//modalita` di visualizzazione, il default e` settimanale
-	let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
-
-	let rangeStart;
-	let rangeEnd;
-	let expandedEvents = [];
+  let today= $derived($timingStore ? $timingStore : new Date());
+  
+  let currentDate = $state($timingStore ? $timingStore : new Date());
+  $effect(()=>{console.log(currentDate)})
+  //modalita` di visualizzazione, il default e` settimanale
+  let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
+  
+  let rangeStart;
+  let rangeEnd;
+  let expandedEvents = $state([]);
 
 	// effetto per aggiornare rangeStart / rangeEnd
 	$effect(() => {

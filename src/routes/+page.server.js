@@ -11,25 +11,7 @@ export async function load(event) {
     redirect(302, "/login")
   }
 
-  console.log(event.locals.user)
 
-
-  console.log("Loading notifications for user:", event.locals.user.id);
-
-  const notificationForPom = await Notifica.find({ destinatario: event.locals.user._id});
-
-  console.log(event.locals.user._id)
-  if (event.locals.user.virtualTime){
-    await computeLevel(event.locals.user._id, event.locals.user.virtualTime);
-  }
-  else{
-    await computeLevel(event.locals.user._id, new Date());
-  }
-  const notificationsForTasks = await getNotificationDataForTasks(event.locals.user._id);
-
-  console.log('notification2:', notificationForPom);
-
-  return { notificationForPom: JSON.parse(JSON.stringify(notificationForPom)), notificationTasks: notificationsForTasks };
 }
 
 export const actions = {

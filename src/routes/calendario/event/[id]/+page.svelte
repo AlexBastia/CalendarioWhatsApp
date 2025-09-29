@@ -15,8 +15,6 @@
     };
 </script>
 
-<h1 class="mb-4">Modifica Evento</h1>
-
 <EventForm 
     event={eventoPerForm}
     pomodoroPresets={data.pomodori}

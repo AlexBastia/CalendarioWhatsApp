@@ -39,7 +39,8 @@ const eventSchema = new Schema(
         type: { type: String, enum: ['MAI', 'N_VOLTE', 'FINO AL'], default: 'MAI' },
         nVolte: Number,
         endDate: Date
-      }
+      },
+      lastDate: Date
     },
     pomodoroPreset: {
       type: Types.ObjectId,
