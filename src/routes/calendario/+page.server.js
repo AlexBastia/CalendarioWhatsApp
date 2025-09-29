@@ -3,7 +3,7 @@ import { Pomodoro } from '$lib/models/Pomodoro.js'; // Aggiunto per caricarlo ne
 import { redirect, fail } from '@sveltejs/kit';
 import { startOfDay, set, differenceInMilliseconds, add } from 'date-fns';
 import { Task } from '$lib/models/Task.js';
-import { mkLastDate } from '$lib/utils/eventRecursion.js'; 
+import { mkLastDate } from '$lib/utils/eventRecursion.js';
 
 async function updateTask(userId, today) {
   const startOfToday = startOfDay(today);
@@ -67,21 +67,21 @@ export async function load({ locals }) {
   if (!locals.user) {
     throw redirect(303, '/login');
   }
-  
+
   console.log(`Caricamento calendario per utente ${locals.user.id}`);
   const today = locals.user.virtualTime ? new Date(locals.user.virtualTime) : new Date();
 
   // Esegue gli aggiornamenti in parallelo per efficienza
   await Promise.all([
-      updatePom(locals.user.id, today),
-      updateTask(locals.user.id, today)
+    updatePom(locals.user.id, today),
+    updateTask(locals.user.id, today)
   ]);
   console.log(`Aggiornamenti completati per utente ${locals.user.id} alla data ${today}`);
 
   // CORREZIONE 2: Carica anche le 'Task'
   const [eventiUtente, attivitaUtente, pomodoriUtente] = await Promise.all([
     Evento.find({ userID: locals.user.id }).lean(),
-    Task.find({ userId: locals.user.id }).lean(), 
+    Task.find({ userId: locals.user.id }).lean(),
     Pomodoro.find({ userID: locals.user.id }).lean()
   ]);
   console.log(`Eventi trovati: ${eventiUtente.length}, Attività trovate: ${attivitaUtente.length}, Pomodori trovati: ${pomodoriUtente.length}`);
@@ -112,7 +112,7 @@ export async function load({ locals }) {
 export const actions = {
   saveEvent: async ({ locals, request }) => {
     if (!locals.user) {
-    redirect(301, '/login');
+      redirect(301, '/login');
     }
     const formData = await request.formData();
     const data = Object.fromEntries(formData);
@@ -127,6 +127,9 @@ export const actions = {
       start = new Date(`${data.dateStart}T${data.timeStart}`);
       end = new Date(`${data.dateStart}T${data.timeEnd}`);
     }
+
+    const isGoogle = data.isGoogle ?? false;
+
     //popola substruct ripetizione con i dati del form
     let ripetizione = {
       isRepeatable: data.isRepeatable === 'on',
@@ -139,9 +142,9 @@ export const actions = {
       dayOfMonth: data.dayOfMonth ? Number(data.dayOfMonth) : null,
       nthWeekday: data.week && data.weekday
         ? {
-            week: Number(data.week),
-            weekday: Number(data.weekday)
-          }
+          week: Number(data.week),
+          weekday: Number(data.weekday)
+        }
         : null,
       endCondition: {
         type: data.endType || 'MAI',
@@ -165,9 +168,10 @@ export const actions = {
       eventType: data.eventType,
       pomodoroPreset: data.eventType === 'POMODORO' ? data.pomodoroPreset : null,
       status: data.eventType === 'POMODORO' ? 'PIANIFICATO' : null,
-      userID: locals.user.id 
+      userID: locals.user.id,
+      isGoogle
     };
-    
+
     const eventId = data.id || null;
 
     if (eventId) {
@@ -197,22 +201,52 @@ export const actions = {
     throw redirect(303, '/calendario');
   },
 
-  updatePomStatus : async ({request, locals}) => {
-   if (!locals.user) {
-    redirect(301, '/login');
-  }
+  updatePomStatus: async ({ request, locals }) => {
+    if (!locals.user) {
+      redirect(301, '/login');
+    }
 
     const formData = await request.formData();
     const eventId = formData.get('eventId');
     const newStatus = formData.get('status');
 
     await Evento.findByIdAndUpdate({
-      _id: eventId, userID: locals.user.id 
-    },  
-    {$set:{
-      status: newStatus 
-    }});
+      _id: eventId, userID: locals.user.id
+    },
+      {
+        $set: {
+          status: newStatus
+        }
+      });
 
     throw redirect(303, '/calendario');
+  },
+
+  refreshGoogleEvents: async ({ request, locals }) => {
+    if (!locals.user) {
+      redirect(301, '/login');
+    }
+
+    const data = await request.json();
+
+    let res = await Evento.deleteMany({ isGoogle: true, userID: locals.user._id })
+    if (!res) return fail(500, { failed: true })
+
+    res = await Evento.insertMany(data.events.map(event => {
+      return {
+        title: event.title,
+        start: event.start,
+        end: event.end,
+        place: event.place,
+        allDay: false,
+        note: event.note,
+        userID: locals.user._id,
+        eventType: 'STANDARD',
+        isGoogle: true
+      }
+    }))
+    if (!res) return fail(500, { failed: true })
+
+    return { success: true }
   }
 };

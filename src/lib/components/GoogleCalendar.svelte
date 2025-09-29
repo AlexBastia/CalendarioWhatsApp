@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { auth } from '$lib/utils/googleAuth.svelte.js'
+	import { auth } from '$lib/utils/googleAuth.svelte.js';
 
 	// State for our calendar events
 	let events = $state([]);
@@ -30,11 +30,14 @@
 		error = null;
 		try {
 			const now = new Date().toISOString();
-			const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=100&orderBy=startTime&singleEvents=true&timeMin=${encodeURIComponent(now)}`, {
-				headers: {
-					'Authorization': `Bearer ${auth.token}`
+			const response = await fetch(
+				`https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=100&orderBy=startTime&singleEvents=true&timeMin=${encodeURIComponent(now)}`,
+				{
+					headers: {
+						Authorization: `Bearer ${auth.token}`
+					}
 				}
-			});
+			);
 
 			if (!response.ok) {
 				throw new Error(`Google API error: ${response.statusText}`);
@@ -44,10 +47,30 @@
 			events = data.items || [];
 		} catch (e) {
 			error = e.message;
-			console.error("Failed to fetch calendar events:", e);
+			console.error('Failed to fetch calendar events:', e);
 		} finally {
 			isLoading = false;
 		}
+		refreshGoogleEvents();
+	}
+
+	async function refreshGoogleEvents() {
+		await fetch('/calendario?/refreshGoogleEvents', {
+			method: 'POST',
+			body: JSON.stringify({
+				events: events
+					.filter((gEvent) => gEvent.start.dateTime && gEvent.end.dateTime)
+					.map((gEvent) => {
+						return {
+							start: gEvent.start.dateTime,
+							end: gEvent.end.dateTime,
+							title: gEvent.summary,
+							note: gEvent.description,
+							place: gEvent.location
+						};
+					})
+			})
+		});
 	}
 </script>
 
@@ -72,7 +95,7 @@
 				<ul>
 					{#each events as event (event.id)}
 						<li>
-							<strong>{event.summary}</strong> - 
+							<strong>{event.summary}</strong> -
 							{new Date(event.start.dateTime || event.start.date).toLocaleString()}
 						</li>
 					{/each}
@@ -108,7 +131,7 @@
 		padding: 8px 16px;
 		border-radius: 4px;
 		border: none;
-		background-color: #4285F4;
+		background-color: #4285f4;
 		color: white;
 		cursor: pointer;
 	}
@@ -128,3 +151,4 @@
 		color: red;
 	}
 </style>
+
