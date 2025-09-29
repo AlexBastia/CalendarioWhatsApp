@@ -25,12 +25,7 @@
 		id="deleteListForm"
 		method="POST"
 		action="?/delete"
-		use:enhance={() => {
-			return () => {
-				goto('/note');
-			};
-		}}
-	>
+		use:enhance	>
 		<button
 			class="dropdown-item text-danger fs-4"
 			type="button"
@@ -46,12 +41,7 @@
 		id="listForm"
 		method="POST"
 		action="?/updateTitle"
-		use:enhance={() => {
-			return () => {
-				goto('/note');
-			};
-		}}
-	>
+		use:enhance	>
 		<div>
 			<textarea
 				class="w-100 fs-1 fw-bold mb-0 border-0"

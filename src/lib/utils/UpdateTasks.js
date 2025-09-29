@@ -10,11 +10,11 @@ const urgencyOrder = {
 };
 
 
-export async function computeLevel(userID, now) {
+export async function computeLevel(userId, now) {
   console.log(`noi puffi siamo in computeLevel`);
-  console.log(`computeLevel per utente ${userID} alla data ${now}`);
+  console.log(`computeLevel per utente ${userId} alla data ${now}`);
   const tasks = await Task.find({
-    userId: userID,
+    userId,
     status: 'todo'
   })
   if (!tasks || tasks.length === 0) {
@@ -26,7 +26,6 @@ export async function computeLevel(userID, now) {
     const deadline = new Date(task.deadline);
     let currentLevel = 'Nessuna';
 
-    // 2. Determina il livello di urgenza attuale in base alla data.
     const hoursUntilDeadline = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
 
     if (hoursUntilDeadline < 0) {

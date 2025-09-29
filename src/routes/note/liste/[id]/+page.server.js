@@ -114,7 +114,7 @@ export const actions = {
 		);
 		if (!res) return fail(500, { failed: true });
 
-		return { success: true };
+		redirect(303, '/note');
 	}),
 
 	// UPDATE Tags (for this list)
@@ -134,6 +134,6 @@ export const actions = {
 		});
 		if (!res) return fail(500, { failed: true });
 
-		return redirect(303, '/note');
+		redirect(303, '/note');
 	})
 };

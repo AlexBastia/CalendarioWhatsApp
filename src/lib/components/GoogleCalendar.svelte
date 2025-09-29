@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { auth } from '$lib/utils/googleAuth.svelte.js';
 	import Alert from './Alert.svelte';
+	import Loading from './Loading.svelte';
 
 	// State for our calendar events
 	let events = $state([]);
@@ -75,9 +76,18 @@
 	}
 </script>
 
-<button class="btn btn-secondary" onclick={auth.signIn} disabled={isLoading || !auth.isInitialized}>
-	{isLoading ? 'Loading...' : 'Sync Google Calendar'}
-</button>
+{#if isLoading}
+	<Loading />	
+{:else}
+	<button
+		class="btn btn-secondary rounded-pill"
+		onclick={auth.signIn}
+		disabled={!auth.isInitialized}
+		aria-label="Sync Google Calendar"
+	>
+		Sync
+	</button>
+{/if}
 {#if error}
-	<Alert type={'warning'} message={error}/>
+	<Alert type={'warning'} message={error} />
 {/if}

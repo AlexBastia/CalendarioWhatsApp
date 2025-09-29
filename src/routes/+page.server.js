@@ -16,9 +16,8 @@ export async function load(event) {
 
   console.log("Loading notifications for user:", event.locals.user.id);
 
-  const notificationForPom = await Notifica.find({ destinatario: event.locals.user.id});
+  const notificationForPom = await Notifica.find({ destinatario: event.locals.user._id});
 
-  console.log("Found notifications:", notificationForPom);
   console.log(event.locals.user._id)
   if (event.locals.user.virtualTime){
     await computeLevel(event.locals.user._id, event.locals.user.virtualTime);

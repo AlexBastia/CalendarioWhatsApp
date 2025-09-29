@@ -157,21 +157,5 @@
 <style>
     .time-machine-container {
         z-index: 1050; /* Sopra la maggior parte degli elementi Bootstrap */
-    }
-    
-    /* Assicura che il contenitore non interferisca con il contenuto */
-    body {
-        padding-bottom: 80px; /* Spazio per la time machine su mobile */
-    }
-    
-    @media (min-width: 992px) {
-        body {
-            padding-bottom: 0; /* Reset padding su desktop */
-        }
-        
-        .time-machine-container.d-none.d-lg-block {
-            width: auto;
-            max-width: 90%;
-        }
-    }
+    }    
 </style>

@@ -24,6 +24,7 @@
 	import { expandEvent } from '$lib/utils/eventRecursion.js';
 	import Title from '$lib/components/Title.svelte';
 	import GoogleCalendar from '$lib/components/GoogleCalendar.svelte';
+	import DailyView from '$lib/components/DailyView.svelte';
 
 	let week = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
 	let { data } = $props();
@@ -116,7 +117,9 @@
 	let monthCalendarDays = $derived(getMonthCalendarDays(currentDate));
 </script>
 
-<Title title={format(currentDate, 'dd/mm/yyyy')}></Title>
+<Title title={format(currentDate, 'dd/mm/yyyy')} backLink={'/'}>
+	<GoogleCalendar />
+</Title>
 
 <div class="d-flex align-items-center gap-2 mb-4">
 	<label for="view-mode" class="form-label">Vista:</label>
@@ -127,8 +130,12 @@
 	</select>
 </div>
 
-<GoogleCalendar />
 {#if viewMode === 'daily'}
+	<DailyView
+		events={expandedEvents.filter((event) => isSameDay(currentDate, event.start))}
+		tasks={data.tasks.filter((task) => isSameDay(currentDate, task.deadline))}
+		lateTasks={data.tasks.filter((task) => task.status === 'late')}
+	/>
 	<div class="card">
 		<div class="card-header fs-4 {isSameDay(currentDate, today) ? 'today' : ''}">
 			{format(currentDate, 'dd MMMM yyyy, EEEE')}

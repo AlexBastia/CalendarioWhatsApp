@@ -176,7 +176,7 @@
 	<!-- Layout principale: container Bootstrap con struttura mobile-first -->
 	<div class="container-fluid min-vh-100 py-3">
 		<!-- Header Section: Solo Titolo e Status -->
-		<Title title={pomData.title}></Title>
+		<Title title={pomData.title} backLink={'/pomodoro'}></Title>
 
 		<!-- Settings & Share Section: Nuova sezione per modifica e condivisione -->
 		<section class="row justify-content-center mb-4">
