@@ -5,8 +5,6 @@
 	import Title from "$lib/components/Title.svelte";
 
 	let {data } = $props();
-	console.log("notifiche non lette:", data);
-
 	
 </script>
 
@@ -23,14 +21,8 @@
 		<li><a href="/logout">Logout</a></li>
 	</ul>
 
-	{#if !data.notificationForPom}
-		<p>Non ci sono notifiche non lette.</p>
-	{:else}
-		<NotificationBell/>
-	{/if}
-	{#if data.notificationTasks && data.notificationTasks.length > 0}
-		<NotificationApiManager data={data.notificationTasks} />
-	{/if}
+	<NotificationBell/>
+
 
 	<GoogleCalendar />
 </main>

@@ -21,8 +21,6 @@ async function updateTask(userId, today) {
   }
 
 }
-
-
 async function updatePom(userId, today) {
 
   const startOfToday = startOfDay(today);
