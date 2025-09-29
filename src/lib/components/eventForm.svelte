@@ -142,22 +142,6 @@
 
         {#if e.notificationSettings.enabled}
           <div class="col-12">
-            <div class="row g-2 align-items-center mt-2">
-    <div class="col-auto">
-      <label for="notificationRepeat" class="form-label mb-0">Ripeti notifica</label>
-    </div>
-    <div class="col">
-      <select 
-        class="form-select"
-        id="notificationRepeat"
-        name="notificationRepeat"
-        bind:value={e.notificationSettings.repeat}
-      >
-        <option value="none">Mai (una sola volta)</option>
-        <option value="every_minute">Ogni minuto (finché non viene letta)</option>
-      </select>
-    </div>
-</div>
             <div class="row g-2 align-items-center">
               <div class="col-auto">
                 <label for="notificationAdvanceValue" class="form-label mb-0">Notifica</label>
@@ -184,8 +168,40 @@
                 </select>
               </div>
             </div>
-          </div>
+
+            <div class="row g-2 align-items-center mt-2">
+              <div class="col-auto">
+                <label for="notificationRepeat" class="form-label mb-0">Ripeti ogni</label>
+              </div>
+              {#if e.notificationSettings.repeat !== 'none'}
+                <div class="col-4 col-md-3">
+                  <input 
+                    type="number" 
+                    id="notificationRepeatNumber"
+                    name="notificationRepeatNumber"
+                    class="form-control" 
+                    bind:value={e.notificationSettings.repeat_number} 
+                    min="1"
+                  >
+                </div>
+              {/if}
+              <div class="col">
+                <select 
+                  class="form-select"
+                  id="notificationRepeat"
+                  name="notificationRepeat"
+                  bind:value={e.notificationSettings.repeat}
+                >
+                  <option value="none">Mai (singola notifica)</option>
+                  <option value="minute">minuto/i</option>
+                  <option value="hour">ora/e</option>
+                  <option value="day">giorno/i</option>
+                </select>
+              </div>
+            </div>
+            </div>
         {/if}
+
         <hr class="my-3" />
 
       <div class="d-flex justify-content-end align-items-center gap-2">
