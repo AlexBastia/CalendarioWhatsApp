@@ -100,12 +100,28 @@
                                 </div>
                             </div>
                         {:else if notification.tipo === 'EVENTO'}
-                            <a href="#!" on:click|preventDefault={() => handleNotificationClick(notification)} class="dropdown-item d-block">
+                            <a href="#!" onclick={(e) => {e.preventDefault(); handleNotificationClick(notification)}} class="dropdown-item d-block">
                                 <strong class="d-block mb-1">📅 Promemoria Evento</strong>
-                                <p class="small text-muted mb-0">{notification.body || 'Un evento programmato sta per iniziare.'}</p>
+                                <!-- Mostra il titolo dell'evento se disponibile -->
+                                <p class="fw-semibold mb-1 text-dark">
+                                    {notification.evento?.title || 'Evento senza titolo'}
+                                </p>
+                                <p class="small text-muted mb-0">
+                                    {#if notification.evento?.start}
+                                        {new Date(notification.evento.start).toLocaleDateString('it-IT', {
+                                            weekday: 'short',
+                                            day: 'numeric',
+                                            month: 'short',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    {:else}
+                                        Un evento programmato sta per iniziare.
+                                    {/if}
+                                </p>
                             </a>
                         {:else if notification.tipo === 'NUOVA_ATTIVITA'}
-                            <a href="#!" on:click|preventDefault={() => handleNotificationClick(notification)} class="dropdown-item d-block">
+                            <a href="#!" onclick={(e) => {e.preventDefault(); handleNotificationClick(notification)}} class="dropdown-item d-block">
                                 <strong class="d-block mb-1">📝 Nuova Attività Assegnata</strong>
                                 <p class="small text-muted mb-0">{notification.body || 'Ti è stata assegnata una nuova attività.'}</p>
                             </a>
