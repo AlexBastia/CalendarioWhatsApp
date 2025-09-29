@@ -1,6 +1,7 @@
 <script>
 	import NotificationBell from "$lib/components/NotificationBell.svelte";
 	import NotificationApiManager from "$lib/components/NotificationApiManager.svelte";
+	import GoogleCalendar from "$lib/components/GoogleCalendar.svelte";
 
 	let {data } = $props();
 	console.log("notifiche non lette:", data);
@@ -28,5 +29,7 @@
 		<NotificationApiManager data={data.notificationTasks} />
 		
 	{/if}
+
+	<GoogleCalendar />
 </main>
 
