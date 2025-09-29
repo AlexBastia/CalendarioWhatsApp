@@ -14,8 +14,17 @@
       dateStart: '', 
       timeStart: '09:00',
       timeEnd: '10:00',
-      pomodoroPreset: null
+      pomodoroPreset: null,
       // Le notificationSettings non sono qui di default
+      ripetizione: {
+        isRepeatable: false,
+        frequenza: '',
+        giorniSettimana: [],
+        monthlyMode: 'dayOfMonth',
+        nthWeekday: { week: null, weekday: null },
+        endCondition: { type: 'MAI', nVolte: null, endDate: '' },
+        lastDate: null
+      }
     },
     formAction,
     pomodoroPresets = [],
@@ -124,6 +133,169 @@
           <label for="timeEnd" class="form-label">Fine</label>
           <input type="time" id="timeEnd" name="timeEnd" class="form-control form-control-lg" bind:value={e.timeEnd} disabled={e.allDay} />
         </div>
+        <div class="col-12 mt-3">
+          <div class="form-check form-switch mb-3">
+            <!-- hidden fallback -->
+            <input type="hidden" name="ripetizione[isRepeatable]" value="false" />
+
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="isRepeatable"
+              name="ripetizione[isRepeatable]"
+              checked={e.ripetizione.isRepeatable}
+              onchange={(ev) => e.ripetizione.isRepeatable = ev.target.checked}
+              value="true"
+            />
+
+            <label class="form-check-label" for="isRepeatable">
+              Evento ricorrente
+            </label>
+          </div>
+        </div>
+
+
+{#if e.ripetizione.isRepeatable}
+  <div class="col-md-6">
+    <div class="form-floating">
+      <select
+        class="form-select"
+        id="frequency"
+        name="ripetizione[frequenza]"
+        bind:value={e.ripetizione.frequenza}
+        required
+      >
+        <option value="" disabled>Scegli la frequenza...</option>
+        <option value="GIORNALIERO">Ogni giorno</option>
+        <option value="SETTIMANALE">Ogni settimana</option>
+        <option value="MENSILE">Ogni mese</option>
+        <option value="ANNUALE">Ogni anno</option>
+      </select>
+      <label for="frequency">Frequenza</label>
+    </div>
+  </div>
+
+  {#if e.ripetizione.frequenza === 'SETTIMANALE'}
+    <fieldset class="col-12">
+      <legend class="form-label">Giorni della settimana</legend>
+      <div class="d-flex gap-2 flex-wrap">
+        {#each ['D','L','M','M','G','V','S'] as day, i}
+          <div class="form-check">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id={`day${i}`}
+              name="ripetizione[giorniSettimana][]"
+              value={i}
+              onchange={(evt) => {
+                if (evt.currentTarget.checked) {
+                  e.ripetizione.giorniSettimana = [...e.ripetizione.giorniSettimana, i];
+                } else {
+                  e.ripetizione.giorniSettimana =
+                    e.ripetizione.giorniSettimana.filter((d) => d !== i);
+                }
+              }}
+              checked={e.ripetizione.giorniSettimana.includes(i)}
+            />
+            <label for={`day${i}`} class="form-check-label">{day}</label>
+          </div>
+        {/each}
+      </div>
+    </fieldset>
+  {/if}
+
+  {#if e.ripetizione.frequenza === 'MENSILE'}
+    <fieldset class="col-12 mb-3">
+      <legend class="form-label">Ripetizione mensile</legend>
+
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="radio"
+          id="monthlyDayOfMonth"
+          name="ripetizione[monthlyMode]"
+          value="dayOfMonth"
+          bind:group={e.ripetizione.monthlyMode}
+        />
+        <label class="form-check-label" for="monthlyDayOfMonth">
+          Ogni {new Date(e.dateStart).getDate()} del mese
+        </label>
+      </div>
+
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="radio"
+          id="monthlyNthWeekday"
+          name="ripetizione[monthlyMode]"
+          value="nthWeekday"
+          bind:group={e.ripetizione.monthlyMode}
+        />
+        <label class="form-check-label" for="monthlyNthWeekday">
+          Ogni {Math.ceil(new Date(e.dateStart).getDate() / 7)}°
+          {[
+            'domenica',
+            'lunedì',
+            'martedì',
+            'mercoledì',
+            'giovedì',
+            'venerdì',
+            'sabato'
+          ][new Date(e.dateStart).getDay()]}
+          del mese
+        </label>
+      </div>
+    </fieldset>
+  {/if}
+
+  <div class="col-md-6">
+    <div class="form-floating">
+      <select
+        class="form-select"
+        id="endType"
+        name="ripetizione[endCondition][type]"
+        bind:value={e.ripetizione.endCondition.type}
+      >
+        <option value="MAI">Mai</option>
+        <option value="N_VOLTE">Dopo N occorrenze</option>
+        <option value="FINO AL">Fino a data</option>
+      </select>
+      <label for="endType">Termina</label>
+    </div>
+  </div>
+
+  {#if e.ripetizione.endCondition.type === 'N_VOLTE'}
+    <div class="col-md-6">
+      <div class="form-floating">
+        <input
+          type="number"
+          min="1"
+          class="form-control"
+          id="count"
+          name="ripetizione[endCondition][nVolte]"
+          bind:value={e.ripetizione.endCondition.nVolte}
+        />
+        <label for="count">Numero di ripetizioni</label>
+      </div>
+    </div>
+  {/if}
+
+  {#if e.ripetizione.endCondition.type === 'FINO AL'}
+    <div class="col-md-6">
+      <div class="form-floating">
+        <input
+          type="date"
+          class="form-control"
+          id="endDate"
+          name="ripetizione[endCondition][endDate]"
+          bind:value={e.ripetizione.endCondition.endDate}
+        />
+        <label for="endDate">Data fine</label>
+      </div>
+    </div>
+  {/if}
+
+{/if}
       </div>
 
       <hr class="my-3" />
