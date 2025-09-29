@@ -30,7 +30,8 @@
       enabled: false,
       advanceValue: 15,
       advanceUnit: 'minutes',
-      repeat: 'none'
+      repeat: 'none',
+      repeat_number: 0
     };
   }
 

@@ -41,8 +41,9 @@ export const actions = {
     console.log(pomodoroId, notificaId)
     const userId = locals.user._id;
 
-    const pomodoro = await Pomodoro.findById({_id: pomodoroId});
-    if(!pomodoro) return fail(400, {message: 'f', success: false})
+    const pomodoro = await Pomodoro.findOne({_id: pomodoroId});
+    console.log('asdads')
+    if(!pomodoro) {console.log('d'); return fail(400, {message: 'f', success: false})}
     console.log(pomodoro);
     // devo controllare se l'utente sia in sheredUSer
     if (!pomodoro.sharedUsers.some(id => id.equals(userId))) {
