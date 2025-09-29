@@ -54,18 +54,24 @@ const eventSchema = new Schema(
             required: function() { return this.eventType === 'POMODORO' }
         },
           notificationSettings: {
-    enabled: { type: Boolean, default: false },
-    // Quando inviare la notifica (calcolato dal server)
-    notifyAt: { type: Date }, 
-    // Valore scelto dall'utente (es: 15)
-    advanceValue: { type: Number, default: 15 }, 
-    // Unità scelta dall'utente (es: 'minutes')
-    advanceUnit: { type: String, enum: ['minutes', 'hours', 'days'], default: 'minutes' },
-    // Ripetizione scelta dall'utente
-    repeat: { type: String, enum: ['none', 'every_minute'], default: 'none' },
-    // Meccanismo (per ora usiamo 'os' per 'sistema operativo')
-    mechanism: [{ type: String, enum: ['os', 'email'], default: 'os' }]
-  }
+            enabled: { type: Boolean, default: false },
+            // Quando inviare la notifica (calcolato dal server)
+            notifyAt: { type: Date }, 
+            // Valore scelto dall'utente (es: 15)
+            advanceValue: { type: Number, default: 15 }, 
+            // Unità scelta dall'utente (es: 'minutes')
+            advanceUnit: { type: String, enum: ['minutes', 'hours', 'days'], default: 'minutes' },
+            // Ripetizione scelta dall'utente
+            repeat: { type: String, enum: ['none', 'minute', 'hour', 'days'], default: 'none' },
+            repeat_number: {
+                type: Number,
+                required: function() { return this.notificationSettings.repeat !== 'none'},
+            },
+            lastNotificationSentAt: {type: Date},
+            processed: {type: Boolean},
+            // Meccanismo (per ora usiamo 'os' per 'sistema operativo')
+            mechanism: [{ type: String, enum: ['os', 'email'], default: 'os' }]
+        }
 
     }
 );
