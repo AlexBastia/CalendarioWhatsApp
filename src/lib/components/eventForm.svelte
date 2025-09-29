@@ -11,20 +11,28 @@
       allDay: false,
       eventType: 'STANDARD',
       place: '',
-      dateStart: '', // inizializziamo dopo
+      dateStart: '', 
       timeStart: '09:00',
       timeEnd: '10:00',
       pomodoroPreset: null
+      // Le notificationSettings non sono qui di default
     },
     formAction,
     pomodoroPresets = [],
     deleteAction
   } = $props();
 
-
-
-  // variabile locale reattiva su cui bindare
+  // Variabile locale reattiva su cui bindare
   let e = $state({ ...event });
+
+  if (!e.notificationSettings) {
+    e.notificationSettings = {
+      enabled: false,
+      advanceValue: 15,
+      advanceUnit: 'minutes',
+      repeat: 'none'
+    };
+  }
 
   function handleCancel() {
     history.back();
@@ -117,7 +125,69 @@
         </div>
       </div>
 
-      <hr class="my-4" />
+      <hr class="my-3" />
+
+        <div class="col-12">
+          <div class="form-check form-switch mb-2">
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              id="notificationEnabled" 
+              name="notificationEnabled"
+              bind:checked={e.notificationSettings.enabled} 
+            />
+            <label class="form-check-label" for="notificationEnabled">🔔 Abilita Notifiche</label>
+          </div>
+        </div>
+
+        {#if e.notificationSettings.enabled}
+          <div class="col-12">
+            <div class="row g-2 align-items-center mt-2">
+    <div class="col-auto">
+      <label for="notificationRepeat" class="form-label mb-0">Ripeti notifica</label>
+    </div>
+    <div class="col">
+      <select 
+        class="form-select"
+        id="notificationRepeat"
+        name="notificationRepeat"
+        bind:value={e.notificationSettings.repeat}
+      >
+        <option value="none">Mai (una sola volta)</option>
+        <option value="every_minute">Ogni minuto (finché non viene letta)</option>
+      </select>
+    </div>
+</div>
+            <div class="row g-2 align-items-center">
+              <div class="col-auto">
+                <label for="notificationAdvanceValue" class="form-label mb-0">Notifica</label>
+              </div>
+              <div class="col-4 col-md-3">
+                <input 
+                  type="number" 
+                  id="notificationAdvanceValue" 
+                  name="notificationAdvanceValue"
+                  class="form-control" 
+                  bind:value={e.notificationSettings.advanceValue} 
+                  min="1"
+                >
+              </div>
+              <div class="col">
+                <select 
+                  class="form-select"
+                  name="notificationAdvanceUnit"
+                  bind:value={e.notificationSettings.advanceUnit}
+                >
+                  <option value="minutes">minuti prima</option>
+                  <option value="hours">ore prima</option>
+                  <option value="days">giorni prima</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        {/if}
+        <hr class="my-3" />
+
       <div class="d-flex justify-content-end align-items-center gap-2">
         <button type="button" class="btn btn-secondary" onclick={handleCancel}>Annulla</button>
 

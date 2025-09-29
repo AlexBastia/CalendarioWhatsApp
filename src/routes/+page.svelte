@@ -24,7 +24,7 @@
 	{#if !data.notificationForPom}
 		<p>Non ci sono notifiche non lette.</p>
 	{:else}
-		<NotificationBell data={data}  />
+		<NotificationBell/>
 	{/if}
 	{#if data.notificationTasks && data.notificationTasks.length > 0}
 		<NotificationApiManager data={data.notificationTasks} />

@@ -6,8 +6,7 @@
   import { 
     format, getMonth, getYear, startOfMonth, endOfMonth, 
     addDays, addMonths, subMonths, subDays, startOfWeek, 
-    eachDayOfInterval, endOfWeek, isSameMonth, isSameDay, 
-    isToday } from 'date-fns';
+    eachDayOfInterval, endOfWeek, isSameMonth, isSameDay} from 'date-fns';
   import "bootstrap/dist/css/bootstrap.min.css";
   import { onMount } from 'svelte';
   import { expandEvent } from '$lib/utils/eventRecursion.js';
@@ -15,8 +14,11 @@
 
   let week = ['dom','lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
   let {data} = $props();
+
+  let today= $derived($timingStore ? $timingStore : new Date());
   
-  let currentDate = $derived($timingStore ? $timingStore : new Date());
+  let currentDate = $state($timingStore ? $timingStore : new Date());
+  $effect(()=>{console.log(currentDate)})
   //modalita` di visualizzazione, il default e` settimanale
   let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
   
@@ -95,9 +97,7 @@
   let monthCalendarDays = $derived(getMonthCalendarDays(currentDate));
 </script>
 
-<Title title={format(currentDate, "dd/mm/yyyy")}>
-
-</Title>
+<Title title={format(currentDate, "dd/mm/yyyy")}></Title>
 
 <div class="d-flex align-items-center gap-2 mb-4">
   <label for="view-mode" class="form-label">Vista:</label>
@@ -110,7 +110,7 @@
 
 {#if viewMode === 'daily'}
   <div class="card">
-    <div class="card-header fs-4 {isToday(currentDate) ? 'today' : ''}">
+    <div class="card-header fs-4 {isSameDay(currentDate, today) ? 'today' : ''}">
         {format(currentDate, 'dd MMMM yyyy, EEEE')}
     </div>
     <div class="list-group list-group-flush">
@@ -126,7 +126,7 @@
                 <div onclick={()=>goToTask(task._id)} class="list-group-item list-group-item-action event-link {task.status === 'late' ? 'task-late' : ''}">📝 {task.title}</div>
             {/if}
         {/each}
-        {#if isToday(currentDate)}
+        {#if isSameDay(currentDate, today)}
             {#each data.tasks as task}
                 {#if task.status === 'late'}
                     <div onclick={()=>goToTask(task._id)} class="list-group-item list-group-item-action event-link task-late">🚨 {task.title} (Scaduta)</div>
@@ -145,7 +145,7 @@
     </div>
     <div class="row">
       {#each weekDays as day}
-        <div class="col border p-2 {isToday(day) ? 'today' : ''}" style="min-height: 120px;">
+        <div class="col border p-2 {isSameDay(day, today) ? 'today' : ''}" style="min-height: 120px;">
           <p class="text-center">{format(day, 'd')}</p>
           {#each expandedEvents as event}
             {#if isSameDay(event.start, day)}
@@ -174,7 +174,7 @@
     {#each Array(Math.ceil(monthCalendarDays.length / 7)) as _, weekIndex}
       <div class="row">
         {#each monthCalendarDays.slice(weekIndex * 7, (weekIndex + 1) * 7) as day}
-          <div class="col border p-2 {isToday(day) ? 'today' : ''} {!isSameMonth(day, currentDate) ? 'text-muted bg-light' : ''}" style="min-height: 120px;">
+          <div class="col border p-2 {isSameDay(day, today) ? 'today' : ''} {!isSameMonth(day, currentDate) ? 'text-muted bg-light' : ''}" style="min-height: 120px;">
             <p>{format(day, 'd')}</p>
             {#if isSameMonth(day, currentDate)}
               {#each expandedEvents as event}

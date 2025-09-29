@@ -1,9 +1,12 @@
 import { dbConnect } from '$lib/server/database';
 import { validateSessionToken, setSessionTokenCookie, deleteSessionTokenCookie } from '$lib/server/session';
+import { startScheduler } from '$lib/server/scheduler';
 
 // Funzione che viene chiamata una sola volta all'avvio dell'applicazione
 export async function init() {
   await dbConnect();
+  console.log("--- AVVIO SERVER: Sto per avviare lo scheduler... ---");
+  startScheduler();
 }
 
 // https://github.com/lucia-auth/example-sveltekit-email-password-2fa/blob/main/src/hooks.server.ts
@@ -30,6 +33,5 @@ export const handle = async ({ event, resolve }) => {
   // Nella risposta aggiungo gli oggetti sessione e utente (null se il token non e' valido)
   event.locals.session = session;
   event.locals.user = user;
-  console.log("User in locals:", event.locals.user.virtualTime);
   return resolve(event);
 };
