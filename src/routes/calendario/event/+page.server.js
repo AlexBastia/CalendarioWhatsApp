@@ -1,5 +1,6 @@
 import { Evento } from '$lib/models/Event.js';
 import { redirect } from '@sveltejs/kit';
+import {sub, parse} from "date-fns"
 
 export async function load({ locals }) {
     // Proteggi la rotta: se l'utente non è loggato, reindirizzalo
@@ -25,49 +26,71 @@ export const actions = {
         throw redirect(303, '/calendario');
       },
     saveEvent: async ({ locals, request }) => {
-    console.log('Azione saveEvent invocata');
-    if (!locals.user) {
-      redirect(301, '/login');
-    }
-    const formData = await request.formData();
-    const data = Object.fromEntries(formData);
+        console.log('Azione saveEvent invocata');
+        if (!locals.user) {
+          redirect(301, '/login');
+        }
+        const formData = await request.formData();
+        const data = Object.fromEntries(formData);
 
-    const allDay = data.allDay === 'on';
-    let start, end;
+        const allDay = data.allDay === 'on';
+        let start, end;
 
-    if (allDay) {
-      start = new Date(data.dateStart + 'T00:00:00');
-      end = new Date(data.dateStart + 'T23:59:59');
-    } else {
-      start = new Date(`${data.dateStart}T${data.timeStart}`);
-      end = new Date(`${data.dateStart}T${data.timeEnd}`);
-    }
+                if (allDay) {
+            // Questo blocco era già corretto
+            start = parse(data.dateStart, 'yyyy-MM-dd', new Date());
+            start.setHours(0, 0, 0, 0);
+            end = new Date(start);
+            end.setHours(23, 59, 59, 999);
+        } else {
+            start = parse(`${data.dateStart} ${data.timeStart}`, 'yyyy-MM-dd HH:mm', new Date());
+            end = parse(`${data.dateStart} ${data.timeEnd}`, 'yyyy-MM-dd HH:mm', new Date());
+        }
 
-    // Prepara il pacchetto di dati da salvare, includendo i campi pomodoro
-    const eventData = {
-      title: data.title,
-      note: data.note,
-      start: start,
-      end: end,
-      place: data.location,
-      allDay: allDay,
-      eventType: data.eventType,
-      pomodoroPreset: data.eventType === 'POMODORO' ? data.pomodoroPreset : null,
-      status: data.eventType === 'POMODORO' ? 'PIANIFICATO' : null,
-      userID: locals.user.id 
-    };
-    
-    const eventId = data.id || null;
+        
 
-    if (eventId) {
-      // Se c'è un ID, aggiorna l'evento esistente
-      await Evento.findOneAndUpdate({ _id: eventId, userID: locals.user.id }, eventData);
-    } else {
-      // Altrimenti, crea un nuovo evento
-      await Evento.create(eventData);
-    }
 
-    // Reindirizza l'utente al calendario dopo l'operazione
-    throw redirect(303, '/calendario');
-  },
+        // NUOVO: Gestione delle impostazioni di notifica
+        const notificationSettings = {
+            enabled: data.notificationEnabled === 'on',
+            advanceValue: parseInt(data.notificationAdvanceValue, 10) || 0,
+            advanceUnit: data.notificationAdvanceUnit || 'minutes',
+            repeat: data.notificationRepeat || 'none',
+            repeat_number: (data.notificationRepeat && data.notificationRepeat !== 'none') ? (parseInt(data.repeatNumber, 10) || null) : null,
+
+            // Aggiungi qui 'repeat' e 'mechanism' se li avrai nel form
+        };
+
+        // Se le notifiche sono abilitate, calcoliamo il campo 'notifyAt'
+        if (notificationSettings.enabled) {
+            notificationSettings.notifyAt = sub(start, {
+                [notificationSettings.advanceUnit]: notificationSettings.advanceValue
+            });
+        }
+        
+        // MODIFICATO: Aggiungiamo 'notificationSettings' all'oggetto da salvare
+        const eventData = {
+          title: data.title,
+          note: data.note,
+          start: start,
+          end: end,
+          place: data.location,
+          allDay: allDay,
+          eventType: data.eventType,
+          pomodoroPreset: data.eventType === 'POMODORO' ? data.pomodoroPreset : null,
+          status: data.eventType === 'POMODORO' ? 'PIANIFICATO' : null,
+          userID: locals.user.id,
+          notificationSettings: notificationSettings // Aggiunto qui
+        };
+        
+        const eventId = data.id || null;
+
+        if (eventId) {
+          await Evento.findOneAndUpdate({ _id: eventId, userID: locals.user.id }, eventData);
+        } else {
+          await Evento.create(eventData);
+        }
+
+        throw redirect(303, '/calendario');
+    },
 }

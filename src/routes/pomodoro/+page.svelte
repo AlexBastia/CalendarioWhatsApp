@@ -5,6 +5,7 @@
     import FloatingButton from '$lib/components/btn.svelte';
     import PomodoroCard from '$lib/components/pomodoroCard.svelte';
     import PomodoroModal from '$lib/components/pomodoroModal.svelte';
+    import Title from '$lib/components/Title.svelte';
 
     console.log(data);
     console.log(form);
@@ -20,11 +21,9 @@
     let editModalRef;
 </script>
 
-<header class="container d-flex justify-content-between align-items-center">
-    <h1 class="display-2">Pomodori</h1>
-</header>
 
 <main>
+    <Title title={"Pomodori"}></Title>
     <div class="container mt-4">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-4">
             {#each data.pomodori as pomodoro}

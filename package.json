@@ -34,7 +34,8 @@
 		"date-fns": "^4.1.0",
 		"dompurify": "^3.2.4",
 		"marked": "^15.0.7",
-		"mongoose": "^8.9.2"
+		"mongoose": "^8.9.2",
+		"node-cron": "^4.2.1"
 	},
 	"description": "Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).",
 	"main": "eslint.config.js",

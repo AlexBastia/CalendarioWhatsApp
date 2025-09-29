@@ -2,6 +2,7 @@
 	import NotificationBell from "$lib/components/NotificationBell.svelte";
 	import NotificationApiManager from "$lib/components/NotificationApiManager.svelte";
 	import GoogleCalendar from "$lib/components/GoogleCalendar.svelte";
+	import Title from "$lib/components/Title.svelte";
 
 	let {data } = $props();
 	console.log("notifiche non lette:", data);
@@ -9,8 +10,10 @@
 	
 </script>
 
+
+
 <main>
-	<h1>E' TORNATO SVELTEKIT!!!!!!!</h1>
+	<Title title={"Cos'è tornato alessio?"}></Title>
 	<ul>
 		<li><a href="/note">Note</a></li>
 		<li><a href="/calendario">CalenDario</a></li>
@@ -23,11 +26,10 @@
 	{#if !data.notificationForPom}
 		<p>Non ci sono notifiche non lette.</p>
 	{:else}
-		<NotificationBell data={data}  />
+		<NotificationBell/>
 	{/if}
 	{#if data.notificationTasks && data.notificationTasks.length > 0}
 		<NotificationApiManager data={data.notificationTasks} />
-		
 	{/if}
 
 	<GoogleCalendar />
