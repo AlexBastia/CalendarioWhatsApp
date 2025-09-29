@@ -1,7 +1,6 @@
 <script>
 	import NotificationBell from "$lib/components/NotificationBell.svelte";
 	import NotificationApiManager from "$lib/components/NotificationApiManager.svelte";
-	import GoogleCalendar from "$lib/components/GoogleCalendar.svelte";
 	import Title from "$lib/components/Title.svelte";
 
 	let {data } = $props();
@@ -31,7 +30,5 @@
 	{#if data.notificationTasks && data.notificationTasks.length > 0}
 		<NotificationApiManager data={data.notificationTasks} />
 	{/if}
-
-	<GoogleCalendar />
 </main>
 
