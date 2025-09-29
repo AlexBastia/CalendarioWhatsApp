@@ -43,7 +43,14 @@
       repeat_number: 0
     };
   }
-
+  $effect(() => {
+    if(e.ripetizione.frequenza === 'MENSILE'){
+      const d = new Date(e.dateStart);
+      const week = Math.ceil(d.getDate()/7);
+      const weekday = d.getDay();
+      e.ripetizione.nthWeekday = { week, weekday };
+    }
+  })
   function handleCancel() {
     history.back();
   }
@@ -136,13 +143,13 @@
         <div class="col-12 mt-3">
           <div class="form-check form-switch mb-3">
             <!-- hidden fallback -->
-            <input type="hidden" name="ripetizione[isRepeatable]" value="false" />
+            <input type="hidden" name="isRepeatable" value="false" />
 
             <input
               class="form-check-input"
               type="checkbox"
               id="isRepeatable"
-              name="ripetizione[isRepeatable]"
+              name="isRepeatable"
               checked={e.ripetizione.isRepeatable}
               onchange={(ev) => e.ripetizione.isRepeatable = ev.target.checked}
               value="true"
@@ -158,13 +165,7 @@
 {#if e.ripetizione.isRepeatable}
   <div class="col-md-6">
     <div class="form-floating">
-      <select
-        class="form-select"
-        id="frequency"
-        name="ripetizione[frequenza]"
-        bind:value={e.ripetizione.frequenza}
-        required
-      >
+      <select class="form-select" id="frequency" name="frequenza" bind:value={e.ripetizione.frequenza} required>
         <option value="" disabled>Scegli la frequenza...</option>
         <option value="GIORNALIERO">Ogni giorno</option>
         <option value="SETTIMANALE">Ogni settimana</option>
@@ -185,7 +186,7 @@
               type="checkbox"
               class="form-check-input"
               id={`day${i}`}
-              name="ripetizione[giorniSettimana][]"
+              name="giorniSettimana"
               value={i}
               onchange={(evt) => {
                 if (evt.currentTarget.checked) {
@@ -213,7 +214,7 @@
           class="form-check-input"
           type="radio"
           id="monthlyDayOfMonth"
-          name="ripetizione[monthlyMode]"
+          name="monthlyMode"
           value="dayOfMonth"
           bind:group={e.ripetizione.monthlyMode}
         />
@@ -227,12 +228,12 @@
           class="form-check-input"
           type="radio"
           id="monthlyNthWeekday"
-          name="ripetizione[monthlyMode]"
+          name="monthlyMode"
           value="nthWeekday"
           bind:group={e.ripetizione.monthlyMode}
         />
         <label class="form-check-label" for="monthlyNthWeekday">
-          Ogni {Math.ceil(new Date(e.dateStart).getDate() / 7)}°
+          Ogni {Number(e.ripetizione.nthWeekday.week)}°
           {[
             'domenica',
             'lunedì',
@@ -241,7 +242,7 @@
             'giovedì',
             'venerdì',
             'sabato'
-          ][new Date(e.dateStart).getDay()]}
+          ][Number(e.ripetizione.nthWeekday.weekday)]}
           del mese
         </label>
       </div>
@@ -253,7 +254,7 @@
       <select
         class="form-select"
         id="endType"
-        name="ripetizione[endCondition][type]"
+        name="endType"
         bind:value={e.ripetizione.endCondition.type}
       >
         <option value="MAI">Mai</option>
@@ -272,7 +273,7 @@
           min="1"
           class="form-control"
           id="count"
-          name="ripetizione[endCondition][nVolte]"
+          name="endCount"
           bind:value={e.ripetizione.endCondition.nVolte}
         />
         <label for="count">Numero di ripetizioni</label>
@@ -287,7 +288,7 @@
           type="date"
           class="form-control"
           id="endDate"
-          name="ripetizione[endCondition][endDate]"
+          name="endDate"
           bind:value={e.ripetizione.endCondition.endDate}
         />
         <label for="endDate">Data fine</label>

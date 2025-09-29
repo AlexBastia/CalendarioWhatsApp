@@ -139,7 +139,7 @@ export const actions = {
           ? data.giorniSettimana.map(Number)
           : [Number(data.giorniSettimana)]
         : [],
-      dayOfMonth: data.dayOfMonth ? Number(data.dayOfMonth) : null,
+      monthlyMode: data.monthlyMode || null,
       nthWeekday: data.week && data.weekday
         ? {
           week: Number(data.week),
@@ -155,7 +155,7 @@ export const actions = {
 
     // Calcola lastInstance solo se ripetizione attiva
     if (ripetizione.isRepeatable) {
-      ripetizione.lastInstance = mkLastDate({ start, ripetizione });
+      ripetizione.lastDate = mkLastDate({ start, ripetizione });
     }
     // Prepara il pacchetto di dati da salvare, includendo i campi pomodoro
     const eventData = {
@@ -167,6 +167,7 @@ export const actions = {
       allDay: allDay,
       eventType: data.eventType,
       pomodoroPreset: data.eventType === 'POMODORO' ? data.pomodoroPreset : null,
+      ripetizione: ripetizione,
       status: data.eventType === 'POMODORO' ? 'PIANIFICATO' : null,
       userID: locals.user.id,
       isGoogle
