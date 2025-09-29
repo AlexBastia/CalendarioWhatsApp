@@ -1,7 +1,6 @@
 <script>
 	import NotificationBell from "$lib/components/NotificationBell.svelte";
 	import NotificationApiManager from "$lib/components/NotificationApiManager.svelte";
-	import GoogleCalendar from "$lib/components/GoogleCalendar.svelte";
 	import Title from "$lib/components/Title.svelte";
 
 	let {data } = $props();

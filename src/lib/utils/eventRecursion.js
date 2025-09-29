@@ -1,4 +1,7 @@
-import { addDays, addWeeks, addMonths, addYears, startOfDay } from "date-fns";
+import {addDays, addWeeks, addMonths, addYears, 
+        startOfDay, startOfWeek, 
+        getTime, getDay, getDate, getMonth , getYear} 
+  from "date-fns";
 
 
 export function mkLastDate(event) {
@@ -16,8 +19,11 @@ export function mkLastDate(event) {
         break;
       case "SETTIMANALE":
         const countPerWeek = ripetizione.giorniSettimana.length || 1;
-        const weeksNeeded = Math.ceil(n / countPerWeek);
-        lastDate = addWeeks(start, weeksNeeded - 1);
+        const weeksNeeded = Math.floor(n / countPerWeek);
+        //sketchy math, catchy meth
+        lastDate = addWeeks(start, weeksNeeded);
+        lastDate = startOfWeek(lastDate);
+        lastDate = addDays(lastDate, ripetizione.giorniSettimana[n%countPerWeek]);
         break;
       case "MENSILE":
         lastDate = addMonths(start, n - 1);
@@ -39,33 +45,33 @@ export function expandEvent(event, rangeStart, rangeEnd) {
 
   const instances = [];
   const { start, end, ripetizione } = event;
-  const durationMs = end.getTime() - start.getTime();
+  const durationMs = getTime(end) - getTime(start);
 
   // --- Calcolo lastDate in base a endCondition ---
   let lastDate = mkLastDate(event);
   if (lastDate > rangeEnd) lastDate = rangeEnd;
-
+  const dayOfMonth = getDate(start);
   const pushInstance = (date) => {
-    const instStart = new Date(date.getTime());
+    const instStart = new Date(getTime(date));
     instStart.setHours(start.getHours(), start.getMinutes(), start.getSeconds());
-    const instEnd = new Date(instStart.getTime() + durationMs);
+    const instEnd = new Date(getTime(instStart) + durationMs);
     instances.push({ ...event, start: instStart, end: instEnd });
   };
 
   switch (ripetizione.frequenza) {
     case "GIORNALIERO":
-      let dayCursor = startOfDay(start);
+      let dayCursor = startOfDay(rangeStart);
       while (dayCursor <= lastDate) {
-        if (dayCursor >= rangeStart) { pushInstance(dayCursor); }
+        pushInstance(dayCursor);
         dayCursor = addDays(dayCursor, 1);
       }
       break;
 
     case "SETTIMANALE":
-      let weekCursor = startOfDay(start);
+      let weekCursor = startOfDay(rangeStart);
       while (weekCursor <= lastDate) {
-        for (const dow of ripetizione.giorniSettimana) {
-          const offset = (dow + 7 - weekCursor.getDay()) % 7;
+        for (const dayofweek of ripetizione.giorniSettimana) {
+          const offset = (dayofweek + 7 - getDay(weekCursor)) % 7;
           const instanceDate = addDays(weekCursor, offset);
           if (instanceDate > lastDate) continue;
           if (instanceDate >= rangeStart) {
@@ -79,8 +85,8 @@ export function expandEvent(event, rangeStart, rangeEnd) {
     case "MENSILE":
       let monthCursor = startOfDay(start);
       while (monthCursor <= lastDate) {
-        const year = monthCursor.getFullYear();
-        const month = monthCursor.getMonth();
+        const year = getYear(monthCursor);
+        const month = getMonth(monthCursor);
 
         if (ripetizione.monthlyMode === 'dayOfMonth') {
           // Fixed: calculate dayOfMonth from original start date
@@ -114,34 +120,14 @@ export function expandEvent(event, rangeStart, rangeEnd) {
 
     case "ANNUALE":
       let yearCursor = startOfDay(start);
-      const startMonth = start.getMonth();
+      const startMonth = getMonth(start);
       while (yearCursor <= lastDate) {
-        const year = yearCursor.getFullYear();
-
-        if (ripetizione.dayOfMonth) {
-          const instanceDate = new Date(year, startMonth, ripetizione.dayOfMonth);
+        const year = getYear(yearCursor);
+        const instanceDate = new Date(year, startMonth, dayOfMonth);
           if (instanceDate >= rangeStart && instanceDate <= lastDate) {
             pushInstance(instanceDate);
           }
-        }
-
-        if (ripetizione.nthWeekday?.week) {
-          const weekday = ripetizione.nthWeekday.weekday;
-          const weekNum = ripetizione.nthWeekday.week;
-          let count = 0;
-          for (let d = 1; d <= 31; d++) {
-            const date = new Date(year, startMonth, d);
-            if (date.getMonth() !== startMonth) break;
-            if (date.getDay() === weekday) count++;
-            if (count === weekNum) {
-              if (date >= rangeStart && date <= lastDate) {
-                pushInstance(date);
-              }
-              break;
-            }
-          }
-        }
-
+        
         yearCursor = addYears(yearCursor, 1);
       }
       break;
