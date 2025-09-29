@@ -12,6 +12,8 @@
 	import TagDisplayButton from '$lib/components/TagDisplayButton.svelte';
 	import DateDisplay from '$lib/components/DateDisplay.svelte';
 	import DeleteConfirmationModal from '$lib/components/DeleteConfirmationModal.svelte';
+	import Title from '$lib/components/Title.svelte';
+	import TaskForm from '$lib/components/taskForm.svelte';
 
 	let { data, form } = $props();
 	let isMDView = $state(false);
@@ -38,27 +40,22 @@
 </script>
 
 <div class="position-relative vh-100">
-	<header class="container d-flex justify-content-between align-content-center p-3">
-		<a href="/note" aria-label="Go back to note view" class="fs-4">
-			<i class="bi bi-box-arrow-left"></i>
-		</a>
-		<div class="hstack">
-			<button class="btn fs-4" aria-label="View markdown" onclick={() => toggleMDView()}>
-				{#if !isMDView}
-					<i class="bi bi-book-half"></i>
-				{:else}
-					<i class="bi bi-pencil-fill"></i>
-				{/if}
-			</button>
-			<NoteActionDropdown
-				isShared={data.noteIsShared}
-				{copyText}
-				sharingId={data.sharedUserData?._id}
-			/>
+	<Title backLink={'/note'}>
+		<button class="btn fs-4" aria-label="View markdown" onclick={() => toggleMDView()}>
+			{#if !isMDView}
+				<i class="bi bi-book-half"></i>
+			{:else}
+				<i class="bi bi-pencil-fill"></i>
+			{/if}
+		</button>
+		<NoteActionDropdown
+			isShared={data.noteIsShared}
+			{copyText}
+			sharingId={data.sharedUserData?._id}
+		/>
 
-			<DeleteConfirmationModal formId={'deleteNoteForm'} />
-		</div>
-	</header>
+		<DeleteConfirmationModal formId={'deleteNoteForm'} />
+	</Title>
 
 	<main class="container">
 		{#if data.noteIsShared}

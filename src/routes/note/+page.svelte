@@ -3,12 +3,13 @@
 	import { fade } from 'svelte/transition';
 	import { enhance } from '$app/forms';
 	import { filterPreviews, sortPreviews } from './utilities';
+	import { timingStore } from '$lib/stores/timing';
 	import NoteTagModalHome from '$lib/components/NoteTagModalHome.svelte';
 	import SelectionModal from '$lib/components/SelectionModal.svelte';
 	import PreviewNote from '$lib/components/PreviewNote.svelte';
 	import Alert from '$lib/components/Alert.svelte';
-	import { timingStore } from '$lib/stores/timing';
 	import Btn from '$lib/components/btn.svelte';
+	import Title from '$lib/components/Title.svelte';
 
 	let { data, form } = $props();
 
@@ -75,22 +76,16 @@
 </script>
 
 <div class="position-relative vh-100">
-	<header class="container d-flex justify-content-between align-items-center">
-		<h1 class="display-2">Note</h1>
-		<div class="hstack">
-			<a href="/" aria-label="Go back to home" class="fs-2 me-5">
-				<i class="bi bi-box-arrow-left"></i>
-			</a>
-			<button
-				type="button"
-				class="btn btn-outline-primary"
-				data-bs-toggle="modal"
-				data-bs-target="#noteModalCategorie"
-			>
-				Gestisci categorie
-			</button>
-		</div>
-	</header>
+	<Title title={'Note'} backLink={'/'}>
+		<button
+			type="button"
+			class="btn btn-outline-primary"
+			data-bs-toggle="modal"
+			data-bs-target="#noteModalCategorie"
+		>
+			Gestisci categorie
+		</button>
+	</Title>
 
 	<main>
 		<!-- Order/Filter inputs -->

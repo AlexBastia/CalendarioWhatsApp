@@ -1,6 +1,7 @@
 <script>
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { fade, fly } from 'svelte/transition';
 	import Btn from '$lib/components/btn.svelte';
 	import DateDisplay from '$lib/components/DateDisplay.svelte';
 	import DeleteConfirmationModal from '$lib/components/DeleteConfirmationModal.svelte';
@@ -8,7 +9,7 @@
 	import ListItemModal from '$lib/components/ListItemModal.svelte';
 	import NoteTagModal from '$lib/components/NoteTagModal.svelte';
 	import TagDisplayButton from '$lib/components/TagDisplayButton.svelte';
-	import { fade, fly } from 'svelte/transition';
+	import Title from '$lib/components/Title.svelte';
 
 	let { data } = $props();
 
@@ -19,10 +20,7 @@
 	};
 </script>
 
-<header class="container d-flex justify-content-between p-3">
-	<a href="/note" aria-label="Go back to note view" class="fs-4">
-		<i class="bi bi-box-arrow-left"></i>
-	</a>
+<Title backLink={'/note'}>
 	<form
 		id="deleteListForm"
 		method="POST"
@@ -41,7 +39,7 @@
 			data-bs-target="#deleteConfirmationModal"><i class="bi bi-trash"></i></button
 		>
 	</form>
-</header>
+</Title>
 
 <main class="container">
 	<form
