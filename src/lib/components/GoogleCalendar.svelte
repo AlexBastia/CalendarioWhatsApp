@@ -29,7 +29,8 @@
 		isLoading = true;
 		error = null;
 		try {
-			const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=10&orderBy=startTime&singleEvents=true', {
+			const now = new Date().toISOString();
+			const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=100&orderBy=startTime&singleEvents=true&timeMin=${encodeURIComponent(now)}`, {
 				headers: {
 					'Authorization': `Bearer ${auth.token}`
 				}
