@@ -47,13 +47,16 @@ export const actions = {
             end = parse(`${data.dateStart} ${data.timeEnd}`, 'yyyy-MM-dd HH:mm', new Date());
         }
 
+        
+
 
         // NUOVO: Gestione delle impostazioni di notifica
         const notificationSettings = {
             enabled: data.notificationEnabled === 'on',
-            advanceValue: parseInt(data.notificationAdvanceValue, 10),
-            advanceUnit: data.notificationAdvanceUnit,
-                repeat: data.notificationRepeat || 'none' 
+            advanceValue: parseInt(data.notificationAdvanceValue, 10) || 0,
+            advanceUnit: data.notificationAdvanceUnit || 'minutes',
+            repeat: data.notificationRepeat || 'none',
+            repeat_number: (data.notificationRepeat && data.notificationRepeat !== 'none') ? (parseInt(data.repeatNumber, 10) || null) : null,
 
             // Aggiungi qui 'repeat' e 'mechanism' se li avrai nel form
         };
