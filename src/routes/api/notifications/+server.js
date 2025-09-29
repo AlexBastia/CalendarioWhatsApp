@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ cookies, url, locals }) {
 	try {
+		console.log(locals.user);
 		if (!locals.user) {
 			return json({ error: 'Unauthorized' }, { status: 401 });
 		}

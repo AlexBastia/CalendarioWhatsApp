@@ -3,76 +3,102 @@
 import cron from 'node-cron';
 import { Evento } from '$lib/models/Event.js'; 
 import { Notifica } from '$lib/models/Notification.js';
-import {differenceInMinutes, differenceInHours, differenceInDays} from "date-fns";
+import { differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
 
 export function startScheduler() {
   console.log('Scheduler per le notifiche avviato.');
   
   cron.schedule('*/1 * * * *', async () => {
     const now = new Date();
-    const oneMinuteFromNow = new Date(now.getTime() + 60000);
     console.log(`\n🕒 Cron job in esecuzione: ${now.toLocaleTimeString('it-IT')}`);
 
-try {
-    const now = new Date();
-    const eventsToNotify = await Evento.find({
-      'notificationSettings.enabled': true,
-      'notificationSettings.notifyAt': { $lte: now }, // Notifiche "scadute"
-      'notificationSettings.processed': { $ne: true }  // E non ancora "ignorate"
-    });
+    try {
+      const eventsToNotify = await Evento.find({
+        'notificationSettings.enabled': true,
+        'notificationSettings.notifyAt': { $lte: now },
+        'notificationSettings.processed': { $ne: true }
+      });
 
-    for (const event of eventsToNotify) {
-      const { repeat, repeat_number, lastNotificationSentAt } = event.notificationSettings;
+      console.log(`📋 Eventi trovati: ${eventsToNotify.length}`);
 
-      let shouldNotify = false;
+      for (const event of eventsToNotify) {
+        const { repeat, repeat_number, lastNotificationSentAt } = event.notificationSettings;
 
-      // --- NUOVA LOGICA DI CONTROLLO ---
-      if (!lastNotificationSentAt) {
-        shouldNotify = true;
-      } else {
-        switch (repeat) {
-          case 'minute':
-            if (differenceInMinutes(now, lastNotificationSentAt) >= repeat_number) {
-              shouldNotify = true;
-            }
-            break;
-          case 'hour':
-            if (differenceInHours(now, lastNotificationSentAt) >= repeat_number) {
-              shouldNotify = true;
-            }
-            break;
-          case 'day':
-            if (differenceInDays(now, lastNotificationSentAt) >= repeat_number) {
-              shouldNotify = true;
-            }
-            break;
-        }
-      }
+        let shouldNotify = false;
 
-      if (shouldNotify) {
-        console.log(`📩 Creazione notifica per l'evento: "${event.title}"`);
-        await Notifica.create({
-          destinatario: event.userID,
-          mittente: null,
-          tipo: 'EVENTO',
-          riferimento: event._id,
-        });
-
-        if (repeat === 'none') {
-          // Se la ripetizione è 'none', la marchiamo come processata e finisce qui.
-          event.notificationSettings.processed = true;
+        // Determina se inviare la notifica
+        if (!lastNotificationSentAt) {
+          shouldNotify = true;
         } else {
-          // Altrimenti, aggiorniamo solo la data dell'ultima notifica inviata.
-          event.notificationSettings.lastNotificationSentAt = now;
+          switch (repeat) {
+            case 'minute':
+              if (differenceInMinutes(now, lastNotificationSentAt) >= repeat_number) {
+                shouldNotify = true;
+              }
+              break;
+            case 'hour':
+              if (differenceInHours(now, lastNotificationSentAt) >= repeat_number) {
+                shouldNotify = true;
+              }
+              break;
+            case 'day':
+              if (differenceInDays(now, lastNotificationSentAt) >= repeat_number) {
+                shouldNotify = true;
+              }
+              break;
+          }
         }
-        await event.save();
-      }
-    }
 
-    if (eventsToNotify.length === 0) {
-      console.log("DB controllato, nessuna notifica da inviare in questo minuto.");
-    }
-  } catch (error) {
+        if (shouldNotify) {
+          // AGGIORNAMENTO ATOMICO: Aggiorna PRIMA di creare la notifica
+          // Questo previene duplicati anche in caso di esecuzioni concorrenti
+          const updateQuery = {
+            _id: event._id,
+            'notificationSettings.enabled': true,
+            'notificationSettings.notifyAt': { $lte: now }
+          };
+
+          // Se repeat è 'none', marca come processata, altrimenti aggiorna lastNotificationSentAt
+          const updateData = repeat === 'none' 
+            ? { 'notificationSettings.processed': true }
+            : { 'notificationSettings.lastNotificationSentAt': now };
+
+          // Se NON ha mai inviato notifiche, aggiungi anche questa condizione
+          if (!lastNotificationSentAt) {
+            updateQuery['notificationSettings.lastNotificationSentAt'] = { $exists: false };
+          } else {
+            // Altrimenti, controlla che non sia già stato aggiornato nel frattempo
+            updateQuery['notificationSettings.lastNotificationSentAt'] = lastNotificationSentAt;
+          }
+
+          // Esegui l'update atomico
+          const updated = await Evento.findOneAndUpdate(
+            updateQuery,
+            { $set: updateData },
+            { new: false } // Ritorna il documento PRIMA dell'update
+          );
+
+          // Se l'update ha avuto successo (documento trovato e aggiornato)
+          if (updated) {
+            console.log(`📩 Creazione notifica per l'evento: "${event.title}"`);
+            
+            // Ora crea la notifica
+            await Notifica.create({
+              destinatario: event.userID,
+              mittente: null,
+              tipo: 'EVENTO',
+              riferimento: event._id,
+            });
+          } else {
+            console.log(`⏭️  Evento "${event.title}" già processato da un'altra esecuzione.`);
+          }
+        }
+      }
+
+      if (eventsToNotify.length === 0) {
+        console.log("DB controllato, nessuna notifica da inviare in questo minuto.");
+      }
+    } catch (error) {
       console.error('Errore durante il controllo delle notifiche degli eventi:', error);
     }
   });

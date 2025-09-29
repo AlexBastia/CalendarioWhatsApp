@@ -50,16 +50,17 @@ export const actions = {
         
 
 
-        // NUOVO: Gestione delle impostazioni di notifica
         const notificationSettings = {
-            enabled: data.notificationEnabled === 'on',
-            advanceValue: parseInt(data.notificationAdvanceValue, 10) || 0,
-            advanceUnit: data.notificationAdvanceUnit || 'minutes',
-            repeat: data.notificationRepeat || 'none',
-            repeat_number: (data.notificationRepeat && data.notificationRepeat !== 'none') ? (parseInt(data.repeatNumber, 10) || null) : null,
+        enabled: data.notificationEnabled === 'on',
+        advanceValue: parseInt(data.notificationAdvanceValue, 10) || 0,
+        advanceUnit: data.notificationAdvanceUnit || 'minutes',
+        repeat: data.notificationRepeat || 'none',
+        // CORRETTO: era 'repeatNumber', ora è 'notificationRepeatNumber'
+        repeat_number: (data.notificationRepeat && data.notificationRepeat !== 'none') 
+            ? (parseInt(data.notificationRepeatNumber, 10) || 1) 
+            : 0  // Usa 0 invece di null quando repeat è 'none'
+    };
 
-            // Aggiungi qui 'repeat' e 'mechanism' se li avrai nel form
-        };
 
         // Se le notifiche sono abilitate, calcoliamo il campo 'notifyAt'
         if (notificationSettings.enabled) {
