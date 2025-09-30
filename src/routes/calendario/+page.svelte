@@ -229,34 +229,37 @@
 							currentDate
 						)
 							? 'text-muted bg-light'
-							: ''}"
-						style="min-height: 120px;"
+							: ''} {isSameMonth(day, currentDate) ? 'clickable' : ''}"
+						style="height: 120px; display: flex; flex-direction: column;"
+						onclick={isSameMonth(day, currentDate) ? () => { viewMode = 'daily'; currentDate = day; } : undefined}
 					>
-						<p>{format(day, 'd')}</p>
-						{#if isSameMonth(day, currentDate)}
-							{#each expandedEvents as event}
-								{#if isSameDay(event.start, day)}
-									<div
-										onclick={() => goToEvent(event._id)}
-										class="badge bg-primary w-100 mb-1 event-link"
-									>
-										📅 {event.title}
-									</div>
-								{/if}
-							{/each}
-							{#each data.tasks as task}
-								{#if isSameDay(task.deadline, day)}
-									<div
-										onclick={() => goToTask(task._id)}
-										class="badge w-100 mb-1 event-link {task.status === 'late'
-											? 'bg-danger'
-											: 'bg-success'}"
-									>
-										📝 {task.title}
-									</div>
-								{/if}
-							{/each}
-						{/if}
+						<p class="flex-shrink-0 mb-1">{format(day, 'd')}</p>
+						<div class="flex-grow-1 overflow-auto">
+							{#if isSameMonth(day, currentDate)}
+								{#each expandedEvents as event}
+									{#if isSameDay(event.start, day)}
+										<div
+											onclick={(e) => { e.stopPropagation(); goToEvent(event._id); }}
+											class="badge bg-primary w-100 mb-1 event-link"
+										>
+											📅 {event.title}
+										</div>
+									{/if}
+								{/each}
+								{#each data.tasks as task}
+									{#if isSameDay(task.deadline, day)}
+										<div
+											onclick={(e) => { e.stopPropagation(); goToTask(task._id); }}
+											class="badge w-100 mb-1 event-link {task.status === 'late'
+												? 'bg-danger'
+												: 'bg-success'}"
+										>
+											📝 {task.title}
+										</div>
+									{/if}
+								{/each}
+							{/if}
+						</div>
 					</div>
 				{/each}
 			</div>
@@ -306,5 +309,13 @@
 	.badge {
 		white-space: normal;
 		text-align: left;
+	}
+
+	.clickable {
+		cursor: pointer;
+	}
+
+	.clickable:hover {
+		background-color: #f8f9fa;
 	}
 </style>
