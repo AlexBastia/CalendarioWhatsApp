@@ -6,10 +6,9 @@
     // --- STATO AUTONOMO ---
     let notifications = $state([]);
     let unreadCount = $state(0);
-    let previousUnreadCount = $state(0); // Per rilevare nuove notifiche
-    let isFirstLoad = $state(true); // Per evitare notifica al primo caricamento
+    let previousUnreadCount = $state(0); 
+    let isFirstLoad = $state(true); 
 
-    // Funzione per recuperare le notifiche dall'API
     async function fetchNotifications() {
         try {
             console.log('Fetching notifications...');
@@ -20,21 +19,17 @@
             }
             const data = await response.json();
             if (data.success) {
-                // Salva il conteggio precedente prima di aggiornare
                 previousUnreadCount = unreadCount;
                 
-                // Aggiorna le notifiche
                 notifications = data.notifications;
                 unreadCount = data.unreadCount;
 
-                // Rileva se ci sono nuove notifiche (solo dopo il primo caricamento)
                 if (!isFirstLoad && unreadCount > previousUnreadCount) {
                     const newNotificationsCount = unreadCount - previousUnreadCount;
                     console.log(`🔔 ${newNotificationsCount} nuove notifiche!`);
                     showNewNotificationFeedback();
                 }
 
-                // Dopo il primo caricamento, imposta isFirstLoad a false
                 if (isFirstLoad) {
                     isFirstLoad = false;
                 }
@@ -44,9 +39,7 @@
         }
     }
 
-    // Funzione per mostrare feedback quando arriva una nuova notifica
     function showNewNotificationFeedback() {
-        // 1. Animazione shake del campanello
         const bellButton = document.querySelector('.notification-bell-btn');
         if (bellButton) {
             bellButton.classList.add('shake');
@@ -57,7 +50,6 @@
     }
 
 
-    // Mostra notifica del browser
     function showBrowserNotification() {
         if ('Notification' in window && Notification.permission === 'granted') {
             // Prendi la prima notifica non letta per mostrare il dettaglio
@@ -83,14 +75,12 @@
             const notification = new Notification(title, {
                 body: body,
                 icon: icon,
-                tag: 'studyflow-notification', // Evita duplicati
-                requireInteraction: false, // La notifica si chiude automaticamente
+                tag: 'studyflow-notification', 
+                requireInteraction: false, 
             });
 
-            // Chiudi la notifica dopo 5 secondi
             setTimeout(() => notification.close(), 5000);
 
-            // Gestisci il click sulla notifica
             notification.onclick = function() {
                 window.focus();
                 this.close();
@@ -112,7 +102,6 @@
 
 
 
-    // Funzione per segnare una notifica come letta e navigare
     async function handleNotificationClick(notification) {
         try {
             // Segna la notifica come letta sul server
@@ -125,7 +114,6 @@
             const result = await response.json();
             
             if (result.success) {
-                // Rimuovi la notifica dall'UI e aggiorna il contatore
                 notifications = notifications.filter(n => n._id !== notification._id);
                 unreadCount = result.unreadCount;
                 previousUnreadCount = unreadCount;
@@ -136,7 +124,6 @@
             console.error('Errore nella gestione del click:', error);
         }
 
-        // Naviga alla pagina di riferimento
         if (notification.tipo === 'EVENTO') {
             goto(`/calendario/event/${notification.riferimento}`);
         } else if (notification.tipo === 'ATTIVITA') {
@@ -144,7 +131,6 @@
         }
     }
 
-    // Funzione per segnare tutte le notifiche come lette
     async function markAllAsRead() {
         try {
             const response = await fetch(`/api/notifications/mark-read`, {
