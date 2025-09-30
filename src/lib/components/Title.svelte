@@ -2,7 +2,7 @@
 	let { title, backLink, children } = $props();
 </script>
 
-<header class="container d-flex justify-content-between align-items-center">
+<header class="container d-flex justify-content-between align-items-cente w-auto mx-0 ">
 	<div class="d-flex align-items-center g-3">
 		{#if backLink}
 			<a href={backLink} aria-label="Go back" class="fs-2 me-3">

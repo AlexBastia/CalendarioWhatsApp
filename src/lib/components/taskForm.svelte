@@ -90,15 +90,15 @@
         </form>
         <!-- delete form -->
          {#if e._id && deleteAction}
-        <form method="POST" action={deleteAction} class="mt-3">
-            <input name="id" type="hidden" value={task._id} />
-            <div class="d-flex justify-content-start">
-                <button type="submit" class="btn btn-outline-danger">
-                    <i class="bi bi-trash me-2"></i>Elimina Attività
-                </button>
-            </div>
+            <form method="POST" action={deleteAction} class="mt-3">
+                <input name="id" type="hidden" value={task._id} />
+                <div class="d-flex justify-content-start">
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-2"></i>Elimina Attività
+                    </button>
+                </div>
 
-        </form>
+            </form>
         {/if}
         <!-- SEGNA COME COMPLETATA -->
          {#if e._id && deleteAction}

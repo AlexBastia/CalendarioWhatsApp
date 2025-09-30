@@ -19,7 +19,6 @@ async function updateTask(userId, today) {
       $set: { status: 'late' } // Aggiorna lo stato a 'in ritardo'
     });
   }
-
 }
 async function updatePom(userId, today) {
 
