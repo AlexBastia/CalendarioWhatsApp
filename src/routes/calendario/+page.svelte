@@ -38,6 +38,7 @@
 	let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
 
 	let expandedEvents = $state([]);
+	$effect(() => console.log(expandedEvents))
 
 	let currentDateFormated = $derived.by(() => {
 		let dateString = '';
