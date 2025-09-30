@@ -11,10 +11,10 @@ export async function load(event) {
   }
 }
 
-// adding actions
+
 export const actions = {
 
-      saveTask: async ({ locals, request }) => {
+    saveTask: async ({ locals, request }) => {
         if (!locals.user) {
           redirect(301, '/login');
         }
@@ -45,8 +45,8 @@ export const actions = {
     
         // Reindirizza l'utente al calendario dopo l'operazione
         throw redirect(303, '/calendario');
-      },
-        deleteTask: async ({ locals, request }) => {
+    },
+    deleteTask: async ({ locals, request }) => {
         if (!locals.user) {
           redirect(301, '/login');
         }
@@ -58,5 +58,17 @@ export const actions = {
     
         // Reindirizza anche dopo l'eliminazione
         throw redirect(303, '/calendario');
+    },
+    markAsCompleted: async ({locals, request})=>{
+        deleteTask: async ({ locals, request }) => {
+        if (!locals.user) {
+          redirect(301, '/login');
+        }
+        const formData = await request.formData();
+        const taskId = formData.get('id');
+
+        await Task.updateOne({user: locals.user._id},{status: 'done'});
+        throw redirect(303, '/calendario');
       }
+    }
 };

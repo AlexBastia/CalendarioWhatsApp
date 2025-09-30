@@ -25,20 +25,23 @@
 	import Title from '$lib/components/Title.svelte';
 	import GoogleCalendar from '$lib/components/GoogleCalendar.svelte';
 	import DailyView from '$lib/components/DailyView.svelte';
+	import WeeklyView from '$lib/components/WeeklyView.svelte';
 
 	let week = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
 	let { data } = $props();
 
-  let today= $derived($timingStore ? $timingStore : new Date());
-  
-  let currentDate = $state($timingStore ? $timingStore : new Date());
-  $effect(()=>{console.log(currentDate)})
-  //modalita` di visualizzazione, il default e` settimanale
-  let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
-  
-  let rangeStart;
-  let rangeEnd;
-  let expandedEvents = $state([]);
+	let today = $derived($timingStore ? $timingStore : new Date());
+
+	let currentDate = $state($timingStore ? $timingStore : new Date());
+	$effect(() => {
+		console.log(currentDate);
+	});
+	//modalita` di visualizzazione, il default e` settimanale
+	let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
+
+	let rangeStart;
+	let rangeEnd;
+	let expandedEvents = $state([]);
 
 	// effetto per aggiornare rangeStart / rangeEnd
 	$effect(() => {
@@ -104,20 +107,37 @@
 	let weekDays = $derived(getWeekDays(currentDate));
 	let monthCalendarDays = $derived(getMonthCalendarDays(currentDate));
 
-	$effect(() => {console.log(viewMode)})
+	$effect(() => {
+		console.log(viewMode);
+	});
 </script>
 
 <Title title={format(currentDate, 'dd/mm/yyyy')} backLink={'/'}>
 	<GoogleCalendar />
 </Title>
 
-<div class="d-flex align-items-center gap-2 mb-4">
-	<label for="view-mode" class="form-label">Vista:</label>
-	<select id="view-mode" class="form-select w-auto" bind:value={viewMode}>
-		<option value="daily">Giornaliera</option>
-		<option value="weekly">Settimanale</option>
-		<option value="monthly">Mensile</option>
-	</select>
+<div class="d-flex align-items-center justify-content-between mb-4">
+	<div class="d-flex align-items-center justify-content-start gap-2">
+		<label for="view-mode" class="form-label mb-0">Vista:</label>
+		<select id="view-mode" class="form-select w-auto" bind:value={viewMode}>
+			<option value="daily">Giornaliera</option>
+			<option value="weekly">Settimanale</option>
+			<option value="monthly">Mensile</option>
+		</select>
+	</div>
+
+	<div class="d-flex align-items-center">
+		<div>
+			<!-- svelte-ignore a11y_consider_explicit_label -->
+			<button class="btn btn-outline-primary rounded-circle" onclick={goBack} title="Indietro">
+				<i class="bi bi-arrow-left"></i>
+			</button>
+			<!-- svelte-ignore a11y_consider_explicit_label -->
+			<button class="btn btn-outline-primary rounded-circle" onclick={goAhead} title="Avanti">
+				<i class="bi bi-arrow-right"></i>
+			</button>
+		</div>
+	</div>
 </div>
 
 {#if viewMode === 'daily'}
@@ -131,45 +151,7 @@
 		{currentDate}
 	/>
 {:else if viewMode === 'weekly'}
-	<div class="container-fluid">
-		<div class="row text-center fw-bold border-bottom pb-2 mb-2">
-			{#each week as day}
-				<div class="col">{day}</div>
-			{/each}
-		</div>
-		<div class="row">
-			{#each weekDays as day}
-				<div
-					class="col border p-2 {isSameDay(day, today) ? 'today' : ''}"
-					style="min-height: 120px;"
-				>
-					<p class="text-center">{format(day, 'd')}</p>
-					{#each expandedEvents as event}
-						{#if isSameDay(event.start, day)}
-							<div
-								onclick={() => goToEvent(event._id)}
-								class="badge bg-primary w-100 mb-1 event-link"
-							>
-								📅 {event.title}
-							</div>
-						{/if}
-					{/each}
-					{#each data.tasks as task}
-						{#if isSameDay(task.deadline, day)}
-							<div
-								onclick={() => goToTask(task._id)}
-								class="badge w-100 mb-1 event-link {task.status === 'late'
-									? 'bg-danger'
-									: 'bg-success'}"
-							>
-								📝 {task.title}
-							</div>
-						{/if}
-					{/each}
-				</div>
-			{/each}
-		</div>
-	</div>
+	<WeeklyView {weekDays} {today} {expandedEvents} tasks={data.tasks} {goToEvent} {goToTask} />
 {:else}
 	<div class="container-fluid">
 		<div class="row text-center fw-bold border-bottom pb-2 mb-2">
@@ -241,13 +223,6 @@
 </SelectionModal>
 
 <Btn modalTarget="#eventTypeModal" ariaLabel="Aggiungi evento o attività" />
-
-<div class="mt-4 d-flex justify-content-between">
-	<div>
-		<button class="btn btn-outline-primary" onclick={goBack}> Indietro </button>
-		<button class="btn btn-outline-primary" onclick={goAhead}> Avanti </button>
-	</div>
-</div>
 
 <style>
 	.event-link {

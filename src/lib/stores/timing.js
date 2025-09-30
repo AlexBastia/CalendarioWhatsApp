@@ -13,7 +13,7 @@ function createTimingStore() {
             }
         },
         // restta alla data corrente
-        resetTime: () => set(new Date())
+        resetTime: () => set(null)
     }
 }
 
