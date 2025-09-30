@@ -1,8 +1,9 @@
 <script>
 	import { format } from 'date-fns';
 	import { onMount } from 'svelte';
+	import TaskAndEventList from './TaskAndEventList.svelte';
 
-	let { events, tasks, lateTasks, isToday, goToEvent, goToTask, currentDate } = $props();
+	let { events, tasks, lateTasks, isToday, goToEvent, goToTask, today } = $props();
 
 	let currentTimeIndicator = $state(null);
 	let processedEvents = $derived(processEventOverlaps(events));
@@ -91,39 +92,7 @@
 
 <div class="card-body p-0">
 	<!-- All-day events and tasks -->
-	<div class="list-group list-group-flush border-bottom mb-2 bg-white">
-		{#each events.filter((event) => event.allDay) as event}
-			<button
-				onclick={() => goToEvent(event._id)}
-				class="list-group-item list-group-item-action event-link d-flex align-items-center"
-			>
-				<i class="bi bi-calendar-event me-2"></i>
-				<span>{event.title}</span>
-			</button>
-		{/each}
-		{#each tasks as task}
-			{#if task.status !== 'late'}
-				<button
-					onclick={() => goToTask(task._id)}
-					class="list-group-item list-group-item-action event-link d-flex align-items-center"
-				>
-					<i class="bi bi-check2-square me-2"></i>
-					<span>{task.title}</span>
-				</button>
-			{/if}
-		{/each}
-		{#if isToday}
-			{#each lateTasks as task}
-				<button
-					onclick={() => goToTask(task._id)}
-					class="list-group-item list-group-item-action event-link task-late d-flex align-items-center"
-				>
-					<i class="bi bi-exclamation-triangle-fill me-2"></i>
-					<span>{task.title} (Scaduta)</span>
-				</button>
-			{/each}
-		{/if}
-	</div>
+	<TaskAndEventList {events} {tasks} {lateTasks} {isToday} {goToEvent} {goToTask} />
 
 	<!-- Hourly timeline -->
 	<div class="timeline-container">
@@ -131,11 +100,11 @@
 			<div class="hour-slot" data-hour={hour}>
 				<div class="hour-label">{hour.toString().padStart(2, '0')}:00</div>
 				<div class="hour-content">
-					{#if isToday && currentDate.getHours() === hour}
+					{#if isToday && today.getHours() === hour}
 						<div
 							class="current-time"
 							bind:this={currentTimeIndicator}
-							style="--minutes: {currentDate.getMinutes() / 60};"
+							style="--minutes: {today.getMinutes() / 60};"
 						>
 							<div class="time-line"></div>
 							<i class="bi bi-caret-right-fill time-indicator"></i>

@@ -1,6 +1,7 @@
 <script>
     import { calculateEventLayout } from '$lib/utils/layoutCalculator.js';
     import { format } from 'date-fns';
+	import TaskAndEventList from './TaskAndEventList.svelte';
 
     let { day, events = [], tasks = [], goToEvent, goToTask } = $props();
 

@@ -205,7 +205,7 @@
 		isToday={isSameDay(currentDate, today)}
 		{goToEvent}
 		{goToTask}
-		{currentDate}
+		{today}
 	/>
 {:else if viewMode === 'weekly'}
 	<WeeklyView {weekDays} {today} {expandedEvents} tasks={data.tasks} {goToEvent} {goToTask} />

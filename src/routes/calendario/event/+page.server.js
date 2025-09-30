@@ -4,7 +4,7 @@ import {sub, parse} from "date-fns"
 
 export async function load({ locals }) {
     // Proteggi la rotta: se l'utente non è loggato, reindirizzalo
-    if (!locals.user) {
+    if (locals.user === null) {
         redirect(303, '/login');
     }
 }
