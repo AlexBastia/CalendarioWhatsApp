@@ -142,9 +142,6 @@
         </div>
         <div class="col-12 mt-3">
           <div class="form-check form-switch mb-3">
-            <!-- hidden fallback -->
-            <input type="hidden" name="isRepeatable" value="false" />
-
             <input
               class="form-check-input"
               type="checkbox"
