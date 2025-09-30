@@ -29,18 +29,6 @@ export async function load(event) {
     }
 
     console.log(`Eseguo LOAD per Pomodoro [${pomodoroId}] alle ${new Date().toLocaleTimeString()}`);
-    // controllo evento collegato con struttura:  pomodoro/68d02a7bb3edb49ab36718c9?eventId=68d86263ceef92a51ca3fea6
-    // if (event.url.searchParams.has('eventId')) {
-    //   const eventId = event.url.searchParams.get('eventId');
-    //   console.log(`Controllo evento collegato con ID ${eventId}`);
-    //   const linkedEvent = await Evento.findOne({ _id: eventId, pomodoroPreset: pomodoroId });
-    //   if (linkedEvent) {
-    //     console.log('Evento collegato trovato:', linkedEvent);
-    //     pomodoroDoc.linkedEvent = JSON.parse(JSON.stringify(linkedEvent));
-    //   } else {
-    //     console.log('Nessun evento collegato trovato o non corrispondente');
-    //   }
-    // }
 
 
     return {
@@ -77,7 +65,6 @@ export const actions = {
     }
   },
 
-  // Aggiunge SOLO una Notifica — non modifica pomodoro.sharedUsers
   addUser: async ({ request, params, locals }) => {
     if (!locals.user) return fail(401, { message: 'Non autorizzato', error: true });
 

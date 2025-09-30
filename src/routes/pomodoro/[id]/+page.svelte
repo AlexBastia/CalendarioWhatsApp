@@ -10,6 +10,7 @@
 	import PomodoroModal from '$lib/components/pomodoroModal.svelte';
 	import { initNotifiche, mostraNotifica, presetsPomodoro } from '$lib/utils/notification.js';
 	import { Task } from '$lib/models/Task';
+	import {timingStore} from '$lib/stores/timing.js' 
 	import Title from '$lib/components/Title.svelte';
 
 	let { data } = $props();
@@ -51,6 +52,29 @@
 			updateDash(studioSec, studioSec);
 		}
 	});
+	async function setLastTimeUsed(timingStoreValue) {
+
+		console.log('siva')
+		const timeToSet = timingStoreValue || new Date();
+
+		try {
+			const response = await fetch(`/api/pomodoro/${pomData._id}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ time: timeToSet })
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to update timeLastUsed');
+			}
+
+			console.log('timeLastUsed updated successfully');
+		} catch (error) {
+			console.error('Error updating timeLastUsed:', error);
+		}
+	}
 
 	function fmt(totalSec) {
 		if (typeof totalSec !== 'number') return;
@@ -323,6 +347,7 @@
 									iconSrc={PlayIcon}
 									onclick={() => {
 										console.log('Starting runCycles from button click');
+										setLastTimeUsed($timingStore ? $timingStore : new Date())
 										runCycles();
 									}}
 								/>
