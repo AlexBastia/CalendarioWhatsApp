@@ -48,7 +48,7 @@ export const actions = {
         }
 
         let ripetizione = {
-          isRepeatable: data.isRepeatable === 'on',
+          isRepeatable: data.isRepeatable === 'true',
           frequenza: data.frequenza || null,
           giorniSettimana: data.giorniSettimana
             ? Array.isArray(data.giorniSettimana)
