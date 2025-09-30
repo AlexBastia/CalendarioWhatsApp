@@ -50,7 +50,7 @@
 				dateString = format(currentDate, 'do LLL');
 				break;
 			case 'weekly':
-				dateString = format(currentDate, 'do LLL');
+				dateString = format(startOfWeek(currentDate), 'do LLL') + ' - ' + format(endOfWeek(currentDate), 'do LLL');
 				break;
 			case 'monthly':
 				dateString = format(currentDate, 'MMMM');
@@ -157,19 +157,19 @@
 				onclick={() => (viewMode = 'daily')}
 				type="button"
 				data-bs-dismiss="offcanvas"
-				class="list-group-item list-group-item-action">Daily</button
+				class="list-group-item list-group-item-action"><i class="bi bi-calendar2-day"></i> Day</button
 			>
 			<button
 				onclick={() => (viewMode = 'weekly')}
 				type="button"
 				data-bs-dismiss="offcanvas"
-				class="list-group-item list-group-item-action">Weekly</button
+				class="list-group-item list-group-item-action"><i class="bi bi-calendar2-week"></i> Week</button
 			>
 			<button
 				onclick={() => (viewMode = 'monthly')}
 				type="button"
 				data-bs-dismiss="offcanvas"
-				class="list-group-item list-group-item-action">Monthly</button
+				class="list-group-item list-group-item-action"><i class="bi bi-calendar2-month"></i> Month</button
 			>
 		</div>
 		<div class="mt-5" style="margin-inline: auto; width: fit-content;">

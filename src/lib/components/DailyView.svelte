@@ -91,7 +91,7 @@
 
 <div class="card-body p-0">
 	<!-- All-day events and tasks -->
-	<div class="list-group list-group-flush border-bottom mb-2 sticky-top bg-white">
+	<div class="list-group list-group-flush border-bottom mb-2 bg-white">
 		{#each events.filter((event) => event.allDay) as event}
 			<button
 				onclick={() => goToEvent(event._id)}
@@ -187,10 +187,6 @@
 		border-top: 1px solid #dee2e6;
 	}
 
-	.business-hour {
-		background-color: rgba(0, 123, 255, 0.02);
-	}
-
 	.hour-label {
 		padding: 0.25rem 0.5rem;
 		color: #6c757d;
@@ -281,6 +277,7 @@
 		text-overflow: ellipsis;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		line-height: 1.2;
 		width: 100%;
@@ -307,16 +304,9 @@
 		}
 	}
 
-	/* All-day events sticky header */
-	.sticky-top {
-		position: sticky;
-		top: 0;
-		z-index: 20;
-	}
-
 	.list-group-item {
 		padding: 0.5rem 1rem;
-		font-size: 0.9rem;
+		font-size: 1.2em;
 	}
 
 	.task-late {
