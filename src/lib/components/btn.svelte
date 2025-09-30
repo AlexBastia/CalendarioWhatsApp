@@ -3,7 +3,7 @@
 	let { ariaLabel = 'Attiva Azione', modalTarget, submissionForm } = $props();
 </script>
 
-<div class="position-fixed" style="bottom: 6em; right: 0.8em; z-index: 1050;">
+<div class="position-fixed" style="bottom: 2em; right: 0.8em; z-index: 1050;">
 	<div class="float-end">
 		<button
 			type={submissionForm ? 'submit' : 'button'}
