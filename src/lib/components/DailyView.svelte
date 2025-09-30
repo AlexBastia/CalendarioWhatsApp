@@ -1,9 +1,10 @@
 <script>
+	import { goto } from '$app/navigation';
 	import { format } from 'date-fns';
 	import { onMount } from 'svelte';
 	import TaskAndEventList from './TaskAndEventList.svelte';
 
-	let { events, tasks, lateTasks, isToday, goToEvent, goToTask, today } = $props();
+	let { events, tasks, lateTasks, isToday, goToEvent, goToTask, today, currentDate } = $props();
 
 	let currentTimeIndicator = $state(null);
 	let processedEvents = $derived(processEventOverlaps(events));
@@ -99,7 +100,14 @@
 		{#each Array(24) as _, hour}
 			<div class="hour-slot" data-hour={hour}>
 				<div class="hour-label">{hour.toString().padStart(2, '0')}:00</div>
-				<div class="hour-content">
+				<div
+					class="hour-content"
+					onclick={() =>
+						goto(
+							`/calendario/event/addEvent?date=${format(currentDate, 'yyyy-MM-dd')}&startTime=${hour.toString().padStart(2,'0') + ':00'}&endTime=${(hour + 1).toString().padStart(2,'0') + ':00'}`
+						)}
+					aria-label="Add Event"
+				>
 					{#if isToday && today.getHours() === hour}
 						<div
 							class="current-time"
@@ -181,10 +189,11 @@
 		position: absolute;
 		left: 0.5rem;
 		right: 0;
-		height: 2px;
+		height: 3px;
 		background-color: #dc3545;
+		border-radius: 2px;
 		top: 50%;
-		transform: translateY(50%);
+		transform: translateY(10%);
 	}
 
 	.time-indicator {
@@ -271,19 +280,5 @@
 		.event-time {
 			font-size: 0.65rem;
 		}
-	}
-
-	.list-group-item {
-		padding: 0.5rem 1rem;
-		font-size: 1.2em;
-	}
-
-	.task-late {
-		background-color: rgba(220, 53, 69, 0.1);
-		color: #dc3545;
-	}
-
-	.task-late:hover {
-		background-color: rgba(220, 53, 69, 0.2);
 	}
 </style>

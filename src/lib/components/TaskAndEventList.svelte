@@ -42,6 +42,20 @@
 
 <style>
     .done-task {
-        text-decoration-line: line-through;
-    }
+        text-decoration-line: line-through;  
+	}
+
+	.list-group-item {
+		padding: 0.5rem 1rem;
+		font-size: 1.2em;
+	}
+
+	.task-late {
+		background-color: rgba(220, 53, 69, 0.1);
+		color: #dc3545;
+	}
+
+	.task-late:hover {
+		background-color: rgba(220, 53, 69, 0.2);
+	}
 </style>
