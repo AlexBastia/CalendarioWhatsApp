@@ -130,7 +130,7 @@
 
 <Title title={'Calendario'} backLink={'/'}>
 	<button
-		class="btn btn-primary"
+		class="btn fs-1"
 		type="button"
 		data-bs-toggle="offcanvas"
 		data-bs-target="#calendarMenu"
