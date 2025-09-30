@@ -81,7 +81,7 @@ export async function load({ locals }) {
     Pomodoro.find({ userID: locals.user.id }).lean()
   ]);
   console.log(`Eventi trovati: ${eventiUtente.length}, Attività trovate: ${attivitaUtente.length}, Pomodori trovati: ${pomodoriUtente.length}`);
-
+  console.log('Primo evento caricato:', JSON.stringify(eventiUtente[0]?.ripetizione, null, 2));
   return {
     events: eventiUtente.map((evento) => ({
       _id: evento._id.toString(),
@@ -89,8 +89,16 @@ export async function load({ locals }) {
       start: evento.start,
       end: evento.end,
       eventType: evento.eventType,
-      allDay: evento.allDay,
-      pomodoroPreset: evento.pomodoroPreset?.toString()
+      pomodoroPreset: evento.pomodoroPreset?.toString(),
+      ripetizione: evento.ripetizione || {
+        isRepeatable: false,
+        frequenza: null,
+        giorniSettimana: [],
+        monthlyMode: 'dayOfMonth',
+        nthWeekday: { week: null, weekday: null },
+        endCondition: { type: 'MAI', nVolte: null, endDate: null },
+        lastInstance: null
+      }
     })),
     // Aggiungi questo al return object!
     tasks: attivitaUtente.map((task) => ({
@@ -129,7 +137,7 @@ export const actions = {
 
     //popola substruct ripetizione con i dati del form
     let ripetizione = {
-      isRepeatable: data.isRepeatable === 'on',
+      isRepeatable: data.isRepeatable === 'true',
       frequenza: data.frequenza || null,
       giorniSettimana: data.giorniSettimana
         ? Array.isArray(data.giorniSettimana)
@@ -145,15 +153,17 @@ export const actions = {
         : null,
       endCondition: {
         type: data.endType || 'MAI',
-        lastDate: data.endDate ? new Date(data.endDate) : null,
-        nVolte: data.endCount ? Number(data.endCount) : null
-      }
+        nVolte: data.endCount ? Number(data.endCount) : null,
+        endDate: data.endDate ? new Date(data.endDate) : null
+      },
+      //lastDate = mkLastDate(event_object); OPTIMIZATION POSSIBLE
     };
 
     // Calcola lastInstance solo se ripetizione attiva
-    if (ripetizione.isRepeatable) {
-      ripetizione.lastDate = mkLastDate({ start, ripetizione });
-    }
+    //if (ripetizione.isRepeatable) {
+
+      //ripetizione.lastDate = mkLastDate({ start, ripetizione });
+    //}
     // Prepara il pacchetto di dati da salvare, includendo i campi pomodoro
     const eventData = {
       title: data.title,
@@ -171,13 +181,14 @@ export const actions = {
     };
 
     const eventId = data.id || null;
-
+    console.log('Dati ripetizione da salvare:', JSON.stringify(ripetizione, null, 2));
     if (eventId) {
       // Se c'è un ID, aggiorna l'evento esistente
       await Evento.findOneAndUpdate({ _id: eventId, userID: locals.user.id }, eventData);
     } else {
       // Altrimenti, crea un nuovo evento
-      await Evento.create(eventData);
+      const savedEvent = await Evento.create(eventData);
+      console.log('Evento salvato:', JSON.stringify(savedEvent.ripetizione, null, 2));
     }
 
     // Reindirizza l'utente al calendario dopo l'operazione
