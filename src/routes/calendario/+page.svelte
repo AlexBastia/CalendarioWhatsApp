@@ -75,26 +75,16 @@
 		goto(`/calendario/task/${id}`);
 	}
 
-	function toggleView() {
-		viewMode = viewMode === 'daily' ? 'weekly' : viewMode === 'weekly' ? 'monthly' : 'daily';
-	}
-
 	function goBack() {
-		currentDate =
-			viewMode === 'daily'
-				? subDays(currentDate, 1)
-				: viewMode === 'weekly'
-					? subDays(currentDate, 7)
-					: subMonths(currentDate, 1);
+		if (viewMode === 'daily') currentDate = subDays(currentDate, 1);
+		else if (viewMode === 'weekly') currentDate = subDays(currentDate, 7);
+		else currentDate = subMonths(currentDate, 1);
 	}
 
 	function goAhead() {
-		currentDate =
-			viewMode === 'daily'
-				? addDays(currentDate, 1)
-				: viewMode === 'weekly'
-					? addDays(currentDate, 7)
-					: addMonths(currentDate, 1);
+		if (viewMode === 'daily') currentDate = addDays(currentDate, 1);
+		else if (viewMode === 'weekly') currentDate = addDays(currentDate, 7);
+		else currentDate = addMonths(currentDate, 1);
 	}
 
 	function getWeekDays(date) {
@@ -113,6 +103,8 @@
 
 	let weekDays = $derived(getWeekDays(currentDate));
 	let monthCalendarDays = $derived(getMonthCalendarDays(currentDate));
+
+	$effect(() => {console.log(viewMode)})
 </script>
 
 <Title title={format(currentDate, 'dd/mm/yyyy')} backLink={'/'}>
@@ -133,48 +125,11 @@
 		events={expandedEvents.filter((event) => isSameDay(currentDate, event.start))}
 		tasks={data.tasks.filter((task) => isSameDay(currentDate, task.deadline))}
 		lateTasks={data.tasks.filter((task) => task.status === 'late')}
+		isToday={isSameDay(currentDate, today)}
+		{goToEvent}
+		{goToTask}
+		{currentDate}
 	/>
-	<div class="card">
-		<div class="card-header fs-4 {isSameDay(currentDate, today) ? 'today' : ''}">
-			{format(currentDate, 'dd MMMM yyyy, EEEE')}
-		</div>
-		<div class="list-group list-group-flush">
-			{#each expandedEvents as event}
-				{#if isSameDay(event.start, currentDate)}
-					<div
-						onclick={() => goToEvent(event._id)}
-						class="list-group-item list-group-item-action event-link"
-					>
-						📅 {event.title}
-					</div>
-				{/if}
-			{/each}
-			{#each data.tasks as task}
-				{#if isSameDay(task.deadline, currentDate) && task.status !== 'late'}
-					<div
-						onclick={() => goToTask(task._id)}
-						class="list-group-item list-group-item-action event-link {task.status === 'late'
-							? 'task-late'
-							: ''}"
-					>
-						📝 {task.title}
-					</div>
-				{/if}
-			{/each}
-			{#if isSameDay(currentDate, today)}
-				{#each data.tasks as task}
-					{#if task.status === 'late'}
-						<div
-							onclick={() => goToTask(task._id)}
-							class="list-group-item list-group-item-action event-link task-late"
-						>
-							🚨 {task.title} (Scaduta)
-						</div>
-					{/if}
-				{/each}
-			{/if}
-		</div>
-	</div>
 {:else if viewMode === 'weekly'}
 	<div class="container-fluid">
 		<div class="row text-center fw-bold border-bottom pb-2 mb-2">

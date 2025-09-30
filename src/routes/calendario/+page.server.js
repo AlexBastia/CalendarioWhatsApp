@@ -61,9 +61,8 @@ async function updatePom(userId, today) {
 
 export async function load({ locals }) {
   console.log(`Caricamento +page.server.js per /calendario`);
-  // CORREZIONE 1: Usa 'throw redirect'
   if (!locals.user) {
-    throw redirect(303, '/login');
+    redirect(303, '/login');
   }
 
   console.log(`Caricamento calendario per utente ${locals.user.id}`);
@@ -91,6 +90,7 @@ export async function load({ locals }) {
       start: evento.start,
       end: evento.end,
       eventType: evento.eventType,
+      allDay: evento.allDay,
       pomodoroPreset: evento.pomodoroPreset?.toString()
     })),
     // Aggiungi questo al return object!
