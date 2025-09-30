@@ -34,9 +34,12 @@ export function startScheduler() {
         });
         
         if (eventsToNotify.length > 0) {
+           
           for (const event of eventsToNotify) {
             const { repeat, repeat_number, lastNotificationSentAt } = event.notificationSettings;
             let shouldNotify = false;
+            console.log('repeat numebr', repeat_number);
+            console.log('repeat', repeat_number);
 
             if (!lastNotificationSentAt) {
               shouldNotify = true;
@@ -53,9 +56,34 @@ export function startScheduler() {
                   break;
               }
             }
+            /*
+            import mongoose, { Schema, model, Types } from 'mongoose';
+            
+            const notificationSchema = new Schema({
+              destinatario: { type: Types.ObjectId, ref: 'User', required: true },
+              mittente: { type: Types.ObjectId, ref: 'User' },
+              letta: { type: Boolean, default: false, required: true },
+              tipo: {
+                type: String,
+                enum: ['CONDIVISIONE_POMODORO', 'EVENTO', 'ATTIVITA'],
+                required: true
+              },
+              riferimento: { type: Types.ObjectId, required: true }
+            },
+           
+            
+            export const Notifica = mongoose.models.Notifica || model('Notifica', notificationSchema);
+            
+            */
 
             if (shouldNotify) {
-              await Notifica.create({ /* ... */ });
+              await Notifica.create({
+                destinatario: user._id,
+                mittente: null,
+                letta: false,
+                tipo: 'EVENTO',
+                riferimento: event._id
+              });
               if (repeat === 'none') {
                 event.notificationSettings.processed = true;
               } else {
