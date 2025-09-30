@@ -9,6 +9,14 @@ const urgencyOrder = {
   'Scaduta': 3
 };
 
+/*
+lastNotificationLevel: {
+    type: String,
+    enum: ['Nessuna', 'Imminente', 'Oggi', 'Scaduta'],
+    default: 'Nessuna'
+  },
+*/
+
 export async function computeLevel(userId, now) {
   const tasks = await Task.find({
     userId,
