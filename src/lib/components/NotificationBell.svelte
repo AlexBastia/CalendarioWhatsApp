@@ -179,7 +179,7 @@
 <div>
     <div class="dropdown">
         <button 
-            class="btn btn-light dropdown-toggle notification-bell-btn" 
+            class="btn btn-light dropdown-toggle notification-bell-btn position-relative" 
             type="button" 
             data-bs-toggle="dropdown" 
             aria-expanded="false"

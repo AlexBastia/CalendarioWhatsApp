@@ -52,7 +52,7 @@
 </script>
 
 <!-- Mobile First: Layout verticale su mobile -->
-<div class="time-machine-container position-fixed bottom-0 start-0 end-0 bg-dark text-light border-top border-secondary p-2 d-block d-lg-none">
+<div class="time-machine-container bg-dark text-light border-top border-secondary p-2 d-block d-lg-none">
     <div class="container-fluid">
         <!-- Riga 1: Titolo e orario corrente -->
         <div class="row g-1 mb-2">
@@ -106,9 +106,9 @@
     </div>
 </div>
 
-<!-- Desktop: Layout orizzontale più ampio -->
-<div class="time-machine-container position-fixed bottom-0 start-50 translate-middle-x bg-dark text-light rounded-top border border-secondary p-3 d-none d-lg-block">
-    <div class="d-flex align-items-center gap-3">
+<!-- Desktop: Layout orizzontale centrato -->
+<div class="time-machine-container bg-dark text-light border border-secondary rounded p-3 d-none d-lg-block mx-auto my-3">
+    <div class="d-flex align-items-center gap-3 justify-content-center flex-wrap">
         <!-- Titolo -->
         <div class="d-flex align-items-center">
             <i class="bi bi-clock-history me-2"></i>
@@ -157,6 +157,13 @@
 
 <style>
     .time-machine-container {
-        z-index: 1050; /* Sopra la maggior parte degli elementi Bootstrap */
-    }    
+        max-width: 900px;
+    }
+    
+    /* Mobile: occupa tutta la larghezza in basso */
+    @media (max-width: 991px) {
+        .time-machine-container {
+            max-width: 100%;
+        }
+    }
 </style>
