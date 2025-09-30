@@ -250,7 +250,7 @@
 											type="checkbox"
 											class="form-check-input"
 											id={`day${i}`}
-											name="giorniSettimana"
+											name="giorniSettimana${i}"
 											value={i}
 											onchange={(evt) => {
 												if (evt.currentTarget.checked) {

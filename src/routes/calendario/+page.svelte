@@ -7,6 +7,7 @@
 		format,
 		getMonth,
 		getYear,
+		startOfDay,
 		startOfMonth,
 		endOfMonth,
 		addDays,
@@ -17,7 +18,8 @@
 		eachDayOfInterval,
 		endOfWeek,
 		isSameMonth,
-		isSameDay
+		isSameDay,
+		endOfDay
 	} from 'date-fns';
 	import 'bootstrap/dist/css/bootstrap.min.css';
 	import { onMount } from 'svelte';
@@ -58,13 +60,13 @@
 
 	// effetto per aggiornare rangeStart / rangeEnd
 	let rangeStart = $derived.by(() => {
-		if (viewMode === 'daily') return currentDate;
+		if (viewMode === 'daily') return startOfDay(currentDate);
 		if (viewMode === 'weekly') return startOfWeek(currentDate);
 		return startOfMonth(currentDate);
 	});
 
 	let rangeEnd = $derived.by(() => {
-		if (viewMode === 'daily') return currentDate;
+		if (viewMode === 'daily') return endOfDay(currentDate);
 		if (viewMode === 'weekly') return endOfWeek(currentDate);
 		return endOfMonth(currentDate);
 	});
