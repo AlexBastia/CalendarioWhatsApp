@@ -50,11 +50,10 @@ export const actions = {
         let ripetizione = {
           isRepeatable: data.isRepeatable === 'true',
           frequenza: data.frequenza || null,
-          giorniSettimana: data.giorniSettimana
-            ? Array.isArray(data.giorniSettimana)
-              ? data.giorniSettimana.map(Number)
-              : [Number(data.giorniSettimana)]
-            : [],
+          giorniSettimana: Object.keys(data)
+          .filter((key) => key.startsWith('giorniSettimana')) 
+          .map((key) => Number(data[key]))                    
+          .sort((a, b) => a - b),
           monthlyMode: data.monthlyMode || null,
           nthWeekday: data.week && data.weekday
             ? {

@@ -4,7 +4,9 @@
 	import WhatsappIcon from '$lib/assets/svgs/whatsapp.svg';
 	import PlayIcon from '$lib/assets/svgs/playfill.svg';
 	import PauseIcon from '$lib/assets/svgs/pause.svg';
-	import SettingsIcon from '$lib/assets/svgs/settings.svg'; // Aggiungi questa icona per le impostazioni
+	import SettingsIcon from '$lib/assets/svgs/settings.svg';
+	import StopIcon from '$lib/assets/svgs/stop.svg'; // Aggiungi icona stop
+	import RefreshIcon from '$lib/assets/svgs/refresh.svg'; // Aggiungi icona refresh
 	import { page } from '$app/stores';
 	import SharePomodoro from '$lib/components/SharePomodoro.svelte';
 	import PomodoroModal from '$lib/components/pomodoroModal.svelte';
@@ -52,8 +54,8 @@
 			updateDash(studioSec, studioSec);
 		}
 	});
+	
 	async function setLastTimeUsed(timingStoreValue) {
-
 		console.log('siva')
 		const timeToSet = timingStoreValue || new Date();
 
@@ -187,7 +189,6 @@
 </script>
 
 {#if !pomData}
-	<!-- Loading State: utilizza Bootstrap per centrare il contenuto -->
 	<div class="container-fluid vh-100 d-flex flex-column justify-content-center align-items-center">
 		<div class="text-center">
 			<div class="spinner-border text-primary mb-3" role="status">
@@ -197,12 +198,11 @@
 		</div>
 	</div>
 {:else}
-	<!-- Layout principale: container Bootstrap con struttura mobile-first -->
 	<div class="container-fluid min-vh-100 py-3">
-		<!-- Header Section: Solo Titolo e Status -->
+		<!-- Header Section -->
 		<Title title={pomData.title} backLink={'/pomodoro'}></Title>
 
-		<!-- Settings & Share Section: Nuova sezione per modifica e condivisione -->
+		<!-- Settings & Share Section -->
 		<section class="row justify-content-center mb-4">
 			<div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
 				<div class="card">
@@ -224,7 +224,6 @@
 								iconSrc={SettingsIcon}
 								extraClasses="btn-outline-primary p-4"
 								onclick={() => {
-									// Bootstrap modal trigger via JavaScript
 									const modalElement = document.getElementById('settingsModal');
 									const modal = new bootstrap.Modal(modalElement);
 									modal.show();
@@ -248,13 +247,11 @@
 			</div>
 		</section>
 		
-		<!-- Timer Section: SVG Circolare -->
+		<!-- Timer Section -->
 		<section class="row justify-content-center mb-4">
 			<div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
-				<!-- Card contenitore per il timer -->
 				<div class="card shadow-sm">
 					<div class="card-body text-center p-4">
-						<!-- SVG Timer: dimensioni responsive -->
 						<div class="timer-container mb-3">
 							<svg
 								class="w-100"
@@ -263,11 +260,9 @@
 								xmlns="http://www.w3.org/2000/svg"
 								style="max-height: 300px;"
 							>
-								<!-- Cerchio di sfondo -->
 								<circle cx="50" cy="50" {r} fill="white" />
 								<circle cx="50" cy="50" {r} fill="none" stroke="#e9ecef" stroke-width="3" />
 								
-								<!-- Cerchio di progresso -->
 								<circle
 									class="progress-ring"
 									cx="50"
@@ -282,7 +277,6 @@
 									transform="rotate(-90 50 50)"
 								/>
 								
-								<!-- Tempo rimanente -->
 								<text 
 									x="50%" 
 									y="45%" 
@@ -295,7 +289,6 @@
 									{timeStr}
 								</text>
 								
-								<!-- Informazioni ciclo -->
 								{#if running}
 									<text 
 										x="50%" 
@@ -311,7 +304,6 @@
 							</svg>
 						</div>
 
-						<!-- Informazioni aggiuntive -->
 						<div class="row text-center g-3">
 							<div class="col-4">
 								<div class="small text-muted">Studio</div>
@@ -331,9 +323,7 @@
 			</div>
 		</section>
 
-		
-
-		<!-- Controls Section: Pulsanti di Controllo Timer -->
+		<!-- Controls Section -->
 		<section class="row justify-content-center">
 			<div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
 				<div class="card">
@@ -352,7 +342,6 @@
 									}}
 								/>
 							{:else}
-								<!-- Controlli durante l'esecuzione -->
 								<!-- Pausa/Riprendi -->
 								<BtnPom
 									ariaLabel={paused ? "Riprendi" : "Pausa"}
@@ -365,7 +354,7 @@
 								<BtnPom
 									ariaLabel="Ferma Pomodoro"
 									extraClasses="btn-danger p-4"
-									iconSrc={WhatsappIcon}
+									iconSrc={StopIcon}
 									onclick={() => {
 										stopTimer();
 										updateStatus('INCOMPLETO');
@@ -376,7 +365,7 @@
 								<BtnPom
 									ariaLabel="Ricomincia Ciclo Corrente"
 									extraClasses="btn-info p-4"
-									iconSrc={WhatsappIcon}
+									iconSrc={RefreshIcon}
 									onclick={() => {
 										clearInterval(timerId);
 										runCycles(curCycle);
@@ -409,7 +398,7 @@
 		</section>
 	</div>
 
-	<!-- Modals: manteniamo i modali esistenti -->
+	<!-- Modals -->
 	<SharePomodoro
 		bind:this={shareModal}
 		pomodoro={pomData}
@@ -430,12 +419,10 @@
 {/if}
 
 <style>
-	/* Animazione per il progresso del timer */
 	.progress-ring {
 		transition: stroke-dashoffset 1s linear;
 	}
 
-	/* Responsive del timer SVG */
 	.timer-container {
 		position: relative;
 		width: 100%;
@@ -443,7 +430,6 @@
 		margin: 0 auto;
 	}
 
-	/* Miglioramenti tipografici per mobile */
 	@media (max-width: 576px) {
 		svg text[font-size='16'] {
 			font-size: 14px;
@@ -458,19 +444,16 @@
 		}
 	}
 
-	/* Hover effects per i pulsanti */
 	:global(.btn-outline-success:hover),
 	:global(.btn-outline-primary:hover) {
 		transform: translateY(-2px);
 		box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 	}
 
-	/* Animazioni per i badge */
 	.badge {
 		transition: all 0.3s ease;
 	}
 
-	/* Card shadows responsive */
 	@media (min-width: 768px) {
 		.card.shadow-sm {
 			box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;

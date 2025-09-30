@@ -75,11 +75,11 @@
 	<div class="row justify-content-center">
 		<div class="col-12 col-lg-10 col-xl-9">
 			<div class="card shadow-lg border-0 rounded-4">
-				<div class="card-header bg-gradient text-white py-4 rounded-top-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+				<div class="card-header bg-gradient text-white py-4 rounded-top-4">
 					{#if !e._id}
-						<h4 class="display-2"> Crea Evento </h4>
+						<h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Crea Evento</h4>
 					{:else}
-						<h4 class="display-2"> Modifica Evento </h4>
+						<h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Modifica Evento</h4>
 					{/if}
 				</div>
 

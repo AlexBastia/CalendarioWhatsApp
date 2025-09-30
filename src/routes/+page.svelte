@@ -1,10 +1,70 @@
 <script>
-	import NotificationBell from '$lib/components/NotificationBell.svelte';
-	import Title from '$lib/components/Title.svelte';
-	import { timingStore } from '$lib/stores/timing';
+	import NotificationBell from "$lib/components/NotificationBell.svelte";
+	import Title from "$lib/components/Title.svelte";
+	import { timingStore } from "$lib/stores/timing";
+	import { expandEvent } from "$lib/utils/eventRecursion.js";
+	import { endOfWeek } from "date-fns";
 
 	let { data } = $props();
-	let { latestNote, weeklyEvents, latestPomodoro, error } = $state(data);
+
+	let today = $derived($timingStore ? $timingStore : new Date());
+	
+	let expandedEvents = $state([]);
+	let latestNote = $state(null);
+	let latestPomodoro = $state(null);
+	let upcomingEvents = $state([]);
+
+	let rangeStart = $derived.by(() => {
+		return today;
+	});
+
+	let rangeEnd = $derived.by(() => {
+		return endOfWeek(today);
+	});
+
+	$effect(() => {
+		if (!data || !data.events) {
+			expandedEvents = [];
+			return;
+		}
+		expandedEvents = data.events.flatMap((ev) => {
+			const e = { ...ev, start: new Date(ev.start), end: new Date(ev.end) };
+			const expanded = expandEvent(e, rangeStart, rangeEnd);
+			return expanded.map(instance => ({
+				...instance,
+				eventType: ev.eventType, 
+				title: instance.title || ev.title,
+				_id: instance._id || ev._id
+			}));
+		});
+		console.log('Eventi espansi totali:', expandedEvents.length);
+	});
+
+	$effect(() => {
+		const futureEvents = expandedEvents
+			.filter(event => new Date(event.start) >= today)
+			.sort((a, b) => new Date(a.start) - new Date(b.start));
+		
+		upcomingEvents = futureEvents.slice(0, 10); 
+		console.log('Eventi futuri trovati:', futureEvents.length);
+		console.log('Eventi mostrati:', upcomingEvents.length);
+	});
+
+	$effect(() => {
+		if (!data || !data.notes || data.notes.length === 0) {
+			latestNote = null;
+			return;
+		}
+		latestNote = data.notes[0]; 
+	});
+
+	$effect(() => {
+		if (!data || !data.pomodori || data.pomodori.length === 0) {
+			latestPomodoro = null;
+			return;
+		}
+		latestPomodoro = data.pomodori[0]; 
+	});
 
 	function formatDate(date) {
 		if (!date) return 'N/A';
@@ -24,8 +84,8 @@
 		<NotificationBell />
 	</Title>
 
-	{#if error}
-		<p class="error-message">⚠️ Errore: {error}</p>
+	{#if data.error}
+		<p class="error-message">⚠️ Errore: {data.error}</p>
 	{/if}
 
 	<section class="navigation-links">
@@ -53,13 +113,10 @@
 			<div class="card">
 				<h3>{latestNote.title}</h3>
 				<p class="note-date">Creata il: {formatDate(latestNote.timeCreation)}</p>
-				<p class="note-snippet">{latestNote.snippet}...</p>
-				<!-- Rimuovi il link se non funziona -->
-				<!-- <a href="/note/{latestNote._id}" class="read-more">Apri nota completa &rarr;</a> -->
+				<p class="note-snippet">{latestNote.textStart}...</p>
 			</div>
 		{:else}
 			<p>Nessuna nota recente trovata.</p>
-			<!-- <a href="/note/new">Crea la tua prima nota!</a> -->
 		{/if}
 	</section>
 
@@ -67,12 +124,12 @@
 
 	<section class="calendar-preview">
 		<h2>
-			Eventi della Settimana
+			Prossimi Eventi 
 			<a href="/calendario" class="view-all-link">Vedi Calendario &rarr;</a>
 		</h2>
-		{#if weeklyEvents.length > 0}
+		{#if upcomingEvents.length > 0}
 			<ul class="event-list">
-				{#each weeklyEvents.slice(0, 5) as event}
+				{#each upcomingEvents as event}
 					<li>
 						<span class="event-type">
 							{#if event.eventType === 'POMODORO'}🍅{/if}
@@ -82,12 +139,14 @@
 						{event.title}
 					</li>
 				{/each}
-				{#if weeklyEvents.length > 5}
-					<li class="more-events">...e altri {weeklyEvents.length - 5} eventi.</li>
+				{#if expandedEvents.filter(e => new Date(e.start) >= today).length > 10}
+					<li class="more-events">
+						...e altri {expandedEvents.filter(e => new Date(e.start) >= today).length - 10} eventi.
+					</li>
 				{/if}
 			</ul>
 		{:else}
-			<p>Nessun evento in programma per la settimana corrente.</p>
+			<p>Nessun evento in programma per questa settimana.</p>
 		{/if}
 	</section>
 
@@ -102,11 +161,10 @@
 			<div class="card">
 				<h3>{latestPomodoro.title || 'Sessione Pomodoro'}</h3>
 				<p>Cicli completati: <strong>{latestPomodoro.cycles || 'N/A'}</strong></p>
-				<p>Terminato il: <strong>{formatDate(latestPomodoro.completionTime)}</strong></p>
+				<p>Terminato il: <strong>{formatDate(latestPomodoro.timeLastUsed)}</strong></p>
 			</div>
 		{:else}
 			<p>Nessuna attività Pomodoro completata di recente.</p>
-			<!-- <a href="/pomodoro">Inizia un nuovo ciclo!</a> -->
 		{/if}
 	</section>
 </main>
@@ -182,19 +240,6 @@
 	.note-snippet {
 		color: #555;
 		line-height: 1.5;
-	}
-
-	.read-more {
-		display: inline-block;
-		margin-top: 10px;
-		font-weight: bold;
-		text-decoration: none;
-		color: #28a745;
-		transition: color 0.2s;
-	}
-
-	.read-more:hover {
-		color: #1e7e34;
 	}
 
 	.main-nav-list {

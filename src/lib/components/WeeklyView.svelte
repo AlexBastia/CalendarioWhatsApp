@@ -40,9 +40,7 @@
             </div>
         </div>
 
-        <!-- Days content -->
         <div class="days-container">
-            <!-- All-day band -->
             <div class="all-day-band">
                 {#each weekDays as day}
                     {@const allDayEvents = expandedEvents.filter((event) => isSameDay(event.start, day) && event.allDay)}
@@ -105,13 +103,13 @@
     .weekly-view {
         display: flex;
         flex-direction: column;
-        height: 80vh; /* Adjust to fit viewport */
+        height: 80vh; 
         overflow: hidden;
     }
 
     .header-row {
         display: grid;
-        grid-template-columns: 60px repeat(7, 1fr); /* Time column width + 7 days */
+        grid-template-columns: 60px repeat(7, 1fr); 
         background-color: #f8f9fa;
         border-bottom: 2px solid #dee2e6;
         font-weight: bold;

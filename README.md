@@ -1,6 +1,7 @@
 # Divisione lavoro
 - Alex Bastianini alex.bastianini@studio.unibo.it: Note, autenticazione Utente (incluso signup/login), visione giornaliera calendario, gestione hosting sulla macchina del laboratorio, integrazione con google calendar
 - Giovanni Menozzi giovanni.menozzi3@studio.unibo.it: pomodoro (fino all'estensione 33), notifiche, calendario (a parte la gestione delle ripetizioni e la visione giornaliera), eventi, tasks, time machine
+- Dario Venuto dario.venuto@studio.unibo.it: gestione eventi ricorrenti, homepage/preview, visione calendario 
 
 # Tecnologie Usate
 La web app e' stata realizzata con il meta-framework SvelteKit, con il framework CSS Bootstrap e come database e' stato usato MongoDB interfacciato tramite Mongoose.
