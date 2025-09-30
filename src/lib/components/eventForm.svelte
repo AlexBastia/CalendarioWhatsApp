@@ -33,8 +33,6 @@
 		}
 	} = $props();
 
-  console.log(options)
-
 	if (options?.date) event.dateStart = options.date;
 	if (options?.startTime) event.timeStart = options.startTime;
 	if (options?.endTime) event.timeEnd = options.endTime;

@@ -1,7 +1,7 @@
 <script>
-	import NotificationBell from "$lib/components/NotificationBell.svelte";
-	import Title from "$lib/components/Title.svelte";
-	import { timingStore } from "$lib/stores/timing";
+	import NotificationBell from '$lib/components/NotificationBell.svelte';
+	import Title from '$lib/components/Title.svelte';
+	import { timingStore } from '$lib/stores/timing';
 
 	let { data } = $props();
 	let { latestNote, weeklyEvents, latestPomodoro, error } = $state(data);
@@ -9,9 +9,9 @@
 	function formatDate(date) {
 		if (!date) return 'N/A';
 		const d = new Date(date);
-		return d.toLocaleDateString('it-IT', { 
-			year: 'numeric', 
-			month: 'long', 
+		return d.toLocaleDateString('it-IT', {
+			year: 'numeric',
+			month: 'long',
 			day: 'numeric',
 			hour: '2-digit',
 			minute: '2-digit'
@@ -20,7 +20,9 @@
 </script>
 
 <main class="homepage-container">
-	<Title title={"Homepage"}/>
+	<Title title={'CalenDario WhatsApp AI'}>
+		<NotificationBell />
+	</Title>
 
 	{#if error}
 		<p class="error-message">⚠️ Errore: {error}</p>
@@ -40,11 +42,11 @@
 		</ul>
 	</section>
 
-	<hr/>
+	<hr />
 
 	<section class="note-preview">
 		<h2>
-			Ultima Nota 
+			Ultima Nota
 			<a href="/note" class="view-all-link">Vedi tutte &rarr;</a>
 		</h2>
 		{#if latestNote}
@@ -61,11 +63,11 @@
 		{/if}
 	</section>
 
-	<hr/>
+	<hr />
 
 	<section class="calendar-preview">
 		<h2>
-			Eventi della Settimana 
+			Eventi della Settimana
 			<a href="/calendario" class="view-all-link">Vedi Calendario &rarr;</a>
 		</h2>
 		{#if weeklyEvents.length > 0}
@@ -76,7 +78,8 @@
 							{#if event.eventType === 'POMODORO'}🍅{/if}
 							{#if event.eventType === 'STANDARD'}🗓️{/if}
 						</span>
-						<strong>{formatDate(event.start)}:</strong> {event.title}
+						<strong>{formatDate(event.start)}:</strong>
+						{event.title}
 					</li>
 				{/each}
 				{#if weeklyEvents.length > 5}
@@ -87,12 +90,12 @@
 			<p>Nessun evento in programma per la settimana corrente.</p>
 		{/if}
 	</section>
-	
-	<hr/>
+
+	<hr />
 
 	<section class="pomodoro-report-preview">
 		<h2>
-			Ultima Attività Pomodoro 
+			Ultima Attività Pomodoro
 			<a href="/pomodoro" class="view-all-link">Vedi Report &rarr;</a>
 		</h2>
 		{#if latestPomodoro}
@@ -106,8 +109,6 @@
 			<!-- <a href="/pomodoro">Inizia un nuovo ciclo!</a> -->
 		{/if}
 	</section>
-
-	<NotificationBell/>
 </main>
 
 <style>
@@ -115,7 +116,10 @@
 		max-width: 800px;
 		margin: 0 auto;
 		padding: 20px;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	.error-message {
@@ -152,7 +156,7 @@
 		color: #007bff;
 		transition: color 0.2s;
 	}
-	
+
 	.view-all-link:hover {
 		color: #0056b3;
 	}
@@ -161,14 +165,14 @@
 		background: #f9f9f9;
 		padding: 15px;
 		border-radius: 6px;
-		box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 	}
-	
+
 	.card h3 {
 		margin-top: 0;
 		color: #333;
 	}
-	
+
 	.note-date {
 		font-size: 0.85em;
 		color: #888;
@@ -179,7 +183,7 @@
 		color: #555;
 		line-height: 1.5;
 	}
-	
+
 	.read-more {
 		display: inline-block;
 		margin-top: 10px;
@@ -216,14 +220,16 @@
 		text-decoration: none;
 		font-weight: bold;
 		text-align: center;
-		transition: background-color 0.2s, transform 0.1s;
+		transition:
+			background-color 0.2s,
+			transform 0.1s;
 	}
 
 	.main-nav-list a:hover {
 		background-color: #0056b3;
 		transform: translateY(-2px);
 	}
-	
+
 	.utility-nav-list {
 		list-style: none;
 		padding: 0;
