@@ -4,7 +4,6 @@ import { Pomodoro } from "$lib/models/Pomodoro.js";
 import { Note } from "$lib/models/Note.js";
 import { Evento } from "$lib/models/Event.js";
 import { User } from "$lib/models/User";
-import { startOfWeek, endOfWeek } from "date-fns";
 
 export async function load(event) {
   console.log("Loading homepage data...");
@@ -15,61 +14,56 @@ export async function load(event) {
   }
 
   const userId = sessionUser._id;
-  const userData = await User.findById(userId).select('virtualTime').lean();
-  const today = userData?.virtualTime || new Date();  
-  const weekStart = startOfWeek(today);
-  const weekEnd = endOfWeek(today);
 
   try {
-    // 1. Fetch latest Note
-    const latestNote = await Note.findOne({ userID: userId })
+    // Fetch all notes
+    const notes = await Note.find({ userID: userId })
       .sort({ timeCreation: -1 })
       .lean();
 
-    // 2. Fetch Calendar events for the current week
-    const weeklyEvents = await Evento.find({
-      userID: userId,
-      $or: [
-        { start: { $gte: weekStart, $lt: weekEnd } },
-        { end: { $gte: weekStart, $lt: weekEnd } }
-      ]
-    })
-    .sort('start')
-    .lean();
-    
-    // 3. Fetch latest Pomodoro report/activity
-    const latestPomodoro = await Pomodoro.findOne({ 
+    // Fetch all events
+    const events = await Evento.find({ userID: userId })
+      .sort('start')
+      .lean();
+
+    // Fetch all pomodori
+    const pomodori = await Pomodoro.find({ 
       $or: [{ owner: userId }, { sharedUsers: userId }] 
     })
     .sort({ timeLastUsed: -1 })
     .lean();
 
     return {
-      latestNote: latestNote ? { 
-        _id: latestNote._id.toString(), 
-        title: latestNote.title, 
-        snippet: latestNote.textStart, 
-        timeCreation: latestNote.timeCreation
-      } : null,
-      weeklyEvents: weeklyEvents.map(event => ({ 
-        title: event.title, 
-        start: event.start, 
-        eventType: event.eventType
+      notes: notes.map(note => ({
+        _id: note._id.toString(),
+        title: note.title,
+        textStart: note.textStart,
+        timeCreation: note.timeCreation
       })),
-      latestPomodoro: latestPomodoro ? {
-        completionTime: latestPomodoro.timeLastUsed, 
-        cycles: latestPomodoro.cycles,
-        title: latestPomodoro.title
-      } : null,
+      events: events.map(event => ({
+        _id: event._id.toString(),
+        title: event.title,
+        start: event.start,
+        end: event.end,
+        eventType: event.eventType,
+        repetition: event.repetition,
+        repetitionEnd: event.repetitionEnd
+      })),
+      pomodori: pomodori.map(pom => ({
+        _id: pom._id.toString(),
+        title: pom.title,
+        cycles: pom.cycles,
+        timeLastUsed: pom.timeLastUsed
+      }))
     };
 
   } catch (error) {
-    console.error("Error fetching homepage previews:", error);
+    console.error("Error fetching homepage data:", error);
     return {
-      latestNote: null,
-      weeklyEvents: [],
-      latestPomodoro: null,
-      error: "Could not load preview data."
+      notes: [],
+      events: [],
+      pomodori: [],
+      error: "Could not load data."
     };
   }
 }
