@@ -43,6 +43,22 @@
 	let rangeEnd;
 	let expandedEvents = $state([]);
 
+	let currentDateFormated = $derived.by(() => {
+		let dateString = '';
+		switch (viewMode) {
+			case 'daily':
+				dateString = format(currentDate, 'do LLL');
+				break;
+			case 'weekly':
+				dateString = format(currentDate, 'do LLL');
+				break;
+			case 'monthly':
+				dateString = format(currentDate, 'MMMM');
+				break;
+		}
+		return dateString;
+	});
+
 	// effetto per aggiornare rangeStart / rangeEnd
 	$effect(() => {
 		if (viewMode === 'daily') {
@@ -112,32 +128,66 @@
 	});
 </script>
 
-<Title title={format(currentDate, 'dd/mm/yyyy')} backLink={'/'}>
-	<GoogleCalendar />
+<Title title={'Calendario'} backLink={'/'}>
+	<button
+		class="btn btn-primary"
+		type="button"
+		data-bs-toggle="offcanvas"
+		data-bs-target="#calendarMenu"
+		aria-controls="calendarMenu"
+		aria-label="Open calendar menu"
+	>
+		<i class="bi bi-list"></i>
+	</button>
 </Title>
 
-<div class="d-flex align-items-center justify-content-between mb-4">
-	<div class="d-flex align-items-center justify-content-start gap-2">
-		<label for="view-mode" class="form-label mb-0">Vista:</label>
-		<select id="view-mode" class="form-select w-auto" bind:value={viewMode}>
-			<option value="daily">Giornaliera</option>
-			<option value="weekly">Settimanale</option>
-			<option value="monthly">Mensile</option>
-		</select>
+<div
+	class="offcanvas offcanvas-start"
+	tabindex="-1"
+	id="calendarMenu"
+	aria-labelledby="calendarMenuLabel"
+>
+	<div class="offcanvas-header">
+		<h5 class="offcanvas-title" id="calendarMenuLabel">WhatsApp Calendar</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 	</div>
-
-	<div class="d-flex align-items-center">
-		<div>
-			<!-- svelte-ignore a11y_consider_explicit_label -->
-			<button class="btn btn-outline-primary rounded-circle" onclick={goBack} title="Indietro">
-				<i class="bi bi-arrow-left"></i>
-			</button>
-			<!-- svelte-ignore a11y_consider_explicit_label -->
-			<button class="btn btn-outline-primary rounded-circle" onclick={goAhead} title="Avanti">
-				<i class="bi bi-arrow-right"></i>
-			</button>
+	<div class="offcanvas-body">
+		<div class="list-group list-group-flush">
+			<button
+				onclick={() => (viewMode = 'daily')}
+				type="button"
+				data-bs-dismiss="offcanvas"
+				class="list-group-item list-group-item-action">Daily</button
+			>
+			<button
+				onclick={() => (viewMode = 'weekly')}
+				type="button"
+				data-bs-dismiss="offcanvas"
+				class="list-group-item list-group-item-action">Weekly</button
+			>
+			<button
+				onclick={() => (viewMode = 'monthly')}
+				type="button"
+				data-bs-dismiss="offcanvas"
+				class="list-group-item list-group-item-action">Monthly</button
+			>
+		</div>
+		<div class="mt-5" style="margin-inline: auto; width: fit-content;">
+			<GoogleCalendar />
 		</div>
 	</div>
+</div>
+
+<div class="container-fluid d-flex align-items-center justify-content-between mb-4 mt-4">
+	<button class="btn btn-outline-primary rounded-pill fs-6" onclick={goBack} aria-label="Go back">
+		<i class="bi bi-chevron-left"></i>
+	</button>
+	<h3 class="fs-1">
+		{currentDateFormated}
+	</h3>
+	<button class="btn btn-outline-primary rounded-pill fs-6" onclick={goAhead} aria-label="Go ahead">
+		<i class="bi bi-chevron-right"></i>
+	</button>
 </div>
 
 {#if viewMode === 'daily'}

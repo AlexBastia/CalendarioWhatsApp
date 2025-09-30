@@ -80,12 +80,12 @@
 	<Loading />	
 {:else}
 	<button
-		class="btn btn-secondary rounded-pill"
+		class="btn btn-outline-primary rounded-pill"
 		onclick={auth.signIn}
 		disabled={!auth.isInitialized}
 		aria-label="Sync Google Calendar"
 	>
-		Sync
+		Sync with Google Calendar
 	</button>
 {/if}
 {#if error}

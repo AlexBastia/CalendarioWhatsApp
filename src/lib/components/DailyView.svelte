@@ -1,9 +1,12 @@
 <script>
     import { format } from 'date-fns';
     import { onMount } from 'svelte';
+
     let { events, tasks, lateTasks, isToday, goToEvent, goToTask, currentDate } = $props();
-    let currentTimeIndicator;
-    
+
+    let currentTimeIndicator = $state(null);
+    let processedEvents = $derived(processEventOverlaps(events));
+
     // Process events to handle overlaps
     function processEventOverlaps(events) {
         // Filter and sort timed events
@@ -79,12 +82,11 @@
         return processedEvents;
     }
     
-    const processedEvents = processEventOverlaps(events);
     
     onMount(() => {
         if (currentTimeIndicator) {
             currentTimeIndicator.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+		}
     });
 </script>
 
@@ -127,8 +129,7 @@
     <!-- Hourly timeline -->
     <div class="timeline-container">
         {#each Array(24) as _, hour}
-            {@const isBusinessHour = hour >= 9 && hour <= 17}
-            <div class="hour-slot {isBusinessHour ? 'business-hour' : ''}" data-hour={hour}>
+            <div class="hour-slot" data-hour={hour}>
                 <div class="hour-label">{hour.toString().padStart(2, '0')}:00</div>
                 <div class="hour-content">
                     {#if isToday && currentDate.getHours() === hour}
