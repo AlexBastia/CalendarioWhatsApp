@@ -19,11 +19,10 @@ export function startScheduler() {
       const allUsers = await User.find({}).select('_id virtualTime').lean();
       
       for (const user of allUsers) {
-        // 1. DETERMINA IL TEMPO CORRENTE PER L'UTENTE
-        // Usa il tempo virtuale se esiste, altrimenti il tempo reale del server
         const currentTime = user.virtualTime || serverTime;
         
         console.log(`--- Controlli per utente ${user._id} (Tempo: ${currentTime.toLocaleTimeString('it-IT')}) ---`);
+        
 
         // --- 2. GESTIONE NOTIFICHE EVENTI PER L'UTENTE CORRENTE ---
         const eventsToNotify = await Evento.find({
@@ -66,10 +65,8 @@ export function startScheduler() {
             }
           }
         }
-        
-        // --- 3. GESTIONE NOTIFICHE ATTIVITÀ PER L'UTENTE CORRENTE ---
-        // Questa parte era già corretta
         await computeLevel(user._id, currentTime);
+        
       }
 
       console.log(`\n✅ Controlli completati per ${allUsers.length} utenti.`);

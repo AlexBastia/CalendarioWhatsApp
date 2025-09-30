@@ -10,4 +10,5 @@
     formAction="/calendario/task?/saveTask"
     task={data.task}
     deleteAction="/calendario/task?/deleteTask"
+    completeAtction = "/calendario/task?/markAsCompleted"
 />

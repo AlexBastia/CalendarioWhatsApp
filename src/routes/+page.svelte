@@ -21,8 +21,6 @@
 	</ul>
 
 	<NotificationBell/>
-
-
-	<GoogleCalendar />
+	<!-- <GoogleCalendar /> -->
 </main>
 

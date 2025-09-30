@@ -9,7 +9,7 @@ const urgencyOrder = {
   'Scaduta': 3
 };
 
-export async function computeLevel(userID, now) {
+export async function computeLevel(userId, now) {
   const tasks = await Task.find({
     userId,
     status: 'todo'
@@ -41,7 +41,7 @@ export async function computeLevel(userID, now) {
        // 2. NUOVO: Creiamo una notifica per l'utente
        console.log(`🔔 Creazione notifica per l'attività "${task.title}"...`);
        await Notifica.create({
-          destinatario: userID,
+          destinatario: userId,
           mittente: null, // Notifica di sistema
           tipo: 'ATTIVITA', // Usiamo il tipo corretto per le attività
           riferimento: task._id // Colleghiamo la notifica all'attività specifica
