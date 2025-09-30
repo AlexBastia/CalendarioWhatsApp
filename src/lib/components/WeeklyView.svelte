@@ -18,7 +18,7 @@
                 <div class="day-name">{format(day, 'EEE')}</div>
                 <div class="day-date">{format(day, 'd')}</div>
                 {#if isSameDay(day, today)}
-                    <div class="today-indicator">Oggi</div>
+                    <div class="today-dot"></div>
                 {/if}
             </div>
         {/each}
@@ -45,15 +45,18 @@
             <!-- All-day band -->
             <div class="all-day-band">
                 {#each weekDays as day}
+                    {@const allDayEvents = expandedEvents.filter((event) => isSameDay(event.start, day) && event.allDay)}
+                    {@const dayTasks = tasks.filter((task) => isSameDay(task.deadline, day) && task.status !== 'late')}
+                    {@const dayLateTasks = tasks.filter((task) => isSameDay(task.deadline, day) && task.status === 'late')}
+                    {@const totalTasks = dayTasks.length + (isSameDay(day, today) ? dayLateTasks.length : 0)}
                     <div class="all-day-cell">
-                        <TaskAndEventList
-                            events={expandedEvents.filter((event) => isSameDay(event.start, day) && event.allDay)}
-                            tasks={tasks.filter((task) => isSameDay(task.deadline, day) && task.status !== 'late')}
-                            lateTasks={tasks.filter((task) => isSameDay(task.deadline, day) && task.status === 'late')}
-                            isToday={isSameDay(day, today)}
-                            {goToEvent}
-                            {goToTask}
-                        />
+                        <div 
+                            class="mini-count" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#allDayModal-{day.getTime()}"
+                        >
+                            📅 {allDayEvents.length} | 📝 {totalTasks}
+                        </div>
                     </div>
                 {/each}
             </div>
@@ -73,6 +76,30 @@
         </div>
     </div>
 </div>
+
+<!-- Modals for each day -->
+{#each weekDays as day}
+    <div class="modal fade" id="allDayModal-{day.getTime()}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Elementi Tutto il Giorno per {format(day, 'PPP')}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <TaskAndEventList
+                        events={expandedEvents.filter((event) => isSameDay(event.start, day) && event.allDay)}
+                        tasks={tasks.filter((task) => isSameDay(task.deadline, day) && task.status !== 'late')}
+                        lateTasks={tasks.filter((task) => isSameDay(task.deadline, day) && task.status === 'late')}
+                        isToday={isSameDay(day, today)}
+                        {goToEvent}
+                        {goToTask}
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+{/each}
 
 <style>
     .weekly-view {
@@ -101,6 +128,7 @@
         padding: 0.5rem 0.25rem;
         border-right: 1px solid #dee2e6;
         min-height: 50px; /* Fixed height for header */
+        background-color: #f8f9fa;
     }
 
     .day-header:last-child {
@@ -117,9 +145,11 @@
         color: #212529;
     }
 
-    .today-indicator {
-        font-size: 0.8em;
-        color: #0d6efd;
+    .today-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #0d6efd;
+        border-radius: 50%;
         margin-top: 2px;
     }
 
@@ -138,7 +168,7 @@
     }
 
     .all-day-spacer {
-        height: 150px; /* Fixed height for all-day band */
+        height: 40px; /* Fixed height for all-day band */
         border-bottom: 1px solid #dee2e6;
     }
 
@@ -170,25 +200,37 @@
     }
 
     .all-day-band {
-        height: 150px; /* Match spacer */
+        height: 40px; /* Match spacer */
         overflow-y: scroll;
         display: grid;
         grid-template-columns: repeat(7, 1fr);
         border-bottom: 1px solid #dee2e6;
+        background-color: #f8f9fa;
     }
 
     .all-day-cell {
         border-right: 1px solid #dee2e6;
-        padding: 0.5rem;
+        padding: 0.25rem;
         overflow-y: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
     }
 
     .all-day-cell:last-child {
         border-right: none;
     }
 
-    :global(.all-day-cell .list-group) {
-        min-height: 100%;
+    .mini-count {
+        cursor: pointer;
+        font-size: 0.75em;
+        color: #6c757d;
+        text-align: center;
+    }
+
+    .mini-count:hover {
+        color: #0d6efd;
     }
 
     .timeline-band {
