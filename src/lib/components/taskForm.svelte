@@ -1,9 +1,11 @@
+<!-- component/taskForm.svelte -->
 <script>
     import {timingStore} from '$lib/stores/timing';
     import { format } from 'date-fns';
     
     // Ricevi i dati come prima
     let { task = { title: '', description: '' }, formAction, deleteAction, completeAtction } = $props();
+    console.log(completeAtction)
 
     // 2. Quando crei lo stato 'e', formatta la 'deadline'
     let e = $state({
@@ -12,7 +14,7 @@
             // Se la task ha una deadline, formattala
             ? format(new Date(task.deadline), 'yyyy-MM-dd') 
             // Altrimenti, usa la data di oggi (per una nuova task)
-            : format($timingStore, 'yyyy-MM-dd')
+            : format($timingStore ? $timingStore: new Date(), 'yyyy-MM-dd')
     });
     
     console.log("task in form:", e);
@@ -91,7 +93,7 @@
         <!-- delete form -->
          {#if e._id && deleteAction}
             <form method="POST" action={deleteAction} class="mt-3">
-                <input name="id" type="hidden" value={task._id} />
+                <input name="id" type="hidden" value={e._id} />
                 <div class="d-flex justify-content-start">
                     <button type="submit" class="btn btn-outline-danger">
                         <i class="bi bi-trash me-2"></i>Elimina Attività
@@ -103,7 +105,7 @@
         <!-- SEGNA COME COMPLETATA -->
          {#if e._id && deleteAction}
             <form method="POST" action={completeAtction} class="mt-3">
-                <input name="id" type="hidden" value={task._id} />
+                <input name="id" type="hidden" value={e._id} />
                 <div class="d-flex justify-content-start">
                     <button type="submit" class="btn btn-outline-danger">
                         <i class="bi bi-trash me-2"></i>Segna come completato

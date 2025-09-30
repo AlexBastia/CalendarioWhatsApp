@@ -1,3 +1,5 @@
+// calendario/task/[id]/server.js
+
 import { Task } from '$lib/models/Task.js';
 import { error, redirect } from '@sveltejs/kit';
 import { Types } from 'mongoose';
@@ -28,3 +30,25 @@ export const load = async ({ params, locals }) => {
         task: JSON.parse(JSON.stringify(task))
     };
 };
+
+export const actions = {
+    markAsCompleted: async ({ locals, request }) => {
+        if (!locals.user) {
+          redirect(301, '/login');
+        }
+        console.log('si inizia!')
+        const formData = await request.formData();
+        const taskId = formData.get('id');
+
+        // --- CORREZIONE QUI ---
+        // Usa la variabile 'taskId' che hai appena creato
+        console.log('ID della task:', taskId);
+
+        await Task.findOneAndUpdate(
+            { _id: taskId, userId: locals.user.id }, 
+            { $set: { status: 'done' } }
+        );
+        
+        throw redirect(303, '/calendario');
+    }
+}
