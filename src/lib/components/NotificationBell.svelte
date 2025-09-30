@@ -9,7 +9,6 @@
     let previousUnreadCount = $state(0); // Per rilevare nuove notifiche
     let isFirstLoad = $state(true); // Per evitare notifica al primo caricamento
 
-    // --- LOGICA DI POLLING ---
     // Funzione per recuperare le notifiche dall'API
     async function fetchNotifications() {
         try {
