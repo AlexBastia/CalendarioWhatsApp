@@ -7,7 +7,7 @@
 	<div class="float-end">
 		<button
 			type={submissionForm ? 'submit' : 'button'}
-			class="button btn"
+			class="button"
 			aria-label={ariaLabel}
 			data-bs-toggle={modalTarget ? 'modal' : ''}
 			data-bs-target={modalTarget ?? ''}
@@ -32,11 +32,16 @@
 		padding: 0;
 		background-color: white;
 		color: var(--bs-primary);
+		border:none;
+		transition: all 0.15s ease-in-out;
+	}
+	.button:hover {
+		transform: scale(1.06);
 	}
 	.icon {
 		position: absolute;
-		top: -23px;
-		left: 1px;
+		top: -22px;
+		left: 2px;
 	}
 	.icon::before {
 		transform: translateY(-4px);

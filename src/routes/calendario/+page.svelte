@@ -50,7 +50,7 @@
 				dateString = format(currentDate, 'do LLL');
 				break;
 			case 'weekly':
-				dateString = format(currentDate, 'do LLL');
+				dateString = format(startOfWeek(currentDate), 'do LLL') + ' - ' + format(endOfWeek(currentDate), 'do LLL');
 				break;
 			case 'monthly':
 				dateString = format(currentDate, 'MMMM');
@@ -75,14 +75,21 @@
 
 	// effetto per aggiornare eventi espansi
 	$effect(() => {
+    console.log('Numero eventi ricevuti:', data.events.length);
+    console.log('Primo evento:', data.events[0]);
+    console.log('Range:', { rangeStart, rangeEnd });
+  
 		if (!data || !data.events) {
 			expandedEvents = [];
 			return;
 		}
 		expandedEvents = data.events.flatMap((ev) => {
+      console.log('Elaboro evento:', ev.title, 'isRepeatable:', ev.ripetizione?.isRepeatable);
 			const e = { ...ev, start: new Date(ev.start), end: new Date(ev.end) };
-			return expandEvent(e, rangeStart, rangeEnd);
-		});
+			const expanded = expandEvent(e, rangeStart, rangeEnd);
+      console.log('Istanze generate:', expanded.length);
+      return expanded;
+    });
 	});
 
 	function goToEvent(id) {
@@ -157,19 +164,19 @@
 				onclick={() => (viewMode = 'daily')}
 				type="button"
 				data-bs-dismiss="offcanvas"
-				class="list-group-item list-group-item-action">Daily</button
+				class="list-group-item list-group-item-action"><i class="bi bi-calendar2-day"></i> Day</button
 			>
 			<button
 				onclick={() => (viewMode = 'weekly')}
 				type="button"
 				data-bs-dismiss="offcanvas"
-				class="list-group-item list-group-item-action">Weekly</button
+				class="list-group-item list-group-item-action"><i class="bi bi-calendar2-week"></i> Week</button
 			>
 			<button
 				onclick={() => (viewMode = 'monthly')}
 				type="button"
 				data-bs-dismiss="offcanvas"
-				class="list-group-item list-group-item-action">Monthly</button
+				class="list-group-item list-group-item-action"><i class="bi bi-calendar2-month"></i> Month</button
 			>
 		</div>
 		<div class="mt-5" style="margin-inline: auto; width: fit-content;">
@@ -198,7 +205,7 @@
 		isToday={isSameDay(currentDate, today)}
 		{goToEvent}
 		{goToTask}
-		{currentDate}
+		{today}
 	/>
 {:else if viewMode === 'weekly'}
 	<WeeklyView {weekDays} {today} {expandedEvents} tasks={data.tasks} {goToEvent} {goToTask} />

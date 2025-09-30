@@ -142,9 +142,6 @@
         </div>
         <div class="col-12 mt-3">
           <div class="form-check form-switch mb-3">
-            <!-- hidden fallback -->
-            <input type="hidden" name="isRepeatable" value="false" />
-
             <input
               class="form-check-input"
               type="checkbox"
@@ -190,10 +187,10 @@
               value={i}
               onchange={(evt) => {
                 if (evt.currentTarget.checked) {
-                  e.ripetizione.giorniSettimana = [...e.ripetizione.giorniSettimana, i];
+                  e.ripetizione.giorniSettimana = [...e.ripetizione.giorniSettimana, i].sort((a, b) => a - b);
                 } else {
                   e.ripetizione.giorniSettimana =
-                    e.ripetizione.giorniSettimana.filter((d) => d !== i);
+                    e.ripetizione.giorniSettimana.filter((d) => d !== i).sort((a, b) => a - b);
                 }
               }}
               checked={e.ripetizione.giorniSettimana.includes(i)}
@@ -247,6 +244,8 @@
         </label>
       </div>
     </fieldset>
+    <input type="hidden" name="week" value={e.ripetizione.nthWeekday?.week || ''}/>
+    <input type="hidden" name="weekday" value={e.ripetizione.nthWeekday?.weekday || ''}/>
   {/if}
 
   <div class="col-md-6">

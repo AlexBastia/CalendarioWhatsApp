@@ -40,7 +40,7 @@ const eventSchema = new Schema(
         nVolte: Number,
         endDate: Date
       },
-      lastDate: Date
+      //lastDate: Date
     },
     pomodoroPreset: {
       type: Types.ObjectId,

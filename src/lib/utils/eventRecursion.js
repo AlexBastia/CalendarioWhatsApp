@@ -12,32 +12,56 @@ export function mkLastDate(event) {
   if (ripetizione.endCondition?.type === "FINO AL") {
     lastDate = new Date(ripetizione.endCondition.endDate);
   } else if (ripetizione.endCondition?.type === "N_VOLTE") {
-    const n = ripetizione.endCondition.nVolte;
+    //con n = 1, ci sara` una ripetizione (2 istanze dell'evento)
+    let n = ripetizione.endCondition.nVolte;
     switch (ripetizione.frequenza) {
       case "GIORNALIERO":
-        lastDate = addDays(start, n - 1);
+        lastDate = addDays(start, n);
         break;
       case "SETTIMANALE":
+        //TODO: rendere obbligatorio il giorno iniziale nella ripetizione settimanale
         const countPerWeek = ripetizione.giorniSettimana.length || 1;
         const weeksNeeded = Math.floor(n / countPerWeek);
-        //sketchy math, catchy meth
+        //voglio n istanze oltre l'evento originale, quindi 21 eventi totali per n = 20
         lastDate = addWeeks(start, weeksNeeded);
-        lastDate = startOfWeek(lastDate);
-        lastDate = addDays(lastDate, ripetizione.giorniSettimana[n%countPerWeek]);
+        n = n % countPerWeek;
+        while(n >= 0){
+          if(ripetizione.giorniSettimana.includes(getDay(lastDate))) n = n -1;
+          if(n < 0) break; //ultima istanza: non vado avanti di altri giorni 
+          lastDate = addDays(lastDate, 1);
+        }
         break;
       case "MENSILE":
-        lastDate = addMonths(start, n - 1);
+        lastDate = addMonths(start, n);
+        if(ripetizione.monthlyMode === 'nthWeekday') {
+          const { week, weekday } = ripetizione.nthWeekday;
+          tmpDate = nthWeekdayOfMonth(lastDate, week, weekday);
+          if(tmpDate) lastDate = tmpDate;
+        }
+        //alternativa che non conta i mesi senza candidato viene fin troppo strana
         break;
       case "ANNUALE":
-        lastDate = addYears(start, n - 1);
+        lastDate = addYears(start, n);
         break;
     }
   }
   return lastDate;
 }
 
+function nthWeekdayOfMonth(date, week, weekday) {
+  const baseMonth = getMonth(date);
+  let d = startOfMonth(date);
+  //mi sposto al primo "weekday" del mese
+  const diff = (weekday - getDay(d) + 7) % 7;
+  d = addDays(d, diff);
+  //aggiungo le settimane necessarie
+  d = addWeeks(d, week -1);
+  if (getMonth(d)!=baseMonth) return null;
+  return d;
+}
 
 export function expandEvent(event, rangeStart, rangeEnd) {
+  //se l'evento non e` ricorrente ritorna l'evento stesso (se nel range)
   if (!event.ripetizione?.isRepeatable) {
     if (event.start >= rangeStart && event.start <= rangeEnd) return [event];
     return [];
@@ -46,16 +70,18 @@ export function expandEvent(event, rangeStart, rangeEnd) {
   const instances = [];
   const { start, end, ripetizione } = event;
   const durationMs = getTime(end) - getTime(start);
-
-  // --- Calcolo lastDate in base a endCondition ---
-  let lastDate = mkLastDate(event);
+  //ritorna se le istanze finiscono prima dell'inizio di questo range
+  let lastDate = ripetizione.lastDate = mkLastDate(event);
   if (lastDate > rangeEnd) lastDate = rangeEnd;
+  if (lastDate < rangeStart) return [];
   const dayOfMonth = getDate(start);
+
+  //pushInstance prende una data (a mezzanotte)
   const pushInstance = (date) => {
-    const instStart = new Date(getTime(date));
-    instStart.setHours(start.getHours(), start.getMinutes(), start.getSeconds());
-    const instEnd = new Date(getTime(instStart) + durationMs);
-    instances.push({ ...event, start: instStart, end: instEnd });
+    const instStart = new Date(getTime(date));                                   //modifica il giorno a quello dell'istanza
+    instStart.setHours(start.getHours(), start.getMinutes(), start.getSeconds());//mantiene l'orario originale
+    const instEnd = new Date(getTime(instStart) + durationMs);                   //aggiunge la durata per mantenere la fine originale
+    instances.push({ ...event, start: instStart, end: instEnd });                //appende l'evento nell'array di istanze ammissibili
   };
 
   switch (ripetizione.frequenza) {
@@ -70,65 +96,32 @@ export function expandEvent(event, rangeStart, rangeEnd) {
     case "SETTIMANALE":
       let weekCursor = startOfDay(rangeStart);
       while (weekCursor <= lastDate) {
-        for (const dayofweek of ripetizione.giorniSettimana) {
-          const offset = (dayofweek + 7 - getDay(weekCursor)) % 7;
-          const instanceDate = addDays(weekCursor, offset);
-          if (instanceDate > lastDate) continue;
-          if (instanceDate >= rangeStart) {
-            pushInstance(instanceDate);
-          }
-        }
-        weekCursor = addWeeks(weekCursor, 1);
+        const today = getDay(weekCursor);
+        if(ripetizione.giorniSettimana.includes(today)) pushInstance(weekCursor);
+        weekCursor = addDays(weekCursor, 1);
       }
       break;
 
     case "MENSILE":
-      let monthCursor = startOfDay(start);
-      while (monthCursor <= lastDate) {
-        const year = getYear(monthCursor);
-        const month = getMonth(monthCursor);
-
-        if (ripetizione.monthlyMode === 'dayOfMonth') {
-          // Fixed: calculate dayOfMonth from original start date
-          const dayOfMonth = start.getDate();
-          const instanceDate = new Date(year, month, dayOfMonth);
-          if (instanceDate >= rangeStart && instanceDate <= lastDate) {
-            pushInstance(instanceDate);
-          }
+      let monthCursor = startOfDay(rangeStart);
+      let day = getDate(monthCursor);
+      if(ripetizione.monthlyMode === 'dayOfMonth') {
+        let instanceDate = addMonths(start, (getMonth(rangeStart) - getMonth(start)));
+        if(getDate(instanceDate) === getDate(start) && instanceDate >= rangeStart && instanceDate <= rangeEnd) {
+        pushInstance(instanceDate);
         }
-
-        if (ripetizione.monthlyMode === 'nthWeekday' && ripetizione.nthWeekday?.week) {
-          const weekday = ripetizione.nthWeekday.weekday;
-          const weekNum = ripetizione.nthWeekday.week;
-          let count = 0;
-          for (let d = 1; d <= 31; d++) {
-            const date = new Date(year, month, d);
-            if (date.getMonth() !== month) break;
-            if (date.getDay() === weekday) count++;
-            if (count === weekNum) {
-              if (date >= rangeStart && date <= lastDate) {
-                pushInstance(date);
-              }
-              break;
-            }
-          }
+      } else {
+        let instanceDate = nthWeekdayOfMonth(rangeStart, ripetizione.nthWeekday.week, ripetizione.nthWeekday.weekday);
+        if(instanceDate){
+          if(instanceDate >= rangeStart && instanceDate <= rangeEnd) pushInstance(instanceDate);
         }
-
-        monthCursor = addMonths(monthCursor, 1);
       }
       break;
 
     case "ANNUALE":
-      let yearCursor = startOfDay(start);
-      const startMonth = getMonth(start);
-      while (yearCursor <= lastDate) {
-        const year = getYear(yearCursor);
-        const instanceDate = new Date(year, startMonth, dayOfMonth);
-          if (instanceDate >= rangeStart && instanceDate <= lastDate) {
-            pushInstance(instanceDate);
-          }
-        
-        yearCursor = addYears(yearCursor, 1);
+      let instanceDate = addYears(start, (getYear(rangeStart) - getYear(start)));
+      if(getDate(instanceDate) === getDate(start) && instanceDate >= rangeStart && instanceDate <= rangeEnd) {
+        pushInstance(instanceDate);
       }
       break;
   }

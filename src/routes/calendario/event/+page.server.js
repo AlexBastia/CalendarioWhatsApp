@@ -4,7 +4,7 @@ import {sub, parse} from "date-fns"
 
 export async function load({ locals }) {
     // Proteggi la rotta: se l'utente non è loggato, reindirizzalo
-    if (!locals.user) {
+    if (locals.user === null) {
         redirect(303, '/login');
     }
 }
@@ -47,7 +47,28 @@ export const actions = {
             end = parse(`${data.dateStart} ${data.timeEnd}`, 'yyyy-MM-dd HH:mm', new Date());
         }
 
-        
+        let ripetizione = {
+          isRepeatable: data.isRepeatable === 'true',
+          frequenza: data.frequenza || null,
+          giorniSettimana: data.giorniSettimana
+            ? Array.isArray(data.giorniSettimana)
+              ? data.giorniSettimana.map(Number)
+              : [Number(data.giorniSettimana)]
+            : [],
+          monthlyMode: data.monthlyMode || null,
+          nthWeekday: data.week && data.weekday
+            ? {
+              week: Number(data.week),
+              weekday: Number(data.weekday)
+            }
+            : null,
+          endCondition: {
+            type: data.endType || 'MAI',
+            nVolte: data.endCount ? Number(data.endCount) : null,
+            endDate: data.endDate ? new Date(data.endDate) : null
+          },
+          //lastDate = mkLastDate(event_object); OPTIMIZATION POSSIBLE
+        };
 
 
         const notificationSettings = {
@@ -78,6 +99,7 @@ export const actions = {
           place: data.location,
           allDay: allDay,
           eventType: data.eventType,
+          ripetizione: ripetizione,
           pomodoroPreset: data.eventType === 'POMODORO' ? data.pomodoroPreset : null,
           status: data.eventType === 'POMODORO' ? 'PIANIFICATO' : null,
           userID: locals.user.id,
