@@ -1,6 +1,9 @@
 import { json } from '@sveltejs/kit';
 import { Notifica } from '$lib/models/Notification.js';
 import { Evento } from '$lib/models/Event.js';
+
+import { Task } from '$lib/models/Task';
+
 import mongoose from 'mongoose';
 
 /** @type {import('./$types').RequestHandler} */

@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { User } from '$lib/models/User'; // Assicurati che il percorso sia corretto
 import { Evento } from '$lib/models/Event.js';
+import { Notifica } from '$lib/models/Notification.js';
 
 export async function PATCH({ params, locals, request }) {
     console.log('fwe')
