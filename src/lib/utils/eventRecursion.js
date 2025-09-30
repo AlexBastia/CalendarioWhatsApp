@@ -71,9 +71,12 @@ export function expandEvent(event, rangeStart, rangeEnd) {
   const { start, end, ripetizione } = event;
   const durationMs = getTime(end) - getTime(start);
   //ritorna se le istanze finiscono prima dell'inizio di questo range
-  let lastDate = ripetizione.lastDate = mkLastDate(event);
+  ripetizione.lastDate = mkLastDate(event);
+  let lastDate = ripetizione.lastDate;
   if (lastDate > rangeEnd) lastDate = rangeEnd;
+  if (start > rangeEnd) return [];
   if (lastDate < rangeStart) return [];
+  
   const dayOfMonth = getDate(start);
 
   //pushInstance prende una data (a mezzanotte)
@@ -86,7 +89,7 @@ export function expandEvent(event, rangeStart, rangeEnd) {
 
   switch (ripetizione.frequenza) {
     case "GIORNALIERO":
-      let dayCursor = startOfDay(rangeStart);
+      let dayCursor = startOfDay(start > rangeStart ? start : rangeStart);
       while (dayCursor <= lastDate) {
         pushInstance(dayCursor);
         dayCursor = addDays(dayCursor, 1);
