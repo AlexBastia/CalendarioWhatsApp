@@ -111,6 +111,8 @@
         }
     }
 
+
+
     // Funzione per segnare una notifica come letta e navigare
     async function handleNotificationClick(notification) {
         try {
@@ -139,7 +141,7 @@
         if (notification.tipo === 'EVENTO') {
             goto(`/calendario/event/${notification.riferimento}`);
         } else if (notification.tipo === 'ATTIVITA') {
-            goto(`/tasks/${notification.riferimento}`);
+            goto(`/task/${notification.riferimento}`);
         }
     }
 
@@ -213,7 +215,22 @@
                 {#each notifications as notification}
                     <li>
                         {#if notification.tipo === 'CONDIVISIONE_POMODORO'}
-                            <div class="px-3 py-2 border-bottom">
+                            <div class="px-3 py-2 border-bottom position-relative notification-wrapper">
+                                <form method="POST" action="?/deleteNotification" use:enhance={() => async ({ result }) => {
+                                    if (result.type === 'success') {
+                                        await fetchNotifications();
+                                    }
+                                }}>
+                                    <input type="hidden" name="notificationId" value={notification._id} />
+                                    <button 
+                                        class="btn btn-sm btn-link text-danger position-absolute top-0 end-0 delete-btn"
+                                        type="submit"
+                                        onclick={(e) => {e.stopPropagation();}}
+                                        title="Elimina notifica"
+                                    >
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
                                 <strong class="d-block mb-1">🍅 Invito Sessione Pomodoro</strong>
                                 <p class="small text-muted mb-2">
                                     {notification.mittente?.email || 'Un utente'} ti ha invitato a una sessione di studio.
@@ -226,7 +243,7 @@
                                         <input type="hidden" name="pomodoroId" value={notification.riferimento} />
                                         <button type="submit" class="btn btn-sm btn-success">Accetta</button>
                                     </form>
-                                    <form method="POST" action="?/declineNotification" use:enhance={() => async ({ result }) => {
+                                    <form method="POST" action="?/deleteNotification" use:enhance={() => async ({ result }) => {
                                         if (result.type === 'success') await fetchNotifications();
                                     }}>
                                         <input type="hidden" name="notificationId" value={notification._id} />
@@ -235,47 +252,95 @@
                                 </div>
                             </div>
                         {:else if notification.tipo === 'EVENTO'}
-                            <a 
-                                href="#!" 
-                                onclick={(e) => {e.preventDefault(); handleNotificationClick(notification)}} 
-                                class="dropdown-item d-block notification-item"
-                            >
-                                <strong class="d-block mb-1">📅 Promemoria Evento</strong>
-                                <p class="fw-semibold mb-1 text-dark">
-                                    {notification.evento?.title || 'Evento senza titolo'}
-                                </p>
-                                <p class="small text-muted mb-0">
-                                    {#if notification.evento?.start}
-                                        {new Date(notification.evento.start).toLocaleDateString('it-IT', {
-                                            weekday: 'short',
-                                            day: 'numeric',
-                                            month: 'short',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
-                                    {:else}
-                                        Un evento programmato sta per iniziare.
-                                    {/if}
-                                </p>
-                            </a>
+                            <div class="position-relative notification-wrapper">
+                                <form method="POST" action="?/deleteNotification" use:enhance={() => async ({ result }) => {
+                                    if (result.type === 'success') {
+                                        await fetchNotifications();
+                                    }
+                                }}>
+                                    <input type="hidden" method="POST" name="notificationId" value={notification._id} />
+                                    <button
+                                        class="btn btn-sm btn-link text-danger position-absolute top-0 end-0 delete-btn"
+                                        type="submit"
+                                        onclick={(e) => {e.stopPropagation();}}
+                                        title="Elimina notifica"
+                                        style="z-index: 10;"
+                                    >
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
+                                <a 
+                                    href="#!" 
+                                    onclick={(e) => {e.preventDefault(); handleNotificationClick(notification)}} 
+                                    class="dropdown-item d-block notification-item pe-5"
+                                >
+                                    <strong class="d-block mb-1">📅 Promemoria Evento</strong>
+                                    <p class="fw-semibold mb-1 text-dark">
+                                        {notification.evento?.title || 'Evento senza titolo'}
+                                    </p>
+                                    <p class="small text-muted mb-2">
+                                        {#if notification.evento?.start}
+                                            {new Date(notification.evento.start).toLocaleDateString('it-IT', {
+                                                weekday: 'short',
+                                                day: 'numeric',
+                                                month: 'short',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        {:else}
+                                            Un evento programmato sta per iniziare.
+                                        {/if}
+                                    </p>
+                                </a>
+                                <div class="px-3 pb-2">
+                                    <button 
+                                        class="btn btn-sm btn-outline-warning w-100"
+                                        onclick={(e) => {
+                                            e.stopPropagation(); 
+                                            disableEventNotifications(notification.riferimento, notification._id)
+                                        }}
+                                    >
+                                        <i class="bi bi-bell-slash me-1"></i>
+                                        Ignora future notifiche
+                                    </button>
+                                </div>
+                            </div>
                         {:else if notification.tipo === 'ATTIVITA'}
-                            <a 
-                                href="#!" 
-                                onclick={(e) => {e.preventDefault(); handleNotificationClick(notification)}} 
-                                class="dropdown-item d-block notification-item"
-                            >
-                                <strong class="d-block mb-1">📝 Promemoria Attività</strong>
-                                <p class="fw-semibold mb-1 text-dark">
-                                    {notification.task?.title || 'Attività'}
-                                </p>
-                                <p class="small text-muted mb-0">
-                                    {#if notification.task?.lastNotificationLevel}
-                                        Scadenza: {notification.task.lastNotificationLevel}
-                                    {:else}
-                                        Hai un'attività in scadenza
-                                    {/if}
-                                </p>
-                            </a>
+                            <div class="position-relative notification-wrapper">
+                                <form method="POST" action="?/deleteNotification" use:enhance={() => async ({ result }) => {
+                                    if (result.type === 'success') {
+                                        await fetchNotifications();
+                                    }
+                                }}>
+                                    <input type="hidden" name="notificationId" value={notification._id} />
+                                    <button 
+                                        class="btn btn-sm btn-link text-danger position-absolute top-0 end-0 delete-btn"
+                                        type="submit"
+                                        onclick={(e) => {e.stopPropagation();}}
+                                        title="Elimina notifica"
+                                        style="z-index: 10;"
+                                    >
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </form>
+                                <a 
+                                    href="#!" 
+                                    onclick={(e) => {e.preventDefault(); handleNotificationClick(notification)}} 
+                                    class="dropdown-item d-block notification-item pe-5"
+                                >
+                                    <strong class="d-block mb-1">📝 Promemoria Attività</strong>
+                                    <p class="fw-semibold mb-1 text-dark">
+                                        {notification.task?.title || 'Attività'}
+                                    </p>
+                                    <p class="small text-muted mb-0">
+                                        {#if notification.task?.lastNotificationLevel}
+                                            Scadenza: {notification.task.lastNotificationLevel}
+                                        {:else}
+                                            Hai un'attività in scadenza
+                                        {/if}
+                                    </p>
+                                </a>
+                            </div>
                         {/if}
                     </li>
                 {/each}
@@ -315,6 +380,23 @@
 
     .notification-item:hover {
         background-color: #f8f9fa;
+    }
+
+    .notification-wrapper {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .notification-wrapper:last-child {
+        border-bottom: none;
+    }
+
+    .delete-btn {
+        padding: 0.25rem 0.5rem;
+        text-decoration: none;
+    }
+
+    .delete-btn:hover {
+        background-color: rgba(220, 53, 69, 0.1);
     }
 
     /* Animazione shake per il campanello quando arriva una nuova notifica */
