@@ -1,6 +1,6 @@
 <script>
     import EventForm from '$lib/components/eventForm.svelte';
-    let { data } = $props(); // Riceve i pomodori caricati dal server
+    let { data, options } = $props(); // Riceve i pomodori caricati dal server
 </script>
 
 <h1 class="mb-4">Crea Nuovo Evento</h1>
@@ -9,4 +9,5 @@
     pomodoroPresets={data.pomodori}
     formAction="/calendario/event?/saveEvent"
     deleteAction=""
+    options={data.options}
 />

@@ -207,9 +207,10 @@
 		tasks={data.tasks.filter((task) => isSameDay(currentDate, task.deadline))}
 		lateTasks={data.tasks.filter((task) => task.status === 'late')}
 		isToday={isSameDay(currentDate, today)}
-		{goToEvent}
+		{goToEvent}	
 		{goToTask}
 		{today}
+		{currentDate}
 	/>
 {:else if viewMode === 'weekly'}
 	<WeeklyView {weekDays} {today} {expandedEvents} tasks={data.tasks} {goToEvent} {goToTask} />
