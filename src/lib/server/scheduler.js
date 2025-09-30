@@ -11,15 +11,15 @@ export function startScheduler() {
   console.log('✅ Scheduler completo con Time Machine avviato.');
   
   cron.schedule('*/1 * * * *', async () => {
-    const serverTime = new Date(); // Il tempo reale del server
-    console.log(`\n🕒 Cron job in esecuzione (Tempo Server: ${serverTime.toLocaleTimeString('it-IT')})`);
+   
+    console.log(`\n🕒 Cron job in esecuzione (Tempo Server: ${new Date()}`);
 
     try {
       // --- CICLO PRINCIPALE SU TUTTI GLI UTENTI ---
       const allUsers = await User.find({}).select('_id virtualTime').lean();
       
       for (const user of allUsers) {
-        const currentTime = user.virtualTime || serverTime;
+        const currentTime = user.virtualTime || new Date();
         
         console.log(`--- Controlli per utente ${user._id} (Tempo: ${currentTime.toLocaleTimeString('it-IT')}) ---`);
         

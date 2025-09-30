@@ -3,7 +3,7 @@
     import { format } from 'date-fns'; 
 
     // 1. Questa variabile rimane il nostro "orologio" principale (oggetto Date)
-    let currentTime = $derived($timingStore);
+    let currentTime = $derived($timingStore ? $timingStore : new Date());
 
     // 2. Creiamo due variabili separate per le stringhe degli input
     let dateInput = $state(format(currentTime, 'yyyy-MM-dd'));
@@ -37,6 +37,7 @@
     async function handleReset() {
         // Resetta lo store locale
         timingStore.resetTime();
+        console.log($timingStore)
 
         try {
             await fetch('/api/virtual-time', {
