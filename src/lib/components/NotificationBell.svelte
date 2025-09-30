@@ -57,7 +57,7 @@
 
 <div>
     <div class="dropdown">
-        <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <button class="btn btn-light dropdown-toggle position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-bell-fill"></i>
             {#if unreadCount > 0}
                 <span class="badge bg-danger rounded-pill ms-1 position-absolute top-0 start-100 translate-middle" style="font-size: 0.6em;">
