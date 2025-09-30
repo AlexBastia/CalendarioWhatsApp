@@ -1,19 +1,9 @@
-/**
- * Controlla se due eventi si sovrappongono nel tempo.
- * @param {object} eventA
- * @param {object} eventB
- * @returns {boolean}
- */
+
 function eventsOverlap(eventA, eventB) {
     return eventA.start < eventB.end && eventA.end > eventB.start;
 }
 
-/**
- * Calcola la posizione e le dimensioni degli eventi per un singolo giorno
- * in modo da gestire le sovrapposizioni.
- * @param {Array<object>} events - La lista di eventi del giorno.
- * @returns {Array<object>} - La lista di eventi con le proprietà di layout.
- */
+
 export function calculateEventLayout(events) {
     if (!events || events.length === 0) {
         return [];

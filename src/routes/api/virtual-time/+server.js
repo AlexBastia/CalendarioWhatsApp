@@ -10,9 +10,7 @@ export async function POST({ request, locals }) {
 
     const { virtualTime } = await request.json();
     console.log(`Nuovo tempo virtuale ricevuto: ${virtualTime}`);
-    if (!virtualTime) {
-        return json({ error: 'Invalid data' }, { status: 400 });
-    }
+    
     console.log(`Aggiornamento tempo virtuale a: ${virtualTime}`);
 
     try {

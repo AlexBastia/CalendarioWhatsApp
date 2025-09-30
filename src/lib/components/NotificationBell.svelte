@@ -12,6 +12,7 @@
     // Funzione per recuperare le notifiche dall'API
     async function fetchNotifications() {
         try {
+            console.log('feerefer\n');
             const response = await fetch('/api/notifications');
             if (!response.ok) {
                 console.error('Errore nel polling delle notifiche:', response.statusText);
@@ -51,7 +52,6 @@
     onMount(() => {
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 30000); // Controlla ogni 30 secondi
-        return () => clearInterval(interval); // Pulisce l'intervallo alla distruzione
     });
 </script>
 
