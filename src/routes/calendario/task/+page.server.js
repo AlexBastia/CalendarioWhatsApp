@@ -60,15 +60,16 @@ export const actions = {
         throw redirect(303, '/calendario');
     },
     markAsCompleted: async ({locals, request})=>{
-        deleteTask: async ({ locals, request }) => {
         if (!locals.user) {
           redirect(301, '/login');
         }
+        console.log('si inizia!')
         const formData = await request.formData();
         const taskId = formData.get('id');
+        console.log('zio pera', id)
 
-        await Task.updateOne({user: locals.user._id},{status: 'done'});
+        await Task.findOneAndUpdate({ _id: taskId, userId: locals.user.id }, {status: 'done'});
         throw redirect(303, '/calendario');
       }
-    }
+    
 };
