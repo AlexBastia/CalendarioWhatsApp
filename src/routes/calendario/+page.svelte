@@ -39,8 +39,6 @@
 	//modalita` di visualizzazione, il default e` settimanale
 	let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
 
-	let rangeStart;
-	let rangeEnd;
 	let expandedEvents = $state([]);
 
 	let currentDateFormated = $derived.by(() => {
@@ -60,19 +58,17 @@
 	});
 
 	// effetto per aggiornare rangeStart / rangeEnd
-	$effect(() => {
-		if (viewMode === 'daily') {
-			rangeStart = currentDate;
-			rangeEnd = currentDate;
-		} else if (viewMode === 'weekly') {
-			rangeStart = startOfWeek(currentDate);
-			rangeEnd = endOfWeek(currentDate);
-		} else {
-			rangeStart = startOfMonth(currentDate);
-			rangeEnd = endOfMonth(currentDate);
-		}
+	let rangeStart = $derived.by(() => {
+		if (viewMode === 'daily') return currentDate;
+		if (viewMode === 'weekly') return startOfWeek(currentDate);
+		return startOfMonth(currentDate);
 	});
 
+	let rangeEnd = $derived.by(() => {
+		if (viewMode === 'daily') return currentDate;
+		if (viewMode === 'weekly') return endOfWeek(currentDate);
+		return endOfMonth(currentDate);
+	});
 	// effetto per aggiornare eventi espansi
 	$effect(() => {
     console.log('Numero eventi ricevuti:', data.events.length);
