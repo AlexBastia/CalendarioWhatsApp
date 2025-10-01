@@ -1,6 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { format } from 'date-fns';
+	import { format, isSameDay } from 'date-fns';
 	import { onMount } from 'svelte';
 	import TaskAndEventList from './TaskAndEventList.svelte';
 
@@ -12,7 +12,7 @@
 	function processEventOverlaps(events) {
 		// Ordina eventi per poi dividerli in gruppi
 		const timedEvents = events
-			.filter((e) => !e.allDay)
+			.filter((e) => !e.allDay && isSameDay(e.start, e.end))
 			.map((e) => ({
 				...e,
 				startMinutes: e.start.getHours() * 60 + e.start.getMinutes(),

@@ -44,7 +44,7 @@ export async function GET({ cookies, url, locals }) {
                 if (notification.tipo === 'EVENTO' && notification.riferimento) {
                     try {
                         const evento = await Evento.findById(notification.riferimento)
-                            .select('title start end')
+                            .select('title start end notificationSettings')
                             .lean();
                         
                         return {

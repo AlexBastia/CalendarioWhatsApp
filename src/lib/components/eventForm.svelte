@@ -18,6 +18,7 @@
 			eventType: 'STANDARD',
 			place: '',
 			dateStart: format(new Date(), 'yyyy-MM-dd'),
+			dateEnd: format(new Date(), 'yyyy-MM-dd'),
 			timeStart: '09:00',
 			timeEnd: '10:00',
 			pomodoroPreset: null,
@@ -33,7 +34,10 @@
 		}
 	} = $props();
 
-	if (options?.date) event.dateStart = options.date;
+	if (options?.date) {
+		event.dateStart = options.date;
+		event.dateEnd = options.date;
+	}
 	if (options?.startTime) event.timeStart = options.startTime;
 	if (options?.endTime) event.timeEnd = options.endTime;
 
@@ -54,6 +58,9 @@
 		e.title.trim().length > 0 && 
 		e.dateStart && 
 		e.dateStart.trim().length > 0 &&
+		e.dateEnd &&
+		e.dateEnd.trim().length > 0 &&
+		new Date(e.dateEnd) >= new Date(e.dateStart) &&
 		(e.eventType !== 'POMODORO' || e.pomodoroPreset)
 	);
 
@@ -209,7 +216,7 @@
 
 							<div class="col-md-5">
 								<label for="dateStart" class="form-label fw-semibold">
-									<i class="bi bi-calendar3 me-2"></i>Data *
+									<i class="bi bi-calendar3 me-2"></i>Data Inizio *
 								</label>
 								<input
 									type="date"
@@ -218,6 +225,21 @@
 									class="form-control form-control-lg"
 									bind:value={e.dateStart}
 									required
+								/>
+							</div>
+
+							<div class="col-md-5">
+								<label for="dateEnd" class="form-label fw-semibold">
+									<i class="bi bi-calendar-check me-2"></i>Data Fine *
+								</label>
+								<input
+									type="date"
+									id="dateEnd"
+									name="dateEnd"
+									class="form-control form-control-lg"
+									bind:value={e.dateEnd}
+									required
+									min={e.dateStart}
 								/>
 							</div>
 

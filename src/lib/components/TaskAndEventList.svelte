@@ -1,9 +1,10 @@
 <script>
+	import { isSameDay } from 'date-fns';
 	let { events, tasks, lateTasks, isToday, goToEvent, goToTask } = $props();
 </script>
 
 <div class="list-group list-group-flush border-bottom mb-2 bg-white">
-	{#each events?.filter((event) => event.allDay) as event}
+	{#each events?.filter((event) => event.allDay || !isSameDay(event.start, event.end)) as event}
 		<button
 			onclick={() => goToEvent(event._id)}
 			class="list-group-item list-group-item-action event-link d-flex align-items-center"

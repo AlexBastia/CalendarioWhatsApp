@@ -206,7 +206,11 @@
 
 {#if viewMode === 'daily'}
 	<DailyView
-		events={expandedEvents.filter((event) => isSameDay(currentDate, event.start))}
+		events={expandedEvents.filter((event) => {
+			const dayStart = startOfDay(currentDate);
+			const dayEnd = endOfDay(currentDate);
+			return event.start < dayEnd && event.end > dayStart;
+		})}
 		tasks={data.tasks.filter((task) => isSameDay(currentDate, task.deadline))}
 		lateTasks={data.tasks.filter((task) => task.status === 'late')}
 		isToday={isSameDay(currentDate, today)}
@@ -241,7 +245,7 @@
 						<div class="flex-grow-1 overflow-auto">
 							{#if isSameMonth(day, currentDate)}
 								{#each expandedEvents as event}
-									{#if isSameDay(event.start, day)}
+									{#if event.start < endOfDay(day) && event.end > startOfDay(day)}
 										<div
 											onclick={(e) => { e.stopPropagation(); goToEvent(event._id); }}
 											class="badge bg-primary w-100 mb-1 event-link"

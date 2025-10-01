@@ -11,7 +11,6 @@
 
     async function fetchNotifications() {
         try {
-            console.log('Fetching notifications...');
             const response = await fetch('/api/notifications');
             if (!response.ok) {
                 console.error('Errore nel polling delle notifiche:', response.statusText);
@@ -100,13 +99,36 @@
         }
     }
 
+    async function toggleEventNotifications(evento, notifica) {
+        console.log('si va a disabilitare')
+        try{
+            const response = await fetch(`/api/notifications/disable-notification`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notificationId: notifica, event: evento })
+            });
+
+            const result = await response.json();
+
+            if (result.success){
+                console.log ('gg')
+                await fetchNotifications();
+            }
+
+        }
+        catch{
+            console.log('f')
+        }
+        
+    }
+
 
 
     async function handleNotificationClick(notification) {
         try {
             // Segna la notifica come letta sul server
             const response = await fetch(`/api/notifications/mark-read`, {
-                method: 'POST',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ notificationId: notification._id })
             });
@@ -127,7 +149,7 @@
         if (notification.tipo === 'EVENTO') {
             goto(`/calendario/event/${notification.riferimento}`);
         } else if (notification.tipo === 'ATTIVITA') {
-            goto(`/task/${notification.riferimento}`);
+            goto(`/calendario/task/${notification.riferimento}`);
         }
     }
 
@@ -141,7 +163,6 @@
             const result = await response.json();
             
             if (result.success) {
-                notifications = [];
                 unreadCount = 0;
                 previousUnreadCount = 0;
             } else {
@@ -243,7 +264,7 @@
                                         await fetchNotifications();
                                     }
                                 }}>
-                                    <input type="hidden" method="POST" name="notificationId" value={notification._id} />
+                                    <input type="hidden" name="notificationId" value={notification._id} />
                                     <button
                                         class="btn btn-sm btn-link text-danger position-absolute top-0 end-0 delete-btn"
                                         type="submit"
@@ -278,16 +299,29 @@
                                     </p>
                                 </a>
                                 <div class="px-3 pb-2">
-                                    <button 
-                                        class="btn btn-sm btn-outline-warning w-100"
-                                        onclick={(e) => {
-                                            e.stopPropagation(); 
-                                            disableEventNotifications(notification.riferimento, notification._id)
-                                        }}
-                                    >
-                                        <i class="bi bi-bell-slash me-1"></i>
-                                        Ignora future notifiche
-                                    </button>
+                                    {#if !notification.evento?.notificationSettings?.processed}
+                                        <button
+                                            class="btn btn-sm btn-outline-warning w-100"
+                                            onclick={(e) => {
+                                                e.stopPropagation(); 
+                                                toggleEventNotifications(notification.evento, notification._id)
+                                            }}
+                                        >
+                                            <i class="bi bi-bell-slash me-1"></i>
+                                            Ignora future notifiche
+                                        </button>
+                                    {:else}
+                                        <button
+                                            class="btn btn-sm btn-outline-success w-100"
+                                            onclick={(e) => {
+                                                e.stopPropagation(); 
+                                                toggleEventNotifications(notification.evento, notification._id)
+                                            }}
+                                        >
+                                            riattiva notifiche
+                                        </button>
+                                        
+                                    {/if}
                                 </div>
                             </div>
                         {:else if notification.tipo === 'ATTIVITA'}

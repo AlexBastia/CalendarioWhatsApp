@@ -36,15 +36,16 @@ export const actions = {
         const allDay = data.allDay === 'on';
         let start, end;
 
-                if (allDay) {
-            // Questo blocco era già corretto
+        if (allDay) {
             start = parse(data.dateStart, 'yyyy-MM-dd', new Date());
             start.setHours(0, 0, 0, 0);
-            end = new Date(start);
+            const endDate = data.dateEnd ? parse(data.dateEnd, 'yyyy-MM-dd', new Date()) : start;
+            end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
         } else {
             start = parse(`${data.dateStart} ${data.timeStart}`, 'yyyy-MM-dd HH:mm', new Date());
-            end = parse(`${data.dateStart} ${data.timeEnd}`, 'yyyy-MM-dd HH:mm', new Date());
+            const endDateStr = data.dateEnd || data.dateStart;
+            end = parse(`${endDateStr} ${data.timeEnd}`, 'yyyy-MM-dd HH:mm', new Date());
         }
 
         let ripetizione = {
@@ -66,7 +67,6 @@ export const actions = {
             nVolte: data.endCount ? Number(data.endCount) : null,
             endDate: data.endDate ? new Date(data.endDate) : null
           },
-          //lastDate = mkLastDate(event_object); OPTIMIZATION POSSIBLE
         };
 
 
@@ -75,10 +75,9 @@ export const actions = {
         advanceValue: parseInt(data.notificationAdvanceValue, 10) || 0,
         advanceUnit: data.notificationAdvanceUnit || 'minutes',
         repeat: data.notificationRepeat || 'none',
-        // CORRETTO: era 'repeatNumber', ora è 'notificationRepeatNumber'
         repeat_number: (data.notificationRepeat && data.notificationRepeat !== 'none') 
             ? (parseInt(data.notificationRepeatNumber, 10) || 1) 
-            : 0  // Usa 0 invece di null quando repeat è 'none'
+            : 0  
     };
 
 

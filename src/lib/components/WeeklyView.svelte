@@ -1,5 +1,5 @@
 <script>
-    import { format, isSameDay, addHours } from 'date-fns';
+    import { format, isSameDay, addHours, startOfDay, endOfDay } from 'date-fns';
     import TaskAndEventList from './TaskAndEventList.svelte';
     import DayColumn from './dayColumn.svelte';
 
@@ -43,7 +43,13 @@
         <div class="days-container">
             <div class="all-day-band">
                 {#each weekDays as day}
-                    {@const allDayEvents = expandedEvents.filter((event) => isSameDay(event.start, day) && event.allDay)}
+                    {@const allDayEvents = expandedEvents.filter((event) => {
+                        const isMultiOrAllDay = event.allDay || !isSameDay(event.start, event.end);
+                        if (!isMultiOrAllDay) return false;
+                        const dayStart = startOfDay(day);
+                        const dayEnd = endOfDay(day);
+                        return event.start < dayEnd && event.end > dayStart;
+                    })}
                     {@const dayTasks = tasks.filter((task) => isSameDay(task.deadline, day) && task.status !== 'late')}
                     {@const dayLateTasks = tasks.filter((task) => isSameDay(task.deadline, day) && task.status === 'late')}
                     {@const totalTasks = dayTasks.length + (isSameDay(day, today) ? dayLateTasks.length : 0)}
@@ -64,7 +70,7 @@
                 {#each weekDays as day}
                     <DayColumn
                         day={day}
-                        events={expandedEvents.filter((event) => isSameDay(event.start, day) && !event.allDay)}
+                        events={expandedEvents.filter((event) => isSameDay(event.start, day) && !event.allDay && isSameDay(event.start, event.end))}
                         tasks={[]}
                         {goToEvent}
                         {goToTask}
@@ -86,7 +92,13 @@
                 </div>
                 <div class="modal-body">
                     <TaskAndEventList
-                        events={expandedEvents.filter((event) => isSameDay(event.start, day) && event.allDay)}
+                        events={expandedEvents.filter((event) => {
+                            const isMultiOrAllDay = event.allDay || !isSameDay(event.start, event.end);
+                            if (!isMultiOrAllDay) return false;
+                            const dayStart = startOfDay(day);
+                            const dayEnd = endOfDay(day);
+                            return event.start < dayEnd && event.end > dayStart;
+                        })}
                         tasks={tasks.filter((task) => isSameDay(task.deadline, day) && task.status !== 'late')}
                         lateTasks={tasks.filter((task) => isSameDay(task.deadline, day) && task.status === 'late')}
                         isToday={isSameDay(day, today)}
