@@ -14,6 +14,7 @@
 	import { Task } from '$lib/models/Task';
 	import {timingStore} from '$lib/stores/timing.js' 
 	import Title from '$lib/components/Title.svelte';
+	let pomodoroSettingsModal;
 
 	let { data } = $props();
 
@@ -221,10 +222,8 @@
 								iconSrc={SettingsIcon}
 								extraClasses="p-4"
 								onclick={() => {
-									// Bootstrap modal trigger via JavaScript
-									const modalElement = document.getElementById('settingsModal');
-									const modal = new bootstrap.Modal(modalElement);
-									modal.show();
+									pomodoroSettingsModal?.show();
+									
 								}}
 							/>
 						</div>
@@ -370,6 +369,7 @@
 	/>
 
 	<PomodoroModal
+		bind:this={pomodoroSettingsModal}
 		id="settingsModal"
 		titleModal="Modifica Impostazioni"
 		formMethod="POST"

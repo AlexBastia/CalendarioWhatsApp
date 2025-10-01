@@ -12,7 +12,6 @@ export async function GET({ cookies, url, locals }) {
     console.log('\n--- 📥 Inizio GET /api/notifications ---');
     
     try {
-        // 2. Log per verificare l'utente in sessione
         console.log('👤 Utente in sessione:', locals.user ? locals.user._id : 'Nessuno');
         
         if (!locals.user) {
