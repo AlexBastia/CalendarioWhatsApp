@@ -1,14 +1,14 @@
 <script>
-	import NotificationBell from "$lib/components/NotificationBell.svelte";
-	import Title from "$lib/components/Title.svelte";
-	import { timingStore } from "$lib/stores/timing";
-	import { expandEvent } from "$lib/utils/eventRecursion.js";
-	import { endOfWeek } from "date-fns";
+	import NotificationBell from '$lib/components/NotificationBell.svelte';
+	import Title from '$lib/components/Title.svelte';
+	import { timingStore } from '$lib/stores/timing';
+	import { expandEvent } from '$lib/utils/eventRecursion.js';
+	import { endOfWeek } from 'date-fns';
 
 	let { data } = $props();
 
 	let today = $derived($timingStore ? $timingStore : new Date());
-	
+
 	let expandedEvents = $state([]);
 	let latestNote = $state(null);
 	let latestPomodoro = $state(null);
@@ -30,24 +30,21 @@
 		expandedEvents = data.events.flatMap((ev) => {
 			const e = { ...ev, start: new Date(ev.start), end: new Date(ev.end) };
 			const expanded = expandEvent(e, rangeStart, rangeEnd);
-			return expanded.map(instance => ({
+			return expanded.map((instance) => ({
 				...instance,
-				eventType: ev.eventType, 
+				eventType: ev.eventType,
 				title: instance.title || ev.title,
 				_id: instance._id || ev._id
 			}));
 		});
-		console.log('Eventi espansi totali:', expandedEvents.length);
 	});
 
 	$effect(() => {
 		const futureEvents = expandedEvents
-			.filter(event => new Date(event.start) >= today)
+			.filter((event) => new Date(event.start) >= today)
 			.sort((a, b) => new Date(a.start) - new Date(b.start));
-		
-		upcomingEvents = futureEvents.slice(0, 10); 
-		console.log('Eventi futuri trovati:', futureEvents.length);
-		console.log('Eventi mostrati:', upcomingEvents.length);
+
+		upcomingEvents = futureEvents.slice(0, 10);
 	});
 
 	$effect(() => {
@@ -55,7 +52,7 @@
 			latestNote = null;
 			return;
 		}
-		latestNote = data.notes[0]; 
+		latestNote = data.notes[0];
 	});
 
 	$effect(() => {
@@ -63,7 +60,7 @@
 			latestPomodoro = null;
 			return;
 		}
-		latestPomodoro = data.pomodori[0]; 
+		latestPomodoro = data.pomodori[0];
 	});
 
 	function formatDate(date) {
@@ -124,7 +121,7 @@
 
 	<section class="calendar-preview">
 		<h2>
-			Prossimi Eventi 
+			Prossimi Eventi
 			<a href="/calendario" class="view-all-link">Vedi Calendario &rarr;</a>
 		</h2>
 		{#if upcomingEvents.length > 0}
@@ -139,9 +136,9 @@
 						{event.title}
 					</li>
 				{/each}
-				{#if expandedEvents.filter(e => new Date(e.start) >= today).length > 10}
+				{#if expandedEvents.filter((e) => new Date(e.start) >= today).length > 10}
 					<li class="more-events">
-						...e altri {expandedEvents.filter(e => new Date(e.start) >= today).length - 10} eventi.
+						...e altri {expandedEvents.filter((e) => new Date(e.start) >= today).length - 10} eventi.
 					</li>
 				{/if}
 			</ul>

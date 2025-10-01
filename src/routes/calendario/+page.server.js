@@ -67,14 +67,12 @@ export async function load({ locals }) {
   console.log(`Caricamento calendario per utente ${locals.user.id}`);
   const today = locals.user.virtualTime ? new Date(locals.user.virtualTime) : new Date();
 
-  // Esegue gli aggiornamenti in parallelo per efficienza
   await Promise.all([
     updatePom(locals.user.id, today),
     updateTask(locals.user.id, today)
   ]);
   console.log(`Aggiornamenti completati per utente ${locals.user.id} alla data ${today}`);
 
-  // CORREZIONE 2: Carica anche le 'Task'
   const [eventiUtente, attivitaUtente, pomodoriUtente] = await Promise.all([
     Evento.find({ userID: locals.user.id }).lean(),
     Task.find({ userId: locals.user.id }).lean(),
@@ -100,7 +98,6 @@ export async function load({ locals }) {
         lastInstance: null
       }
     })),
-    // Aggiungi questo al return object!
     tasks: attivitaUtente.map((task) => ({
       _id: task._id.toString(),
       title: task.title,
@@ -135,15 +132,13 @@ export const actions = {
 
     const isGoogle = data.isGoogle ?? false;
 
-    //popola substruct ripetizione con i dati del form
     let ripetizione = {
       isRepeatable: data.isRepeatable === 'true',
       frequenza: data.frequenza || null,
-      giorniSettimana: data.giorniSettimana
-        ? Array.isArray(data.giorniSettimana)
-          ? data.giorniSettimana.map(Number)
-          : [Number(data.giorniSettimana)]
-        : [],
+      giorniSettimana: Object.keys(data)
+        .filter((key) => key.startsWith('giorniSettimana')) 
+        .map((key) => Number(data[key]))                    
+        .sort((a, b) => a - b),
       monthlyMode: data.monthlyMode || null,
       nthWeekday: data.week && data.weekday
         ? {
@@ -156,15 +151,7 @@ export const actions = {
         nVolte: data.endCount ? Number(data.endCount) : null,
         endDate: data.endDate ? new Date(data.endDate) : null
       },
-      //lastDate = mkLastDate(event_object); OPTIMIZATION POSSIBLE
     };
-
-    // Calcola lastInstance solo se ripetizione attiva
-    //if (ripetizione.isRepeatable) {
-
-      //ripetizione.lastDate = mkLastDate({ start, ripetizione });
-    //}
-    // Prepara il pacchetto di dati da salvare, includendo i campi pomodoro
     const eventData = {
       title: data.title,
       note: data.note,
@@ -183,15 +170,12 @@ export const actions = {
     const eventId = data.id || null;
     console.log('Dati ripetizione da salvare:', JSON.stringify(ripetizione, null, 2));
     if (eventId) {
-      // Se c'è un ID, aggiorna l'evento esistente
       await Evento.findOneAndUpdate({ _id: eventId, userID: locals.user.id }, eventData);
     } else {
-      // Altrimenti, crea un nuovo evento
       const savedEvent = await Evento.create(eventData);
       console.log('Evento salvato:', JSON.stringify(savedEvent.ripetizione, null, 2));
     }
 
-    // Reindirizza l'utente al calendario dopo l'operazione
     throw redirect(303, '/calendario');
   },
 
@@ -203,10 +187,8 @@ export const actions = {
     const formData = await request.formData();
     const eventId = formData.get('id');
 
-    // FIX di sicurezza: assicurati che l'utente possa eliminare solo i propri eventi
     await Evento.deleteOne({ _id: eventId, userID: locals.user.id });
 
-    // Reindirizza anche dopo l'eliminazione
     throw redirect(303, '/calendario');
   },
 

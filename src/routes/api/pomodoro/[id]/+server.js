@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { Pomodoro } from '$lib/models/Pomodoro.js';
 
+// utilizzo AI solo per logging
 export async function PATCH({ params, locals, request }) {
     // --- 1. Inizio della richiesta ---
     console.log('✅ [PATCH] Richiesta ricevuta per /pomodoro/[id]');

@@ -300,38 +300,38 @@
 														</div>
 													</div>
 
-													{#if e.ripetizione.frequenza === 'SETTIMANALE'}
-														<fieldset class="col-12">
-															<legend class="form-label fw-semibold">Giorni della settimana</legend>
-															<div class="d-flex gap-2 flex-wrap">
-																{#each ['D', 'L', 'M', 'M', 'G', 'V', 'S'] as day, i}
-																	<div class="form-check">
-																		<input
-																			type="checkbox"
-																			class="btn-check"
-																			id={`day${i}`}
-																			name="giorniSettimana"
-																			value={i}
-																			onchange={(evt) => {
-																				if (evt.currentTarget.checked) {
-																					e.ripetizione.giorniSettimana = [
-																						...e.ripetizione.giorniSettimana,
-																						i
-																					].sort((a, b) => a - b);
-																				} else {
-																					e.ripetizione.giorniSettimana = e.ripetizione.giorniSettimana
-																						.filter((d) => d !== i)
-																						.sort((a, b) => a - b);
-																				}
-																			}}
-																			checked={e.ripetizione.giorniSettimana.includes(i)}
-																		/>
-																		<label for={`day${i}`} class="btn btn-outline-primary">{day}</label>
-																	</div>
-																{/each}
-															</div>
-														</fieldset>
-													{/if}
+                          {#if e.ripetizione.frequenza === 'SETTIMANALE'}
+                            <fieldset class="col-12">
+                              <legend class="form-label">Giorni della settimana</legend>
+                              <div class="d-flex gap-2 flex-wrap">
+                                {#each ['D', 'L', 'M', 'M', 'G', 'V', 'S'] as day, i}
+                                  <div class="form-check">
+                                    <input
+                                      type="checkbox"
+                                      class="form-check-input"
+                                      id={`day${i}`}
+                                      name="giorniSettimana${i}"
+                                      value={i}
+                                      onchange={(evt) => {
+                                        if (evt.currentTarget.checked) {
+                                          e.ripetizione.giorniSettimana = [
+                                            ...e.ripetizione.giorniSettimana,
+                                            i
+                                          ].sort((a, b) => a - b);
+                                        } else {
+                                          e.ripetizione.giorniSettimana = e.ripetizione.giorniSettimana
+                                            .filter((d) => d !== i)
+                                            .sort((a, b) => a - b);
+                                        }
+                                      }}
+                                      checked={e.ripetizione.giorniSettimana.includes(i)}
+                                    />
+                                    <label for={`day${i}`} class="form-check-label">{day}</label>
+                                  </div>
+                                {/each}
+                              </div>
+                            </fieldset>
+                          {/if}
 
 													{#if e.ripetizione.frequenza === 'MENSILE'}
 														<fieldset class="col-12">

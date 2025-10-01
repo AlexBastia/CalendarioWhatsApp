@@ -19,15 +19,13 @@ export function mkLastDate(event) {
         lastDate = addDays(start, n);
         break;
       case "SETTIMANALE":
-        //TODO: rendere obbligatorio il giorno iniziale nella ripetizione settimanale
         const countPerWeek = ripetizione.giorniSettimana.length || 1;
         const weeksNeeded = Math.floor(n / countPerWeek);
-        //voglio n istanze oltre l'evento originale, quindi 21 eventi totali per n = 20
         lastDate = addWeeks(start, weeksNeeded);
         n = n % countPerWeek;
         while(n >= 0){
           if(ripetizione.giorniSettimana.includes(getDay(lastDate))) n = n -1;
-          if(n < 0) break; //ultima istanza: non vado avanti di altri giorni 
+          if(n < 0) break;
           lastDate = addDays(lastDate, 1);
         }
         break;
