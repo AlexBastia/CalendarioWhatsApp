@@ -134,7 +134,7 @@
     async function markAllAsRead() {
         try {
             const response = await fetch(`/api/notifications/mark-read`, {
-                method: 'PUT',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' }
             });
             

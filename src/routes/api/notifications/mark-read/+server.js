@@ -21,6 +21,10 @@ export async function PATCH({ locals, request }) {
                 return json({ error: 'Notification not found or unauthorized' }, { status: 404 });
             }
 
+            return json({ 
+                success: true, 
+                notification: updatedNotification 
+            });
 
         } else {
             const result = await Notifica.updateMany(
@@ -28,9 +32,14 @@ export async function PATCH({ locals, request }) {
                 { $set: { letta: true } }
             );
 
+            return json({ 
+                success: true, 
+                modifiedCount: result.modifiedCount 
+            });
         }
 
     } catch (error) {
+        console.error('Error marking notifications as read:', error);
         return json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
