@@ -40,12 +40,13 @@
 	let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'
 
 	let expandedEvents = $state([]);
+	$effect(() => console.log(expandedEvents))
 
 	let currentDateFormated = $derived.by(() => {
 		let dateString = '';
 		switch (viewMode) {
 			case 'daily':
-				dateString = format(currentDate, 'do LLL');
+				dateString = format(currentDate, 'EEEE (do LLL)');
 				break;
 			case 'weekly':
 				dateString = format(startOfWeek(currentDate), 'do LLL') + ' - ' + format(endOfWeek(currentDate), 'do LLL');

@@ -9,9 +9,8 @@
 	let currentTimeIndicator = $state(null);
 	let processedEvents = $derived(processEventOverlaps(events));
 
-	// Process events to handle overlaps
 	function processEventOverlaps(events) {
-		// Filter and sort timed events
+		// Ordina eventi per poi dividerli in gruppi
 		const timedEvents = events
 			.filter((e) => !e.allDay)
 			.map((e) => ({
@@ -21,7 +20,6 @@
 			}))
 			.sort((a, b) => a.startMinutes - b.startMinutes || b.endMinutes - a.endMinutes);
 
-		// Group overlapping events
 		const groups = [];
 		let currentGroup = [];
 
@@ -29,7 +27,7 @@
 			if (currentGroup.length === 0) {
 				currentGroup.push(event);
 			} else {
-				// Check if event overlaps with any event in current group
+				// Controlla se l'evento si sovrappone ad altri eventi nel gruppo
 				const overlaps = currentGroup.some(
 					(groupEvent) => event.startMinutes < groupEvent.endMinutes
 				);
@@ -47,14 +45,13 @@
 			groups.push(currentGroup);
 		}
 
-		// Assign columns to each event in each group
 		const processedEvents = [];
 
 		groups.forEach((group) => {
 			const columns = [];
 
 			group.forEach((event) => {
-				// Find the first available column
+				// Trova la prima colonna libera
 				let column = 0;
 				while (true) {
 					const canUseColumn =
@@ -64,14 +61,14 @@
 						if (!columns[column]) columns[column] = [];
 						columns[column].push(event);
 						event.column = column;
-						event.totalColumns = 0; // Will be updated
+						event.totalColumns = 0; // Verra' modificato
 						break;
 					}
 					column++;
 				}
 			});
 
-			// Set total columns for all events in group
+			// Imposta il numero di colonne per ogni gruppo
 			const totalColumns = columns.length;
 			group.forEach((event) => {
 				event.totalColumns = totalColumns;
@@ -92,10 +89,8 @@
 </script>
 
 <div class="card-body p-0">
-	<!-- All-day events and tasks -->
 	<TaskAndEventList {events} {tasks} {lateTasks} {isToday} {goToEvent} {goToTask} />
 
-	<!-- Hourly timeline -->
 	<div class="timeline-container">
 		{#each Array(24) as _, hour}
 			<div class="hour-slot" data-hour={hour}>
