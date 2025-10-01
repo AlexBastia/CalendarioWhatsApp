@@ -8,7 +8,7 @@ import { redirect, error, fail } from '@sveltejs/kit';
 export async function load(event) {
   console.log(`zio pera2}`);
   if (!event.locals.user) {
-    throw redirect(303, '/login');
+    redirect(303, '/login');
   }
 
   const pomodoroId = event.params.id;
@@ -38,6 +38,24 @@ export async function load(event) {
     throw error(500, { message: 'Errore interno' });
   }
 }
+
+function minutesToISO(minutes) {
+  if (!minutes && minutes !== 0) return null;
+  
+  const totalMinutes = Number(minutes);
+  if (Number.isNaN(totalMinutes) || totalMinutes < 0) return null;
+  
+  const hh = Math.floor(totalMinutes / 60);
+  const mm = totalMinutes % 60;
+  
+  const d = new Date(Date.UTC(1970, 0, 1, hh, mm, 0));
+  
+  if (isNaN(d.getTime())) return null;
+  
+  return d.toISOString();
+}
+
+
 
 export const actions = {
   removeUser: async ({ request, params, locals }) => {
@@ -124,46 +142,42 @@ export const actions = {
   },
 
   updatePomodoro: async ({ request, params, locals }) => {
-    if (!locals.user) return fail(401, { message: 'Non autorizzato', error: true });
-    const data = await request.formData();
-    const id = params.id;
+  if (!locals.user) return fail(401, { message: 'Non autorizzato', error: true });
+  const data = await request.formData();
+  const id = params.id;
 
-    const title = data.get('title') || '';
-    const timeStudyStr = data.get('timeStudy'); // atteso "HH:mm"
-    const timeBreakStr = data.get('timeBreak'); // atteso "HH:mm"
-    const cycles = parseInt(data.get('cycles') || '0', 10);
-    // sharedUsers non lo processiamo qui se non lo invii correttamente dal form
+  const title = data.get('title') || '';
+  const timeStudyStr = data.get('timeStudy');
+  const timeBreakStr = data.get('timeBreak');
+  const cycles = parseInt(data.get('cycles') || '0', 10);
 
-    // converti HH:mm in un formato coerente (es. durata in minuti o ISO su giorno fisso)
-    function timeStringToISO(hhmm) {
-      if (!hhmm) return null;
-      const [hh, mm] = hhmm.split(':').map(Number);
-      if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
-      // usa un giorno fisso per memorizzare l'orario
-      const d = new Date(Date.UTC(1970, 0, 1, hh, mm, 0));
-      return d.toISOString();
-    }
+  console.log(timeStudyStr)
+  console.log(timeBreakStr)
 
-    const timeStudy = timeStringToISO(timeStudyStr);
-    const timeBreak = timeStringToISO(timeBreakStr);
+  const timeStudy = minutesToISO(timeStudyStr);
+  const timeBreak = minutesToISO(timeBreakStr);
 
-    try {
-      const pomodoro = await Pomodoro.findById(id);
-      if (!pomodoro) return fail(404, { message: 'Pomodoro non trovato', error: true });
-      if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
+  try {
+    console.log('zio pera');
+    const pomodoro = await Pomodoro.findById(id);
+    if (!pomodoro) return fail(404, { message: 'Pomodoro non trovato', error: true });
+    if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
 
-      pomodoro.title = title;
-      if (timeStudy) pomodoro.timeStudy = timeStudy;
-      if (timeBreak) pomodoro.timeBreak = timeBreak;
-      pomodoro.cycles = isNaN(cycles) ? pomodoro.cycles : cycles;
-      // non toccare sharedUsers qui — la gestione dell'accettazione verrà fatta altrove
+    console.log('pomodoro prima: ', pomodoro)
+    pomodoro.title = title;
+    if (timeStudy) pomodoro.timeStudy = timeStudy;
+    if (timeBreak) pomodoro.timeBreak = timeBreak;
+    pomodoro.cycles = isNaN(cycles) ? pomodoro.cycles : cycles;
+    console.log('pomodoro adesso: ', pomodoro)
 
-      await pomodoro.save();
-
-      throw redirect(303, `/pomodoro/${id}`);
-    } catch (err) {
-      console.error('Errore updatePomodoro:', err);
-      return fail(500, { message: 'Errore interno', error: true });
-    }
+    await pomodoro.save();
+    
+  } catch (err) {
+    // Qui catturo SOLO errori del database, non il redirect
+    console.error('Errore updatePomodoro:', err);
+    return fail(500, { message: 'Errore interno', error: true });
   }
+  throw redirect(303, `/pomodoro/${id}`);
+  
+}
 };
