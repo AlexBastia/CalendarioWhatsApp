@@ -4,8 +4,6 @@ import { Evento } from '$lib/models/Event.js'; // Potrebbe servire per validazio
 import { Notifica } from '$lib/models/Notification.js';
 import { User } from '$lib/models/User';
 import { redirect, error, fail } from '@sveltejs/kit';
-import { previousMondayWithOptions } from 'date-fns/fp';
-import { mergeAlias } from 'vite';
 
 export async function load(event) {
   console.log(`zio pera2}`);
