@@ -5,7 +5,6 @@ import { Notifica } from '$lib/models/Notification.js';
 import { User } from '$lib/models/User';
 import { redirect, error, fail } from '@sveltejs/kit';
 import { previousMondayWithOptions } from 'date-fns/fp';
-import { mergeAlias } from 'vite';
 
 export async function load(event) {
   console.log(`zio pera2}`);
@@ -22,7 +21,7 @@ export async function load(event) {
       .populate('sharedUsers', 'username email _id')
       .lean();
     console.log('Pomodoro trovato:', pomodoroDoc);
-    
+
 
     if (!pomodoroDoc) {
       throw error(404, { message: 'Pomodoro non trovato' });
@@ -88,7 +87,7 @@ export const actions = {
       if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
       if (pomodoro.sharedUsers.some(id => id.equals(user._id))) return fail(403, { message: 'Già conviso', error: true });
 
-     
+
       const existingNotification = await Notifica.findOne({ destinatario: user._id, tipo: 'CONDIVISIONE_POMODORO', riferimento: pomodoro._id, mittente: locals.user._id });
       // devo controllare se è già stata inviata una notifica con la stessa conf
       console.log('Controllo notifica esistente:', existingNotification);
