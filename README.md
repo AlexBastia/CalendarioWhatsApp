@@ -32,3 +32,6 @@ Gli eventi vengono divisi in gruppi in modo tale che nessun evento di un gruppo 
 
 ## Categorie Note
 Le categorie sono memorizzate come lista di sotto-documenti nel documento dell'utente con il loro id, nome e lista di note associate. In piu', ogni documento nota memorizza anch'esso la lista di id delle categorie assegnate. In questo modo sia caricare tutte le categorie dell'utente sia caricare solo le categorie di una nota diventano operazioni molto rapide, con una leggera perdita per quanto riguarda l'eliminazione di una categoria.
+
+## Eventi ricorrenti
+Gli eventi ricorrenti non vengono salvati come una serie di eventi, bensì durante la visualizzazione del calendario vengono create (ma non salvate nel database) istanze nel range di occorrenza.

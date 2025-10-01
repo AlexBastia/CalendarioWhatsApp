@@ -77,7 +77,7 @@
 </script>
 
 <main class="homepage-container">
-	<Title title={'CalenDario WhatsApp AI'}>
+	<Title title={'CalenDario WhatsApp'}>
 		<NotificationBell />
 	</Title>
 
