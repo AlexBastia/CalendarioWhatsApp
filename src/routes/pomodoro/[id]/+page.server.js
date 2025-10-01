@@ -20,7 +20,7 @@ export async function load(event) {
       .populate('sharedUsers', 'username email _id')
       .lean();
     console.log('Pomodoro trovato:', pomodoroDoc);
-    
+
 
     if (!pomodoroDoc) {
       throw error(404, { message: 'Pomodoro non trovato' });
@@ -41,17 +41,17 @@ export async function load(event) {
 
 function minutesToISO(minutes) {
   if (!minutes && minutes !== 0) return null;
-  
+
   const totalMinutes = Number(minutes);
   if (Number.isNaN(totalMinutes) || totalMinutes < 0) return null;
-  
+
   const hh = Math.floor(totalMinutes / 60);
   const mm = totalMinutes % 60;
-  
+
   const d = new Date(Date.UTC(1970, 0, 1, hh, mm, 0));
-  
+
   if (isNaN(d.getTime())) return null;
-  
+
   return d.toISOString();
 }
 
@@ -104,7 +104,7 @@ export const actions = {
       if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
       if (pomodoro.sharedUsers.some(id => id.equals(user._id))) return fail(403, { message: 'Già conviso', error: true });
 
-     
+
       const existingNotification = await Notifica.findOne({ destinatario: user._id, tipo: 'CONDIVISIONE_POMODORO', riferimento: pomodoro._id, mittente: locals.user._id });
       // devo controllare se è già stata inviata una notifica con la stessa conf
       console.log('Controllo notifica esistente:', existingNotification);
@@ -142,42 +142,42 @@ export const actions = {
   },
 
   updatePomodoro: async ({ request, params, locals }) => {
-  if (!locals.user) return fail(401, { message: 'Non autorizzato', error: true });
-  const data = await request.formData();
-  const id = params.id;
+    if (!locals.user) return fail(401, { message: 'Non autorizzato', error: true });
+    const data = await request.formData();
+    const id = params.id;
 
-  const title = data.get('title') || '';
-  const timeStudyStr = data.get('timeStudy');
-  const timeBreakStr = data.get('timeBreak');
-  const cycles = parseInt(data.get('cycles') || '0', 10);
+    const title = data.get('title') || '';
+    const timeStudyStr = data.get('timeStudy');
+    const timeBreakStr = data.get('timeBreak');
+    const cycles = parseInt(data.get('cycles') || '0', 10);
 
-  console.log(timeStudyStr)
-  console.log(timeBreakStr)
+    console.log(timeStudyStr)
+    console.log(timeBreakStr)
 
-  const timeStudy = minutesToISO(timeStudyStr);
-  const timeBreak = minutesToISO(timeBreakStr);
+    const timeStudy = minutesToISO(timeStudyStr);
+    const timeBreak = minutesToISO(timeBreakStr);
 
-  try {
-    console.log('zio pera');
-    const pomodoro = await Pomodoro.findById(id);
-    if (!pomodoro) return fail(404, { message: 'Pomodoro non trovato', error: true });
-    if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
+    try {
+      console.log('zio pera');
+      const pomodoro = await Pomodoro.findById(id);
+      if (!pomodoro) return fail(404, { message: 'Pomodoro non trovato', error: true });
+      if (!pomodoro.userID.equals(locals.user._id)) return fail(403, { message: 'Non autorizzato', error: true });
 
-    console.log('pomodoro prima: ', pomodoro)
-    pomodoro.title = title;
-    if (timeStudy) pomodoro.timeStudy = timeStudy;
-    if (timeBreak) pomodoro.timeBreak = timeBreak;
-    pomodoro.cycles = isNaN(cycles) ? pomodoro.cycles : cycles;
-    console.log('pomodoro adesso: ', pomodoro)
+      console.log('pomodoro prima: ', pomodoro)
+      pomodoro.title = title;
+      if (timeStudy) pomodoro.timeStudy = timeStudy;
+      if (timeBreak) pomodoro.timeBreak = timeBreak;
+      pomodoro.cycles = isNaN(cycles) ? pomodoro.cycles : cycles;
+      console.log('pomodoro adesso: ', pomodoro)
 
-    await pomodoro.save();
-    
-  } catch (err) {
-    // Qui catturo SOLO errori del database, non il redirect
-    console.error('Errore updatePomodoro:', err);
-    return fail(500, { message: 'Errore interno', error: true });
+      await pomodoro.save();
+
+    } catch (err) {
+      // Qui catturo SOLO errori del database, non il redirect
+      console.error('Errore updatePomodoro:', err);
+      return fail(500, { message: 'Errore interno', error: true });
+    }
+    throw redirect(303, `/pomodoro/${id}`);
+
   }
-  throw redirect(303, `/pomodoro/${id}`);
-  
-}
 };

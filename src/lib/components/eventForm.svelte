@@ -301,78 +301,77 @@
 													</div>
 												</div>
 
-												{#if e.ripetizione.frequenza === 'SETTIMANALE'}
-													<fieldset class="col-12">
-														<legend class="form-label fw-semibold">Giorni della settimana</legend>
-														<div class="d-flex gap-2 flex-wrap days-grid">
-															{#each ['D', 'L', 'M', 'M', 'G', 'V', 'S'] as day, i}
-																<div class="form-check">
-																	<input
-																		type="checkbox"
-																		class="btn-check"
-																		id={`day${i}`}
-																		name="giorniSettimana"
-																		value={i}
-																		onchange={(evt) => {
-																			if (evt.currentTarget.checked) {
-																				e.ripetizione.giorniSettimana = [
-																					...e.ripetizione.giorniSettimana,
-																					i
-																				].sort((a, b) => a - b);
-																			} else {
-																				e.ripetizione.giorniSettimana = e.ripetizione.giorniSettimana
-																					.filter((d) => d !== i)
-																					.sort((a, b) => a - b);
-																			}
-																		}}
-																		checked={e.ripetizione.giorniSettimana.includes(i)}
-																	/>
-																	<label for={`day${i}`} class="btn btn-outline-primary day-btn">{day}</label>
-																</div>
-															{/each}
-														</div>
-													</fieldset>
-												{/if}
+                          {#if e.ripetizione.frequenza === 'SETTIMANALE'}
+                            <fieldset class="col-12">
+                              <legend class="form-label fw-semibold">Giorni della settimana</legend>
+                              <div class="d-flex gap-2 flex-wrap days-grid">
+                                {#each ['D', 'L', 'M', 'M', 'G', 'V', 'S'] as day, i}
+                                  <div class="form-check">
+                                    <input
+                                      type="checkbox"
+                                      class="btn-check"
+                                      id={`day${i}`}
+                                      value={i}
+                                      onchange={(evt) => {
+                                        if (evt.currentTarget.checked) {
+                                          e.ripetizione.giorniSettimana = [
+                                            ...e.ripetizione.giorniSettimana,
+                                            i
+                                          ].sort((a, b) => a - b);
+                                        } else {
+                                          e.ripetizione.giorniSettimana = e.ripetizione.giorniSettimana
+                                            .filter((d) => d !== i)
+                                            .sort((a, b) => a - b);
+                                        }
+                                      }}
+                                      checked={e.ripetizione.giorniSettimana.includes(i)}
+                                    />
+                                    <label for={`day${i}`} class="btn btn-outline-primary day-btn">{day}</label>
+                                  </div>
+                                {/each}
+                              </div>
+                            </fieldset>
+                          {/if}
 
-												{#if e.ripetizione.frequenza === 'MENSILE'}
-													<fieldset class="col-12">
-														<legend class="form-label fw-semibold">Ripetizione mensile</legend>
-														<div class="monthly-options">
-															<div class="form-check mb-2">
-																<input
-																	class="form-check-input"
-																	type="radio"
-																	id="monthlyDayOfMonth"
-																	name="monthlyMode"
-																	value="dayOfMonth"
-																	bind:group={e.ripetizione.monthlyMode}
-																/>
-																<label class="form-check-label" for="monthlyDayOfMonth">
-																	Ogni <strong>{new Date(e.dateStart).getDate()}</strong> del mese
-																</label>
-															</div>
-															<div class="form-check">
-																<input
-																	class="form-check-input"
-																	type="radio"
-																	id="monthlyNthWeekday"
-																	name="monthlyMode"
-																	value="nthWeekday"
-																	bind:group={e.ripetizione.monthlyMode}
-																/>
-																<label class="form-check-label" for="monthlyNthWeekday">
-																	Ogni <strong>{Number(e.ripetizione.nthWeekday.week)}°</strong>
-																	<strong>{['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'][
-																		Number(e.ripetizione.nthWeekday.weekday)
-																	]}</strong>
-																	del mese
-																</label>
-															</div>
-														</div>
-													</fieldset>
-													<input type="hidden" name="week" value={e.ripetizione.nthWeekday?.week || ''} />
-													<input type="hidden" name="weekday" value={e.ripetizione.nthWeekday?.weekday || ''} />
-												{/if}
+                          {#if e.ripetizione.frequenza === 'MENSILE'}
+                            <fieldset class="col-12">
+                              <legend class="form-label fw-semibold">Ripetizione mensile</legend>
+                              <div class="monthly-options">
+                                <div class="form-check mb-2">
+                                  <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    id="monthlyDayOfMonth"
+                                    name="monthlyMode"
+                                    value="dayOfMonth"
+                                    bind:group={e.ripetizione.monthlyMode}
+                                  />
+                                  <label class="form-check-label" for="monthlyDayOfMonth">
+                                    Ogni <strong>{new Date(e.dateStart).getDate()}</strong> del mese
+                                  </label>
+                                </div>
+                                <div class="form-check">
+                                  <input
+                                    class="form-check-input"
+                                    type="radio"
+                                    id="monthlyNthWeekday"
+                                    name="monthlyMode"
+                                    value="nthWeekday"
+                                    bind:group={e.ripetizione.monthlyMode}
+                                  />
+                                  <label class="form-check-label" for="monthlyNthWeekday">
+                                    Ogni <strong>{Number(e.ripetizione.nthWeekday.week)}°</strong>
+                                    <strong>{['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'][
+                                      Number(e.ripetizione.nthWeekday.weekday)
+                                    ]}</strong>
+                                    del mese
+                                  </label>
+                                </div>
+                              </div>
+                            </fieldset>
+                            <input type="hidden" name="week" value={e.ripetizione.nthWeekday?.week || ''} />
+                            <input type="hidden" name="weekday" value={e.ripetizione.nthWeekday?.weekday || ''} />
+                          {/if}
 
 												<div class="col-md-6">
 													<div class="form-floating">
