@@ -33,5 +33,6 @@ export const handle = async ({ event, resolve }) => {
   // Nella risposta aggiungo gli oggetti sessione e utente (null se il token non e' valido)
   event.locals.session = session;
   event.locals.user = user;
+  console.log('user: ',user)
   return resolve(event);
 };

@@ -32,9 +32,13 @@
 	let week = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
 	let { data } = $props();
 
-	let today = $derived($timingStore ? $timingStore : new Date());
+	timingStore.setTime(data.virtualTime ? data.virtualTime : new Date())
 
-	let currentDate = $state($timingStore ? $timingStore : new Date());
+	let today = $state(data.virtualTime ? data.virtualTime : new Date());
+	$effect(()=>{
+		today = $timingStore ? $timingStore : new Date();
+	});
+	let currentDate = $state(data.virtualTime ? data.virtualTime : new Date());
 
 	//modalita` di visualizzazione, il default e` settimanale
 	let viewMode = $state('weekly'); // 'daily', 'weekly', 'monthly'

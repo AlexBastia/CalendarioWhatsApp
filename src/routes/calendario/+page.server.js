@@ -1,4 +1,5 @@
 import { Evento } from '$lib/models/Event.js';
+import { User } from '$lib/models/User.js';
 import { Pomodoro } from '$lib/models/Pomodoro.js'; // Aggiunto per caricarlo nel form
 import { redirect, fail } from '@sveltejs/kit';
 import { startOfDay, set, differenceInMilliseconds, add } from 'date-fns';
@@ -21,6 +22,7 @@ async function updateTask(userId, today) {
   }
 }
 async function updatePom(userId, today) {
+  console.log(' OGGI È', today)
 
   const startOfToday = startOfDay(today);
 
@@ -64,8 +66,11 @@ export async function load({ locals }) {
     redirect(303, '/login');
   }
 
-  console.log(`Caricamento calendario per utente ${locals.user.id}`);
-  const today = locals.user.virtualTime ? new Date(locals.user.virtualTime) : new Date();
+
+  const user = await User.findById(locals.user.id, 'virtualTime').lean();
+  console.log(user)
+  const today = user?.virtualTime ? new Date(user.virtualTime) : new Date();
+  console.log('zio pera', today);
 
   await Promise.all([
     updatePom(locals.user.id, today),
@@ -81,6 +86,7 @@ export async function load({ locals }) {
   console.log(`Eventi trovati: ${eventiUtente.length}, Attività trovate: ${attivitaUtente.length}, Pomodori trovati: ${pomodoriUtente.length}`);
   console.log('Primo evento caricato:', JSON.stringify(eventiUtente[0]?.ripetizione, null, 2));
   return {
+    virtualTime: user?.virtualTime,
     events: eventiUtente.map((evento) => ({
       _id: evento._id.toString(),
       title: evento.title,
