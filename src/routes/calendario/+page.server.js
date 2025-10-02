@@ -84,6 +84,7 @@ export async function load({ locals }) {
     events: eventiUtente.map((evento) => ({
       _id: evento._id.toString(),
       title: evento.title,
+      allDay: evento.allDay,
       start: evento.start,
       end: evento.end,
       eventType: evento.eventType,
