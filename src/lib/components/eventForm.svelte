@@ -42,7 +42,13 @@
 	if (options?.endTime) event.timeEnd = options.endTime;
 
 	let e = $state({ ...event });
-
+	$effect(() => {
+		if (e.dateStart && e.dateEnd) {
+		if (new Date(e.dateEnd) < new Date(e.dateStart)) {
+			e.dateEnd = e.dateStart;
+		}
+		}
+	});
 	if (!e.notificationSettings) {
 		e.notificationSettings = {
 			enabled: false,
