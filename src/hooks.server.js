@@ -30,9 +30,10 @@ export const handle = async ({ event, resolve }) => {
     deleteSessionTokenCookie(event);
     // In questo caso, session e user sono gia' null, quindi non dobbiamo impostarli
   }
+
+  
   // Nella risposta aggiungo gli oggetti sessione e utente (null se il token non e' valido)
   event.locals.session = session;
   event.locals.user = user;
-  console.log('user: ',user)
   return resolve(event);
 };
