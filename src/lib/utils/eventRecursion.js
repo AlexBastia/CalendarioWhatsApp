@@ -95,7 +95,7 @@ export function expandEvent(event, rangeStart, rangeEnd) {
       break;
 
     case "SETTIMANALE":
-      let weekCursor = startOfDay(rangeStart);
+      let weekCursor = startOfDay(start > rangeStart ? start : rangeStart);
       while (weekCursor <= lastDate) {
         const today = getDay(weekCursor);
         if(ripetizione.giorniSettimana.includes(today)) pushInstance(weekCursor);
@@ -104,7 +104,7 @@ export function expandEvent(event, rangeStart, rangeEnd) {
       break;
 
     case "MENSILE":
-      let monthCursor = startOfDay(rangeStart);
+      let monthCursor = startOfDay(start > rangeStart ? start : rangeStart);
       let day = getDate(monthCursor);
       if(ripetizione.monthlyMode === 'dayOfMonth') {
         let instanceDate = addMonths(start, (getMonth(rangeStart) - getMonth(start)));

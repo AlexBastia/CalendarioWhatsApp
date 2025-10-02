@@ -333,6 +333,7 @@
                                       type="checkbox"
                                       class="btn-check"
                                       id={`day${i}`}
+									  name = 'giorniSettimana${i}'
                                       value={i}
                                       onchange={(evt) => {
                                         if (evt.currentTarget.checked) {
