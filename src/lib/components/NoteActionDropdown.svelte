@@ -44,6 +44,7 @@
 		<li>
 			<button
 				form="noteForm"
+				formaction="/note?/create"
 				type="submit"
 				alt="duplicate"
 				name="copy"
