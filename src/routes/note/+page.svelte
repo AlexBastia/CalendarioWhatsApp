@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { enhance } from '$app/forms';
-	import { filterPreviews, sortPreviews } from './utilities';
+	import { filterPreviews, sortPreviews } from '$lib/utils/noteSortFilter.js';
 	import { timingStore } from '$lib/stores/timing';
 	import NoteTagModalHome from '$lib/components/NoteTagModalHome.svelte';
 	import SelectionModal from '$lib/components/SelectionModal.svelte';
