@@ -3,6 +3,7 @@
 	import { format, isSameDay } from 'date-fns';
 	import { onMount } from 'svelte';
 	import TaskAndEventList from './TaskAndEventList.svelte';
+	import { stopPropagation } from 'svelte/legacy';
 
 	let { events, tasks, lateTasks, isToday, goToEvent, goToTask, today, currentDate } = $props();
 
@@ -123,7 +124,7 @@
 
 							<button
 								class="event-card"
-								onclick={() => goToEvent(event._id)}
+								onclick={(e) =>{goToEvent(event._id); e.stopPropagation();} }
 								style="
                                     --duration: {duration};
                                     --start-offset: {startOffset};
