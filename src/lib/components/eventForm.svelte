@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { timingStore } from '$lib/stores/timing';
-	import { format } from 'date-fns';
+	import { addDays, format, differenceInCalendarDays } from 'date-fns';
 	import Title from '$lib/components/Title.svelte'
 
 	let {
@@ -42,12 +42,23 @@
 	if (options?.endTime) event.timeEnd = options.endTime;
 
 	let e = $state({ ...event });
+	let previousDateStart = new Date(e.dateStart);
+
 	$effect(() => {
-		if (e.dateStart && e.dateEnd) {
-		if (new Date(e.dateEnd) < new Date(e.dateStart)) {
-			e.dateEnd = e.dateStart;
+		if (!e.dateStart) return;
+
+		const newStart = new Date(e.dateStart);
+		const oldStart = new Date(previousDateStart);
+
+		if (e.dateEnd) {
+			const shift = differenceInCalendarDays(newStart, oldStart);
+			let newEnd = new Date(e.dateEnd);
+			newEnd = addDays(newEnd, shift);
+     		e.dateEnd = format(newEnd, 'yyyy-MM-dd');		
+		} else {
+		e.dateEnd = e.dateStart;
 		}
-		}
+		previousDateStart = newStart;
 	});
 	if (!e.notificationSettings) {
 		e.notificationSettings = {
